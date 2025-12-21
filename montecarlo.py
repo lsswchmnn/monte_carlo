@@ -13,10 +13,13 @@ class MonteCarloSim:
         self.start_state        = fixed_state           # Startbedingung; kann selbst zufällig sein
         self.transitional_rule  = random_walk           # Wie kommt Xt+1 aus Xt zustande?
         self.rng                = random.Random(42)     # Eigener Random-Numbers-Generator mit Seed
-        self.step_size          = None                  # Paramter für die Übergangsfunktionen
+        self.step_size          = 1.0                   # Paramter für die Übergangsfunktionen
+        self.last_result        = []
 #=========================================================================
 # Sim-Methoden
     def run(self)-> list:
+        self.last_result = None     # Ergebnis zurücksetzen
+
         all_paths = []
 
         for _ in range(self.n_paths):
@@ -29,6 +32,8 @@ class MonteCarloSim:
             
             all_paths.append(path)
         
+        self.last_result = all_paths
+
         return all_paths
 
 #=========================================================================
@@ -49,6 +54,10 @@ class MonteCarloSim:
         
         if self.transitional_rule is None:
             show_error(True, "DataError", "No Transitionrule defined.")
+            return False
+        
+        if self.step_size is None:
+            show_error(True, "DataError", "No step size defined.")
             return False
         
         return True
