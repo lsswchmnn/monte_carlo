@@ -1,4 +1,6 @@
 from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error
+from transition_rules import transition_data as td
+from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
 #=========================================================================
@@ -29,14 +31,16 @@ class CLI:
                 continue
 
             elif choice == "2":
-                self._show_rules()
+                self._show_rules(True)
                 enter_continue()
                 continue
 
             elif choice == "3":
                 if not self.sim.check_if_complete():
                     continue
+                self._show_rules(False)             # Informationen ohne Beschreibung aufrufen
                 self._start_sim()
+                print("Sample-paths are being calculated...")
 
             elif choice == "4" and self.sim.last_result is not None:
                 self.result_menu(self.sim.last_result)
@@ -71,21 +75,30 @@ class CLI:
         self.sim.step_size = step_size
 
     # Regeln der Simulation anzeigen
-    def _show_rules(self):
+    def _show_rules(self, info: bool = True):
         clear_cli()
         print_separation()
         print("- MONTE CARLO SIMULATION -\n")
-        print("SETTINGS: ")
+        print("SETTINGS: \n")
 
         if not self.sim.check_if_complete():
             return
         
         print(f"Number of steps: {self.sim.n_steps}")
         print(f"Number of Paths: {self.sim.n_paths}")
+        print(f"Step Size: {self.sim.step_size}")
 
-        # Später durch kurze Beschreibung tauschen
-        print(f"Function for Startvalue:  {self.sim.start_state}")
-        print(f"Function for transitions: {self.sim.transitional_rule}")
+        # Startwert
+        key = self.sim.start_state.__name__
+        print(f"\nFunction for Startvalue: {sd[key]["Name"]}")
+        if info:
+             print(f"Description: {sd[key]["Desc"]}")
+
+        # Transitions-Regel
+        key = self.sim.transitional_rule.__name__
+        print(f"\nFunction for transitions: {td[key]["Name"]}")
+        if info:
+             print(f"Description: {td[key]["Desc"]}\n")
 
     # Ergebnis anziegen
     def result_menu(self, paths:list):
@@ -103,10 +116,10 @@ class CLI:
 
             if choice == "1":
                 print(paths)
+                enter_continue()
                 
             elif choice == "2":
-                plot_paths(paths)
-
+                plot_paths(paths, self.sim.seed)
 
             elif choice == "3":
                 plot_mean_and_std(paths)
@@ -119,7 +132,6 @@ class CLI:
 
     # Simulation starten
     def _start_sim(self):
-        self._show_rules()
         enter_continue("Press enter to start the Simulation...")
         self.sim.run()                       # Simulation aufrufen
         self.result_menu(self.sim.last_result)        # Direkt Menü

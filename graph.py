@@ -2,17 +2,41 @@ import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
 #=========================================================================
+# Verschiedenes
+
+# Default-Speicherpfad
+plt.rcParams["savefig.directory"] = r"C:/Users/Lasse/Pictures/Projekte/Monte Carlo Sim"
+
+# Für Glättung der Linien
+def smooth_path(path, window=10):
+    return np.convolve(path, np.ones(window)/window, mode="valid")
+
+#=========================================================================
 # Funktionen für Visualisierung
 
 # Zeichent alle Sample Paths
-def plot_paths(paths: List[List[float]]) -> None:
+def plot_paths(paths: List[List[float]], seed: int) -> None:
     for path in paths:
-        plt.plot(path, alpha=0.9)
+        smooth = smooth_path(path, window=10)
+        plt.plot(smooth, alpha=0.5)
 
-    plt.title("Monte Carlo Simulation Paths")
+    plt.title("All Sample-paths")
     plt.xlabel("Step")
     plt.ylabel("State")
+
+    # Seed ausgeben
+    if seed is not None:
+        plt.text(
+            0.02, 0.95,
+            f"Seed: {seed}",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment='top',
+            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+        )
+
     plt.show()
+
 
 # Komprimiert zu Erwartungswert und Streuung
 def plot_mean_and_std(paths: List[List[float]]) -> None:

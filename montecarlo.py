@@ -1,6 +1,6 @@
-from utils import show_error                        # Hilfsfunktionen
-from start_state import fixed_state, random_state   # Startwert auswählen
-from transition_rules import random_walk            # Übergänge
+from utils import show_error                                    # Hilfsfunktionen
+from start_state import fixed_state, random_state               # Startwert auswählen
+from transition_rules import random_walk, drifted_random_walk, mean_reverting, state_dependent_vol, fat_tail_walk, absorbing_barrier, regime_switch
 import random
 #=========================================================================
 # Methoden für Startzustand in start_state.py; für Transitionsregeln in 
@@ -8,13 +8,14 @@ import random
 #=========================================================================
 class MonteCarloSim:
     def __init__(self):
-        self.n_steps            = 1000                  # Schritte eines Pfades
-        self.n_paths            = 10000                 # Anzahl an simulierten Pfaden
-        self.start_state        = fixed_state           # Startbedingung; kann selbst zufällig sein
-        self.transitional_rule  = random_walk           # Wie kommt Xt+1 aus Xt zustande?
-        self.rng                = random.Random(42)     # Eigener Random-Numbers-Generator mit Seed
-        self.step_size          = 1.0                   # Paramter für die Übergangsfunktionen
-        self.last_result        = []
+        self.n_steps            = 1000                      # Schritte eines Pfades
+        self.n_paths            = 1000                      # Anzahl an simulierten Pfaden
+        self.start_state        = random_state              # Startbedingung; kann selbst zufällig sein
+        self.transitional_rule  = state_dependent_vol       # Wie kommt Xt+1 aus Xt zustande?
+        self.seed               = 43                        
+        self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
+        self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
+        self.last_result        = []                        # Auf letztes Ergebnis zugreifen
 #=========================================================================
 # Sim-Methoden
     def run(self)-> list:
@@ -24,7 +25,7 @@ class MonteCarloSim:
 
         for _ in range(self.n_paths):
             path = []
-            x = self.start_state()
+            x = self.start_state(self.rng)
 
             for _ in range(self.n_steps):
                 path.append(x)
