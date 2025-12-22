@@ -6,7 +6,7 @@ from montecarlo import MonteCarloSim
 #=========================================================================
 # CLI-KLasse
 class CLI:
-    def __init__(self, simulation:MonteCarloSim):
+    def __init__(self, simulation: MonteCarloSim):
         self.sim = simulation
 
 #=========================================================================
@@ -18,11 +18,11 @@ class CLI:
             print_separation()
             print("- MONTE CARLO SIMULATION -\n")
             print("MENU: ")
-            print("1 - Load Data")
-            print("2 - Show Sim Settings")
+            print("1 - Change Settings")
+            print("2 - Show Settings")
             print("3 - Start Simulation")
             if self.sim.last_result is not None:
-                print("4 - Result Menu")
+                print("4 - Show Result")
             print("C - Close CLI")
             choice = input("> ").strip().lower()
 
@@ -39,8 +39,8 @@ class CLI:
                 if not self.sim.check_if_complete():
                     continue
                 self._show_rules(False)             # Informationen ohne Beschreibung aufrufen
+                print_separation()
                 self._start_sim()
-                print("Sample-paths are being calculated...")
 
             elif choice == "4" and self.sim.last_result is not None:
                 self.result_menu(self.sim.last_result)
@@ -56,7 +56,7 @@ class CLI:
 #=========================================================================
 # CLI-Methoden
 
-    # Daten für die Simulation abfragen und festlegen
+    # Daten für die Sim1ulation abfragen und festlegen
     def _load_data(self):
         self.sim.last_result = None     # Ergebnis zurücksetzen
         clear_cli()
@@ -66,7 +66,7 @@ class CLI:
 
         # Daten abfragen
         n_steps = input_int(10, 10000, 1000, "Input Number of steps", True)
-        n_paths = input_int(10, 10000, 1000, "Input Number of paths", True)
+        n_paths = input_int(1, 10000, 100, "Input Number of paths", True)
         step_size = input_float(0.1, 100, 1, "Step Size", True)
 
         # Daten festlegen
@@ -119,7 +119,7 @@ class CLI:
                 enter_continue()
                 
             elif choice == "2":
-                plot_paths(paths, self.sim.seed)
+                plot_paths(paths, self.sim.seed, self.sim.n_paths)
 
             elif choice == "3":
                 plot_mean_and_std(paths)
@@ -133,5 +133,6 @@ class CLI:
     # Simulation starten
     def _start_sim(self):
         enter_continue("Press enter to start the Simulation...")
+        print("\nSample-paths are being calculated...")
         self.sim.run()                       # Simulation aufrufen
         self.result_menu(self.sim.last_result)        # Direkt Menü
