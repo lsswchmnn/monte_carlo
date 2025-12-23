@@ -3,6 +3,7 @@ from transition_rules import transition_data as td
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
+from ergodicity import calculate_ergodicity
 #=========================================================================
 # CLI-KLasse
 class CLI:
@@ -111,6 +112,7 @@ class CLI:
             print("2 - Show Sample Paths")
             print("3 - Show Mean Path and Volatility")
             print("4 - Show Distribution of Final Cases")
+            print("5 - Calculate Ergodicity")
             print("C - Close")
             choice = input("> ").strip().lower()
 
@@ -120,12 +122,19 @@ class CLI:
                 
             elif choice == "2":
                 plot_paths(paths, self.sim.seed, self.sim.n_paths)
+                continue
 
             elif choice == "3":
                 plot_mean_and_std(paths)
+                continue
 
             elif choice == "4":
-                plot_final_distribution(paths)        
+                plot_final_distribution(paths)
+                continue
+
+            elif choice == "5":
+                calculate_ergodicity(paths)
+                continue
 
             elif choice == "c":
                 break
