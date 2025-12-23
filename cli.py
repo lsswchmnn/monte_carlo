@@ -125,11 +125,11 @@ class CLI:
                 continue
 
             elif choice == "3":
-                plot_mean_and_std(paths)
+                plot_mean_and_std(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
             elif choice == "4":
-                plot_final_distribution(paths)
+                plot_final_distribution(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
             elif choice == "5":

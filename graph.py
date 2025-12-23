@@ -39,7 +39,7 @@ def plot_paths(paths: List[List[float]], seed: int, num_paths: int) -> None:
 
 
 # Komprimiert zu Erwartungswert und Streuung
-def plot_mean_and_std(paths: List[List[float]]) -> None:
+def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> None:
     data = np.array(paths)
 
     mean = data.mean(axis=0)
@@ -60,14 +60,38 @@ def plot_mean_and_std(paths: List[List[float]]) -> None:
     plt.xlabel("Step")
     plt.ylabel("State")
     plt.legend()
+
+    # Seed ausgeben
+    if seed is not None:
+        plt.text(
+            0.02, 0.95,
+            f"Seed: {seed} | Paths: {num_paths}",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment='top',
+            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+        )
+
     plt.show()
 
 # Fokus auf Ergebnis statt Weg
-def plot_final_distribution(paths: List[List[float]]) -> None:
+def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int) -> None:
     final_values = [path[-1] for path in paths]
 
     plt.hist(final_values, bins=30, alpha=0.7)
     plt.title("Distribution of Final States")
     plt.xlabel("Final State")
     plt.ylabel("Frequency")
+
+    # Seed ausgeben
+    if seed is not None:
+        plt.text(
+            0.02, 0.95,
+            f"Seed: {seed} | Paths: {num_paths}",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment='top',
+            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+        )
+
     plt.show()
