@@ -40,7 +40,6 @@ class CLI:
                 if not self.sim.check_if_complete():
                     continue
                 self._show_rules(False)             # Informationen ohne Beschreibung aufrufen
-                print_separation()
                 self._start_sim()
 
             elif choice == "4" and self.sim.last_result is not None:
@@ -121,14 +120,20 @@ class CLI:
                 enter_continue()
                 
             elif choice == "2":
+                clear_cli()
+                print("Is loading...")
                 plot_paths(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
             elif choice == "3":
+                clear_cli()
+                print("Is loading...")
                 plot_mean_and_std(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
             elif choice == "4":
+                clear_cli()
+                print("Is loading...")
                 plot_final_distribution(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
@@ -139,8 +144,8 @@ class CLI:
             elif choice == "c":
                 break
 
+    # Submenü für Ergodizität
     def ergodicity_menu(self, paths:list):
-        
         ergodicity_data = calculate_ergodicity(paths)
         self.sim.last_erg_data = ergodicity_data
 
@@ -165,7 +170,6 @@ class CLI:
                 print(f"Mean of Time Means:    {data['time_mean_mean']:.4f}")
                 print(f"Std of Time Means:     {data['time_mean_std']:.4f}")
                 print(f"Number of Paths:       {len(data['time_means'])}")
-                print(f"Heuristic Ergodic?     {'Yes' if data['ergodic_heuristic'] else 'No'}")
                 
                 enter_continue()
                 continue

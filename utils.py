@@ -17,12 +17,17 @@ def show_error(graphic: bool=True, title: str="Error", text: str="An unknown err
 #=========================================================================
 # CLI-Utilities
 
-# Trennlinie im Terminal für saubere CLI-Abschnitte
+# Trennlinien im Terminal für saubere CLI-Abschnitte
+
 def print_separation(length: int=50):
     print(f"\n{length*'='}")
 
+def print_thin_separation(length: int=50):
+    print(f"\n{length*'-'}")
+
 # Mit Enter fortfahren
 def enter_continue(msg: str="Press Enter to continue..."):
+    print_thin_separation()
     input(f"\n{msg}")
 
 # Leert das CLI komplett
