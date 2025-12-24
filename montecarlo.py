@@ -10,12 +10,13 @@ class MonteCarloSim:
     def __init__(self):
         self.n_steps            = 1000                      # Schritte eines Pfades
         self.n_paths            = 1000                      # Anzahl an simulierten Pfaden
-        self.start_state        = random_state              # Startbedingung; kann selbst zufällig sein
-        self.transitional_rule  = random_walk               # Wie kommt Xt+1 aus Xt zustande?
+        self.start_state        = fixed_state               # Startbedingung
+        self.transitional_rule  = absorbing_barrier         # Wie kommt Xt+1 aus Xt zustande?
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
-        self.last_result        = None                        # Auf letztes Ergebnis zugreifen
+        self.last_result        = None                      # Auf letztes Ergebnis zugreifen
+        self.last_erg_data      = None                      # Ergodizitäts-Ergebnis
 #=========================================================================
 # Sim-Methoden
     def run(self)-> list:

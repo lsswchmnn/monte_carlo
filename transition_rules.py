@@ -95,7 +95,7 @@ def fat_tail_walk(x_t, rng, step_size: float = 1.0):
     return x_t + noise
 
 # Unter- oder Obergrenze
-def absorbing_barrier(x_t, rng, step_size: float = 1.0, barrier = -1):
+def absorbing_barrier(x_t, rng, step_size: float = 1.0, barrier = -10):
     if x_t <= barrier:
         return barrier
     noise = rng.choice([-step_size, step_size])

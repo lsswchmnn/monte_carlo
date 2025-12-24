@@ -18,7 +18,7 @@ class CLI:
             clear_cli()
             print_separation()
             print("- MONTE CARLO SIMULATION -\n")
-            print("MENU: ")
+            print("MAINMENU: ")
             print("1 - Change Settings")
             print("2 - Show Settings")
             print("3 - Start Simulation")
@@ -133,7 +133,50 @@ class CLI:
                 continue
 
             elif choice == "5":
-                calculate_ergodicity(paths)
+                self.ergodicity_menu(paths)
+                continue
+
+            elif choice == "c":
+                break
+
+    def ergodicity_menu(self, paths:list):
+        
+        ergodicity_data = calculate_ergodicity(paths)
+        self.sim.last_erg_data = ergodicity_data
+
+        while True:
+            clear_cli()
+            print_separation()
+            print("- MONTE CARLO SIMULATION -\n")
+            print("RESULT/ERGODICITY: ")
+            print("1 - Show Ergodicitiy Data")
+            print("2 - Check if ergodic (heuristic)")
+            print("C - Close")
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                clear_cli()
+                print_separation()
+                print("- ERGODICITY DATA -\n")
+                
+                data = self.sim.last_erg_data
+                
+                print(f"Ensemble Mean:         {data['ensemble_mean']:.4f}")
+                print(f"Mean of Time Means:    {data['time_mean_mean']:.4f}")
+                print(f"Std of Time Means:     {data['time_mean_std']:.4f}")
+                print(f"Number of Paths:       {len(data['time_means'])}")
+                print(f"Heuristic Ergodic?     {'Yes' if data['ergodic_heuristic'] else 'No'}")
+                
+                enter_continue()
+                continue
+
+            elif choice == "2":
+                if self.sim.last_erg_data["ergodic_heuristic"]:
+                    print("Is ergodic.")
+                else:
+                    print("Is not ergodic.")
+
+                enter_continue()
                 continue
 
             elif choice == "c":
