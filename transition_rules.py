@@ -57,6 +57,13 @@ transition_data = {
             "The process alternates between normal and high-volatility behavior. "
             "Transitions between regimes occur randomly."
         )
+    },
+
+    "linear_step": {
+        "Name": "Linear Step",
+        "Desc": (
+            "The Process creates one linear line."
+        )
     }
 }
 
@@ -108,3 +115,6 @@ def regime_switch(x_t, rng, step_size):
     else:
         noise = rng.gauss(0, step_size * 5)
     return x_t + noise
+
+def linear_step(x_t, rng, step_size):
+    return x_t + 0

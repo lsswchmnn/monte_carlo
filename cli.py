@@ -138,6 +138,8 @@ class CLI:
                 continue
 
             elif choice == "5":
+                clear_cli()
+                print("Ergodicity data is being calculated...")
                 self.ergodicity_menu(paths)
                 continue
 
@@ -162,10 +164,11 @@ class CLI:
             if choice == "1":
                 clear_cli()
                 print_separation()
-                print("- ERGODICITY DATA -\n")
+                print("- MONTE CARLO SIMULATION -\n")
                 
                 data = self.sim.last_erg_data
                 
+                print("RESULT/ERGODICITY/ERGODICITY DATA: ")
                 print(f"Ensemble Mean:         {data['ensemble_mean']:.4f}")
                 print(f"Mean of Time Means:    {data['time_mean_mean']:.4f}")
                 print(f"Std of Time Means:     {data['time_mean_std']:.4f}")
@@ -189,6 +192,7 @@ class CLI:
     # Simulation starten
     def _start_sim(self):
         enter_continue("Press enter to start the Simulation...")
+        clear_cli()
         print("\nSample-paths are being calculated...")
         self.sim.run()                       # Simulation aufrufen
         self.result_menu(self.sim.last_result)        # Direkt Menü

@@ -21,12 +21,12 @@ def calculate_ergodicity(paths: List[List[float]],      # Daten des stochastisch
     ensemble_mean = ensemble_average(tail_data)
 
     # Grobe Heuristik - ergodisch oder nicht?
-    threshold = 0.05  # 5 % relative Abweichung als Faustregel
+    threshold = 0.10  # 5 % relative Abweichung als Faustregel
     ergodic = (time_means.std() / abs(ensemble_mean)) < threshold
 
     # Rückgabe
     result = {
-        "ensemble_mean": ensemble_mean,         # Erwartungswert über alle Pfade
+        "ensemble_mean": ensemble_mean,         # Durchschnitt aller Zustände aller Pfade im asymptotischen Bereich
         "time_mean_mean": time_means.mean(),    # Mittel der Zeitmittel
         "time_mean_std": time_means.std(),      # Streuung der Zeitmittel
         "time_means": time_means,               # Zeitmittel einzelner Pfade

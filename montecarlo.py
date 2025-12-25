@@ -1,6 +1,6 @@
 from utils import show_error                                    # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
-from transition_rules import random_walk, drifted_random_walk, mean_reverting, state_dependent_vol, fat_tail_walk, absorbing_barrier, regime_switch
+from transition_rules import random_walk, drifted_random_walk, mean_reverting, state_dependent_vol, linear_step, fat_tail_walk, absorbing_barrier, regime_switch
 import random
 #=========================================================================
 # Methoden für Startzustand in start_state.py; für Transitionsregeln in 
@@ -11,7 +11,7 @@ class MonteCarloSim:
         self.n_steps            = 1000                      # Schritte eines Pfades
         self.n_paths            = 1000                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
-        self.transitional_rule  = absorbing_barrier         # Wie kommt Xt+1 aus Xt zustande?
+        self.transitional_rule  = mean_reverting
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
@@ -21,6 +21,7 @@ class MonteCarloSim:
 # Sim-Methoden
     def run(self)-> list:
         self.last_result = None     # Ergebnis zurücksetzen
+        self.last_erg_data = None
 
         all_paths = []
 
