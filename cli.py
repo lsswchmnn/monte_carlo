@@ -1,4 +1,4 @@
-from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error
+from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error, progress_iterator
 from transition_rules import transition_data as td
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
@@ -116,14 +116,32 @@ class CLI:
             choice = input("> ").strip().lower()
 
             if choice == "1":
-                print(paths)
-                enter_continue()
-                
-            elif choice == "2":
                 clear_cli()
                 print("Is loading...")
-                plot_paths(paths, self.sim.seed, self.sim.n_paths)
+                print(paths)
+                enter_continue()
+
+
+            elif choice == "2":
+                clear_cli()
+                print("Calculating sample paths...")
+                
+                # Wrapper für progress_iterator
+                def plot_wrapper(idx):
+                    # idx wird für tqdm benötigt, hier uninteressant
+                    plot_paths(paths, self.sim.seed, self.sim.n_paths)
+                    return None  # Keine Rückgabe nötig
+
+                # 1-Step iterator, nur um Ladeleiste zu zeigen während die Funktion läuft
+                progress_iterator(range(1), desc="Loading paths", callback=plot_wrapper)
                 continue
+
+                
+            #elif choice == "2":
+                #clear_cli()
+                #print("Is loading...")
+                #plot_paths(paths, self.sim.seed, self.sim.n_paths)
+                #continue
 
             elif choice == "3":
                 clear_cli()

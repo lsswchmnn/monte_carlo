@@ -1,5 +1,7 @@
-import tkinter as tk
 import os
+from typing import Iterable, Callable, Optional
+from tqdm import tqdm
+import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
 #=========================================================================
@@ -33,6 +35,42 @@ def enter_continue(msg: str="Press Enter to continue..."):
 # Leert das CLI komplett
 def clear_cli():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+
+
+def progress_iterator(
+        iterable: Iterable,
+        *,
+        desc: str = "Progress",
+        unit: str = "it",
+        total: Optional[int] = None,
+        callback: Optional[Callable] = None
+    ) -> list:
+    """
+    Ein Iterator, der über einen iterierbaren Prozess läuft,
+    dabei eine Fortschrittsleiste anzeigt und optional eine Callback-Funktion
+    auf jedes Element anwenden kann.
+
+    Parameter:
+    - iterable: Ein iterierbares Objekt (z.B. range, Liste, Generator).
+    - desc: Beschreibung, die links von der Leiste angezeigt wird.
+    - unit: Einheit für die Leiste (standard: "it" für Iterationen).
+    - total: Gesamtzahl der Schritte (falls tqdm sie nicht automatisch bestimmen kann).
+    - callback: Optionale Funktion, die auf jedes Element angewendet wird.
+
+    Rückgabe:
+    - Liste mit Ergebnissen der Callback-Verarbeitung (falls callback gesetzt),
+      sonst eine Liste der Elemente selbst.
+    """
+    results = []
+    for item in tqdm(iterable, desc=desc, unit=unit, total=total):
+        if callback:
+            results.append(callback(item))
+        else:
+            results.append(item)
+    return results
+
+
 
 #=========================================================================
 # Input-Utilities
