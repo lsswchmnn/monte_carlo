@@ -17,7 +17,7 @@ start_state_data = {
 }
 #=========================================================================
 def fixed_state(rng) -> float:
-    return 0
+    return 1
 
 def random_state(rng) -> float:
     return random.gauss(0, 1)

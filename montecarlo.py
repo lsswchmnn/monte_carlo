@@ -1,6 +1,6 @@
-from utils import show_error                                    # Hilfsfunktionen
+from utils import show_error, printProgressBar                       # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
-from transition_rules import random_walk, drifted_random_walk, mean_reverting, state_dependent_vol, linear_step, fat_tail_walk, absorbing_barrier, regime_switch
+from transition_rules import random_walk, drifted_random_walk, taleb_fair_game, mean_reverting, state_dependent_vol, linear_step, fat_tail_walk, absorbing_barrier, regime_switch
 import random
 #=========================================================================
 # Methoden für Startzustand in start_state.py; für Transitionsregeln in 
@@ -11,7 +11,7 @@ class MonteCarloSim:
         self.n_steps            = 1000                      # Schritte eines Pfades
         self.n_paths            = 1000                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
-        self.transitional_rule  = mean_reverting
+        self.transitional_rule  = taleb_fair_game
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
@@ -25,7 +25,7 @@ class MonteCarloSim:
 
         all_paths = []
 
-        for _ in range(self.n_paths):
+        for i in range(self.n_paths):
             path = []
             x = self.start_state(self.rng)
 
@@ -34,6 +34,9 @@ class MonteCarloSim:
                 x = self.transitional_rule(x, self.rng, self.step_size)
             
             all_paths.append(path)
+
+            printProgressBar(i, self.n_paths, prefix='PGenerating Trajectories:', suffix='Finished', length=50)
+
         
         self.last_result = all_paths
 

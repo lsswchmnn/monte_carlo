@@ -64,6 +64,13 @@ transition_data = {
         "Desc": (
             "The Process creates one linear line."
         )
+    },
+
+    "taleb_fair_game": {
+        "Name": "Taleb fair Game",
+        "Desc": (
+            "Gain or loose 10k."
+        )
     }
 }
 
@@ -118,3 +125,18 @@ def regime_switch(x_t, rng, step_size):
 
 def linear_step(x_t, rng, step_size):
     return x_t + 0
+
+# Spielereien
+
+def taleb_fair_game(x_t: float, rng, step_size: float = 100_000,):
+
+    luck = random.random()
+    mult = random.randint(1, 100)
+
+    if luck >= 0.55:
+        step = step_size * mult
+    else:
+        step = step_size * -mult
+
+    return x_t + step
+

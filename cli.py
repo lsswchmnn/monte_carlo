@@ -1,4 +1,4 @@
-from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error, progress_iterator
+from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error, printProgressBar
 from transition_rules import transition_data as td
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
@@ -65,7 +65,7 @@ class CLI:
         print("DATA: ")
 
         # Daten abfragen
-        n_steps = input_int(10, 10000, 1000, "Input Number of steps", True)
+        n_steps = input_int(1, 10000, 1000, "Input Number of steps", True)
         n_paths = input_int(1, 10000, 100, "Input Number of paths", True)
         step_size = input_float(0.1, 100, 1, "Step Size", True)
 
@@ -120,28 +120,12 @@ class CLI:
                 print("Is loading...")
                 print(paths)
                 enter_continue()
-
-
+                
             elif choice == "2":
                 clear_cli()
-                print("Calculating sample paths...")
-                
-                # Wrapper für progress_iterator
-                def plot_wrapper(idx):
-                    # idx wird für tqdm benötigt, hier uninteressant
-                    plot_paths(paths, self.sim.seed, self.sim.n_paths)
-                    return None  # Keine Rückgabe nötig
-
-                # 1-Step iterator, nur um Ladeleiste zu zeigen während die Funktion läuft
-                progress_iterator(range(1), desc="Loading paths", callback=plot_wrapper)
+                print("Is loading...")
+                plot_paths(paths, self.sim.seed, self.sim.n_paths)
                 continue
-
-                
-            #elif choice == "2":
-                #clear_cli()
-                #print("Is loading...")
-                #plot_paths(paths, self.sim.seed, self.sim.n_paths)
-                #continue
 
             elif choice == "3":
                 clear_cli()
@@ -211,6 +195,5 @@ class CLI:
     def _start_sim(self):
         enter_continue("Press enter to start the Simulation...")
         clear_cli()
-        print("\nSample-paths are being calculated...")
         self.sim.run()                       # Simulation aufrufen
         self.result_menu(self.sim.last_result)        # Direkt Menü
