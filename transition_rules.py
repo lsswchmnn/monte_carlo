@@ -66,10 +66,17 @@ transition_data = {
         )
     },
 
-    "taleb_fair_game": {
+    "more_volatility": {
         "Name": "Taleb fair Game",
         "Desc": (
             "Gain or loose 10k."
+        )
+    },
+
+    "polya_process": {
+        "Name": "Polya Process",
+        "Desc": (
+            "More likely to win after other wins"
         )
     }
 }
@@ -88,14 +95,14 @@ def drifted_random_walk(x_t, rng, step_size: float = 1.0, drift=0.1):
     noise = rng.choice([-step_size, step_size])
     return x_t + drift + noise
 
-# Zunehmendes zurückziehen 
+# Zunehmendes ziehen in eine Richtung 
 def mean_reverting(x_t, rng, step_size: float = 1.0, strength=0.02, mean=2.0):
     pull = -strength * (x_t - mean)
     noise = rng.gauss(0, step_size)
     return x_t + pull + noise
 
 # Extremere Zustände sind gefährlicher
-def state_dependent_vol(x_t, rng, step_size=0.5, factor=0.2):
+def state_dependent_vol(x_t, rng, step_size=0.5, factor=0.08):
     step = step_size + factor * abs(x_t)
     noise = rng.gauss(0, step)
     return x_t + noise
@@ -126,17 +133,19 @@ def regime_switch(x_t, rng, step_size):
 def linear_step(x_t, rng, step_size):
     return x_t + 0
 
-# Spielereien
-
-def taleb_fair_game(x_t: float, rng, step_size: float = 100_000,):
+# Stärkere Volatilität
+def more_volatility(x_t: float, rng, step_size: float = 1.0):
 
     luck = random.random()
     mult = random.randint(1, 100)
 
-    if luck >= 0.55:
+    if luck >= 0.5:
         step = step_size * mult
     else:
         step = step_size * -mult
 
     return x_t + step
+
+def polya_process(x_t: float, rng, step_size = 1.0):
+    pass
 

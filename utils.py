@@ -9,7 +9,7 @@ from tkinter import simpledialog
 
 # Zentralisierte Fehlermeldungen
 def show_error(graphic: bool=True, title: str="Error", text: str="An unknown error occurred."):
-    print(f"⚠️ {title}: {text}\n")
+    print(f"⚠️ {title}: {text}")
     if graphic:
         root = tk.Tk()
         root.withdraw()
@@ -36,13 +36,8 @@ def enter_continue(msg: str="Press Enter to continue..."):
 def clear_cli():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-
-
-# Source - https://stackoverflow.com/a
-# Posted by Greenstick, modified by community. See post 'Timeline' for change history
-# Retrieved 2025-12-28, License - CC BY-SA 4.0
-
 # Print iterations progress
+# Source - https://stackoverflow.com/a
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     """
     Call in a loop to create terminal progress bar
@@ -64,9 +59,6 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     # Print New Line on Complete
     if iteration == total: 
         print()
-
-
-
 
 #=========================================================================
 # Input-Utilities
@@ -100,6 +92,7 @@ def input_int(min_value: int=0, max_value: int=10000, default: int=100, msg: str
     
     return value
 
+# Um Float abzufragen
 def input_float(min_value: float=0, max_value: float=10000, default: float=100, msg: str="value", cli: bool=True) -> float:
     if cli:
         raw = input(f"{msg} (min: {min_value}, max: {max_value}): ").strip()

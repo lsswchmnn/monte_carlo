@@ -65,8 +65,8 @@ class CLI:
         print("DATA: ")
 
         # Daten abfragen
-        n_steps = input_int(1, 10000, 1000, "Input Number of steps", True)
-        n_paths = input_int(1, 10000, 100, "Input Number of paths", True)
+        n_steps = input_int(10, 10000, 1000, "Input Number of steps", True)
+        n_paths = input_int(5, 10000, 100, "Input Number of paths", True)
         step_size = input_float(0.1, 100, 1, "Step Size", True)
 
         # Daten festlegen
@@ -86,6 +86,7 @@ class CLI:
         
         print(f"Number of steps: {self.sim.n_steps}")
         print(f"Number of Paths: {self.sim.n_paths}")
+        print(f"Datapoints to calculate: {int(self.sim.n_paths * self.sim.n_steps)}")
         print(f"Step Size: {self.sim.step_size}")
 
         # Startwert
@@ -181,9 +182,9 @@ class CLI:
 
             elif choice == "2":
                 if self.sim.last_erg_data["ergodic_heuristic"]:
-                    print("Is ergodic.")
+                    print("\nProcess is ergodic.")
                 else:
-                    print("Is not ergodic.")
+                    print("\nProcess is not ergodic.")
 
                 enter_continue()
                 continue
@@ -191,8 +192,14 @@ class CLI:
             elif choice == "c":
                 break
 
+            else:
+                pass
+
     # Simulation starten
     def _start_sim(self):
+        if self.sim.n_steps * self.sim.n_paths > 30000000:
+            print("")
+            show_error(False, "Warning","A high number of trajectories can lead to an unstable simulation and long loading times.")
         enter_continue("Press enter to start the Simulation...")
         clear_cli()
         self.sim.run()                       # Simulation aufrufen
