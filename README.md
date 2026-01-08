@@ -1,4 +1,4 @@
-# monte_carlo_simulation
+# Monte Carlo Simulation
 Implementierung für abstrakte Monte-Carlo Versuche
 
 ---
