@@ -202,5 +202,5 @@ class CLI:
             show_error(False, "Warning","A high number of trajectories can lead to an unstable simulation and long loading times.")
         enter_continue("Press enter to start the Simulation...")
         clear_cli()
-        self.sim.run()                       # Simulation aufrufen
+        self.sim.run_local_marcov()                       # Simulation aufrufen
         self.result_menu(self.sim.last_result)        # Direkt Menü

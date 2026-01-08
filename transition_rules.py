@@ -145,7 +145,3 @@ def more_volatility(x_t: float, rng, step_size: float = 1.0):
         step = step_size * -mult
 
     return x_t + step
-
-def polya_process(x_t: float, rng, step_size = 1.0):
-    pass
-

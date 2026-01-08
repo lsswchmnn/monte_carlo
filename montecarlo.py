@@ -11,7 +11,7 @@ class MonteCarloSim:
         self.n_steps            = 1000                      # Schritte eines Pfades
         self.n_paths            = 1000                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
-        self.transitional_rule  = state_dependent_vol
+        self.transitional_rule  = random_walk
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
@@ -19,7 +19,9 @@ class MonteCarloSim:
         self.last_erg_data      = None                      # Ergodizitäts-Ergebnis
 #=========================================================================
 # Sim-Methoden
-    def run(self)-> list:
+
+    # für lokale, stochastische markov-Prozesse (zeitdiskret und additiv)
+    def run_local_marcov(self)-> list:
         self.last_result = None     # Ergebnis zurücksetzen
         self.last_erg_data = None
 
@@ -41,6 +43,13 @@ class MonteCarloSim:
         self.last_result = all_paths
 
         return all_paths
+
+    def run_variational(self)-> list:
+        self.last_result = None
+        self.last_erg_data = None
+        
+    def run_adaptive(self)-> list:
+        pass
 
 #=========================================================================
 # Hilfsmethoden
