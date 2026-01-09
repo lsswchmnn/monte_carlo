@@ -24,6 +24,7 @@ def plot_paths(paths: List[List[float]], seed: int, num_paths: int) -> None:
     plt.title("All Sample-paths")
     plt.xlabel("Step")
     plt.ylabel("State")
+    plt.grid(True, which='both', linestyle='--', alpha=0.5)
 
     # Seed ausgeben
     if seed is not None:
@@ -62,6 +63,8 @@ def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> No
     plt.xlabel("Step")
     plt.ylabel("State")
     plt.legend()
+    plt.grid(True, which='both', linestyle='--', alpha=0.5)
+
 
     # Seed ausgeben
     if seed is not None:
@@ -85,6 +88,7 @@ def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int)
     plt.title("Distribution of Final States")
     plt.xlabel("Final State")
     plt.ylabel("Frequency")
+    plt.grid(True, which='both', linestyle='--', alpha=0.5)
 
     # Seed ausgeben
     if seed is not None:

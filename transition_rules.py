@@ -2,7 +2,7 @@ import random
 #=========================================================================
 # Beschreibungen und Namen jeder Funktion
 
-transition_data = {
+transition_data_marcov = {
     "random_walk": {
         "Name": "Random Walk",
         "Desc": (
@@ -81,9 +81,37 @@ transition_data = {
     }
 }
 
+transition_data_variational = {
+    "variational_baseline": {
+        "Name": "Variational Baseline",
+        "Desc": (
+            "A simple variational transition that incorporates feedback from the path's history. "
+            "The state is influenced by its deviation from the path mean."
+        )
+    },
+
+    "variational_trend_feedback": {
+        "Name": "Variational Trend Feedback",
+        "Desc": (
+            "A variational transition that incorporates feedback from the path's history, "
+            "with an emphasis on trend feedback and path-dependent volatility."
+        )
+    }
+}
+
+transition_data_adaptive = {
+    # Placeholder for future adaptive transition functions
+}
 #=========================================================================
-# Sammlung an Übergangsfunktionen. Simulation benutzt jeweils nur EINE 
-# dieser Methoden und kennt deren Logik auch nicht.
+'''
+Sammlung an Übergangsfunktionen. Simulation benutzt jeweils nur EINE 
+dieser Methoden und kennt deren Logik auch nicht. Die Funktionen sind in
+drei Typen unterteilt, je nachdem, wieviel Kontext sie für die
+Übergangsentscheidung nutzen dürfen und mit welcher run-Methode sie kombiniert
+ werden können.
+'''
+#=========================================================================
+# TYP 1: Lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer Monte-Carlo-Ansatz)
 
 # Zufällig Nach oben und unten gehen
 def random_walk(x_t: float, rng, step_size: float = 1.0) -> float:
@@ -135,7 +163,6 @@ def linear_step(x_t, rng, step_size):
 
 # Stärkere Volatilität
 def more_volatility(x_t: float, rng, step_size: float = 1.0):
-
     luck = random.random()
     mult = random.randint(1, 100)
 
@@ -145,3 +172,76 @@ def more_volatility(x_t: float, rng, step_size: float = 1.0):
         step = step_size * -mult
 
     return x_t + step
+
+#=========================================================================
+# TYP 2: Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den aktuellen Zustand nutzen
+
+# Minimaler variationaler Übergang
+def variational_baseline(
+    x_t: float,
+    t: int,
+    path: list,
+    rng,
+    step_size: float,
+    memory_strength: float = 0.01
+) -> float:
+    """
+    Minimaler variationaler Übergang:
+    - schwache Rückkopplung an den bisherigen Pfadmittelwert
+    - additive stochastische Komponente
+    """
+
+    if len(path) > 1:
+        path_mean = sum(path) / len(path)
+        feedback = -memory_strength * (x_t - path_mean)
+    else:
+        feedback = 0.0
+
+    noise = rng.gauss(0, step_size)
+
+    return x_t + feedback + noise
+
+def variational_trend_feedback(
+    x_t: float,
+    t: int,
+    path: list,
+    rng,
+    step_size: float,
+    memory_strength: float = 0.02,
+    trend_strength: float = 0.01,
+    vol_factor: float = 0.05
+) -> float:
+    """
+    Variationaler Übergang mit Pfad-Rückkopplung und Trendverstärkung:
+    
+    - Rückkopplung an den Mittelwert des bisherigen Pfads
+    - Verstärkung des bestehenden Trends (lineare Steigung des Pfads)
+    - Additive stochastische Komponente, leicht abhängig von der bisherigen Pfad-Volatilität
+    """
+
+    n = len(path)
+    
+    # Mittelwert-Rückkopplung
+    if n > 1:
+        path_mean = sum(path) / n
+        feedback = -memory_strength * (x_t - path_mean)
+    else:
+        feedback = 0.0
+
+    # Trendverstärkung
+    if n > 2:
+        recent_trend = path[-1] - path[-2]
+        trend = trend_strength * recent_trend
+    else:
+        trend = 0.0
+
+    # Pfadabhängige Volatilität (extremere Abweichungen führen zu größeren Zufallsschritten)
+    if n > 1:
+        deviations = [abs(x - path_mean) for x in path]
+        vol = step_size + vol_factor * max(deviations)
+    else:
+        vol = step_size
+
+    noise = rng.gauss(0, vol)
+
+    return x_t + feedback + trend + noise
