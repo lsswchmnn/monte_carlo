@@ -1,4 +1,4 @@
-from utils import clear_cli, print_separation, input_int, enter_continue, input_float, show_error, printProgressBar
+from utils import clear_cli, print_separation, input_int, print_thin_separation, enter_continue, input_float, show_error, progress_iterator, print_heading
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
@@ -20,17 +20,17 @@ class CLI:
     
     def run(self):
         while True:
-            clear_cli()
-            print_separation()
-            print("- MONTE CARLO SIMULATION -\n")
+            print_heading("- MONTE CARLO SIMULATION -")
             print("MAINMENU: ")
             print("1 - Change Settings")
             print("2 - Show Settings")
             print("3 - Start Simulation")
-            print(f"4 - Change Process Type (Current: {self.sim.process_type})")
+            print(f"4 - Change Transition Rule")
             if self.sim.last_result is not None:
                 print("5 - Show Result")
+            print("H - Help")
             print("C - Close CLI")
+            print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
             if choice == "1":
@@ -54,6 +54,11 @@ class CLI:
             elif choice == "5" and self.sim.last_result is not None:
                 self.result_menu(self.sim.last_result)
 
+            elif choice == "h":
+                print_heading("Help-Menu")
+                print("...")
+                enter_continue("Press enter to return to the main menu")
+
             elif choice == "c":
                 print("Close simulation...")
                 clear_cli()
@@ -62,15 +67,13 @@ class CLI:
             else:
                 continue
 
-#=========================================================================
-# CLI-Methoden
+#-------------------------------------------------------------------------
+# Menüs
 
     # Daten für die Sim1ulation abfragen und festlegen
     def _load_data(self):
         self.sim.last_result = None     # Ergebnis zurücksetzen
-        clear_cli()
-        print_separation()
-        print("- MONTE CARLO SIMULATION -\n")
+        print_heading("- MONTE CARLO SIMULATION -")
         print("DATA: ")
 
         # Daten abfragen
@@ -83,22 +86,27 @@ class CLI:
         self.sim.n_paths = n_paths
         self.sim.step_size = step_size
 
+        print_thin_separation()
+        self._show_rules()
+        enter_continue()
+
     # Regeln der Simulation anzeigen
-    def _show_rules(self, info: bool = True):
-        clear_cli()
-        print_separation()
-        print("- MONTE CARLO SIMULATION -\n")
+    def _show_rules(self, info: bool = True, clear: bool = True):
+        if clear:
+            print_heading("- MONTE CARLO SIMULATION -")
+        else:
+            print_heading("- MONTE CARLO SIMULATION -")
         print("SETTINGS: \n")
 
         if not self.sim.check_if_complete():
             return
         
-        print(f"Number of steps: {self.sim.n_steps}")
-        print(f"Number of Paths: {self.sim.n_paths}")
-        print(f"Datapoints to calculate: {int(self.sim.n_paths * self.sim.n_steps)}")
-        print(f"Step Size: {self.sim.step_size}")
-        print(f"Random Seed: {self.sim.seed}")
-        print(f"Process Type: {self.sim.process_type}")
+        print(f"Number of steps:            {self.sim.n_steps}")
+        print(f"Number of Paths:            {self.sim.n_paths}")
+        print(f"Datapoints to calculate:    {int(self.sim.n_paths * self.sim.n_steps)}")
+        print(f"Step Size:                  {self.sim.step_size}")
+        print(f"Random Seed:                {self.sim.seed}")
+        print(f"Process Type:               {self.sim.process_type}")
 
         # Startwert-Regel
         key = self.sim.start_state.__name__
@@ -132,9 +140,7 @@ class CLI:
     # Ergebnis anziegen
     def result_menu(self, paths:list):
         while True:
-            clear_cli()
-            print_separation()
-            print("- MONTE CARLO SIMULATION -\n")
+            print_heading("- MONTE CARLO SIMULATION -")
             print("RESULT: ")
             print("1 - Print Data")
             print("2 - Show Sample Paths")
@@ -142,6 +148,7 @@ class CLI:
             print("4 - Show Distribution of Final Cases")
             print("5 - Calculate Ergodicity")
             print("C - Close")
+            print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
             if choice == "1":
@@ -183,13 +190,13 @@ class CLI:
         self.sim.last_erg_data = ergodicity_data
 
         while True:
-            clear_cli()
-            print_separation()
-            print("- MONTE CARLO SIMULATION -\n")
+            print_heading("- MONTE CARLO SIMULATION -")
             print("RESULT/ERGODICITY: ")
             print("1 - Show Ergodicitiy Data")
             print("2 - Check if ergodic (heuristic)")
+            print("H - Help")
             print("C - Close")
+            print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
             if choice == "1":
@@ -215,6 +222,12 @@ class CLI:
                     print("\nProcess is not ergodic.")
 
                 enter_continue()
+                continue
+
+            elif choice == "h":
+                print_heading("Helpmenu")
+                print("Ergodicity is ...")
+                enter_continue("Press enter to return to menu")
                 continue
 
             elif choice == "c":
@@ -249,6 +262,53 @@ class CLI:
         self.sim.run()                       # Simulation aufrufen; entscheidung zwischen Typ in der Sim-Klasse
         self.result_menu(self.sim.last_result)        # Direkt Menü
 
+    def _change_process_type(self):
+        while True:
+            print_heading("- MONTE CARLO SIMULATION -")
+            print("CHANGE PROCESS TYPE: ")
+            print("1 - Markov Process")
+            print("2 - Variational Process")
+            print("3 - Adaptive Process")
+            print("H - Help")
+            print("C - Cancel")
+            print_thin_separation(linebreak = False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                self.sim.process_type = "markov"
+                print("\nProcess type set to Markov Process.")
+                enter_continue()
+                return
+
+            elif choice == "2":
+                self.sim.process_type = "variational"
+                print("\nProcess type set to Variational Process.")
+                enter_continue()
+                return
+
+            elif choice == "3":
+                self.sim.process_type = "adaptive"
+                print("\nProcess type set to Adaptive Process.")
+                enter_continue()
+                return
+
+            elif choice == "h":
+                print_heading("Help-Menu")
+                print("You can choose several transition rules from three categories.")
+                print("...\n")
+                enter_continue("Press enter to return to the settings")
+                continue
+
+            elif choice == "c":
+                return
+
+            else:
+                print("\nInvalid choice. Process type not changed.")
+                enter_continue()
+                return
+#-------------------------------------------------------------------------
+# Hilfsmethoden
+
     def get_allowed_datapoints(self, type:str) -> int:
         if type == "markov":
             adp = self.sim.marcov_max_datapoints
@@ -264,36 +324,3 @@ class CLI:
         paths = math.floor(root)
 
         return steps, paths
-
-    def _change_process_type(self):
-        clear_cli()
-        print_separation()
-        print("- MONTE CARLO SIMULATION -\n")
-        print("CHANGE PROCESS TYPE: ")
-        print("1 - Markov Process")
-        print("2 - Variational Process")
-        print("3 - Adaptive Process")
-        choice = input("> ").strip().lower()
-
-        if choice == "1":
-            self.sim.process_type = "markov"
-            print("\nProcess type set to Markov Process.")
-            enter_continue()
-            return
-
-        elif choice == "2":
-            self.sim.process_type = "variational"
-            print("\nProcess type set to Variational Process.")
-            enter_continue()
-            return
-
-        elif choice == "3":
-            self.sim.process_type = "adaptive"
-            print("\nProcess type set to Adaptive Process.")
-            enter_continue()
-            return
-
-        else:
-            print("\nInvalid choice. Process type not changed.")
-            enter_continue()
-            return

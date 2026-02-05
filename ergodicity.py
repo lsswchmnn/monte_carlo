@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List
-from utils import printProgressBar, clear_cli
+from utils import progress_iterator, clear_cli
 #=========================================================================
 def calculate_ergodicity(paths: List[List[float]],
                          observable = lambda x: x,
@@ -19,7 +19,7 @@ def calculate_ergodicity(paths: List[List[float]],
     
     for i, path in enumerate(tail_data, 1):
         time_means.append(time_average(path))
-        printProgressBar(i, total, prefix='Calculating Ergodicity:', suffix='Finished', length=50)
+        progress_iterator(i, total, prefix='Calculating Ergodicity:', suffix='Finished', length=50)
     
     time_means = np.array(time_means)
     ensemble_mean = ensemble_average(tail_data)

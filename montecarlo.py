@@ -1,11 +1,10 @@
-from utils import show_error, printProgressBar                       # Hilfsfunktionen
+from utils import show_error, progress_iterator                       # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
 import random
 
 # Verschiedene Übergangsfunktionen importieren
 from transition_rules import random_walk, drifted_random_walk, more_volatility, mean_reverting, state_dependent_vol, linear_step, fat_tail_walk, absorbing_barrier, regime_switch
 from transition_rules import variational_baseline, variational_trend_feedback
-
 #=========================================================================
 # Methoden für Startzustand in start_state.py; für Transitionsregeln in 
 # transition_rule.py. Sim darf nicht wissen, welche Regeln sie nutzt
@@ -20,7 +19,7 @@ class MonteCarloSim:
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
         self.last_result        = None                      # Auf letztes Ergebnis zugreifen
         self.last_erg_data      = None                      # Ergodizitäts-Ergebnis
-        self.process_type       = "variational"             # Prozess-Typ: markov, variational, adaptive
+        self.process_type       = "variational"             # Aktueller Prozess-Typ: markov, variational, adaptive
 
         # Höchstgrenzen für Datenpunkte (Performance)
         self.marcov_max_datapoints       = 10_000_000
@@ -28,11 +27,12 @@ class MonteCarloSim:
         self.adaptive_max_datapoints     = 200_000
 
         # Standard-Übergangsfunktionen
+        self.transitinal_funcion    = None  # Vereinheitlichen!
         self.transition_markov      = random_walk
         self.transition_variational = variational_trend_feedback
         self.transition_adaptive    = None
 
-#=========================================================================
+#-------------------------------------------------------------------------
 # Sim-Methoden
 
     def run(self):
@@ -60,7 +60,7 @@ class MonteCarloSim:
             
             all_paths.append(path)
 
-            printProgressBar(i, self.n_paths, prefix='PGenerating Trajectories:', suffix='Finished', length=50)
+            progress_iterator(i, self.n_paths, prefix='PGenerating Trajectories:', suffix='Finished', length=50)
 
         
         self.last_result = all_paths
@@ -90,7 +90,7 @@ class MonteCarloSim:
 
             all_paths.append(path)
 
-            printProgressBar(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
+            progress_iterator(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
 
         self.last_result = all_paths
         return all_paths
@@ -99,7 +99,7 @@ class MonteCarloSim:
     def run_adaptive(self)-> list:
         pass
 
-#=========================================================================
+#-------------------------------------------------------------------------
 # Hilfsmethoden
 
     def check_if_complete(self)-> bool:
