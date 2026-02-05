@@ -5,6 +5,7 @@ Implementierung für abstrakte Monte-Carlo Versuche
 
 ## Fragen und Probleme
 
+- Ich muss die verschiedenen Übergänge von der CLI aus wechseln können
 - wie implementiere ich "Typ B"?
 - wie sorge ich für saubere Auswahl aus A und B in der CLI?
 - wie grenze ich die Übergangsfunktionen von einander ab? Evtl. Dict?
