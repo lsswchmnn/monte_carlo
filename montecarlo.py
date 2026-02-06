@@ -1,4 +1,4 @@
-from utils import show_error, progress_iterator                       # Hilfsfunktionen
+from utils import show_error, printProgressBar, enter_continue                 # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
 import random
 
@@ -17,20 +17,20 @@ class MonteCarloSim:
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
-        self.last_result        = None                      # Auf letztes Ergebnis zugreifen
-        self.last_erg_data      = None                      # Ergodizitäts-Ergebnis
-        self.process_type       = "variational"             # Aktueller Prozess-Typ: markov, variational, adaptive
 
         # Höchstgrenzen für Datenpunkte (Performance)
-        self.marcov_max_datapoints       = 10_000_000
+        self.markov_max_datapoints       = 10_000_000
         self.variational_max_datapoints  = 500_000
         self.adaptive_max_datapoints     = 200_000
 
-        # Standard-Übergangsfunktionen
-        self.transitinal_funcion    = None  # Vereinheitlichen!
-        self.transition_markov      = random_walk
-        self.transition_variational = variational_trend_feedback
-        self.transition_adaptive    = None
+        # Standard-Übergangsfunktion
+        self.process_type       = "variational" # Aktueller Prozess-Typ: markov, variational, adaptive
+        self.transition_function        = None  # Funktion
+        self.function_name = None
+
+        # Ergebnis der Simulation
+        self.last_result        = None  # Auf letztes Ergebnis zugreifen
+        self.last_erg_data      = None  # Ergodizitäts-Ergebnis
 
 #-------------------------------------------------------------------------
 # Sim-Methoden
@@ -44,7 +44,7 @@ class MonteCarloSim:
             return self.run_adaptive()
 
     # für lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer Monte-Carlo-Ansatz)
-    def run_marcov(self)-> list:
+    def run_markov(self)-> list:
         self.last_result = None     # Ergebnis zurücksetzen
         self.last_erg_data = None
 
@@ -56,13 +56,12 @@ class MonteCarloSim:
 
             for _ in range(self.n_steps):
                 path.append(x)
-                x = self.transition_markov(x, self.rng, self.step_size)
+                x = self.transition_function (x, self.rng, self.step_size)
             
             all_paths.append(path)
 
-            progress_iterator(i, self.n_paths, prefix='PGenerating Trajectories:', suffix='Finished', length=50)
+            printProgressBar(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
 
-        
         self.last_result = all_paths
 
         return all_paths
@@ -80,7 +79,7 @@ class MonteCarloSim:
 
             for t in range(self.n_steps):
                 path.append(x)
-                x = self.transition_variational(
+                x = self.transition_function (
                     x_t= x,
                     t= t,
                     path= path,
@@ -90,7 +89,7 @@ class MonteCarloSim:
 
             all_paths.append(path)
 
-            progress_iterator(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
+            printProgressBar(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
 
         self.last_result = all_paths
         return all_paths
@@ -103,6 +102,10 @@ class MonteCarloSim:
 # Hilfsmethoden
 
     def check_if_complete(self)-> bool:
+        if self.transition_function  is None:
+            show_error(True, "DataError", "No Transitional Function loaded.")
+            return False
+
         if self.n_steps is None:
             show_error(True, "DataError", "No Number of steps defined.")
             return False
@@ -126,21 +129,5 @@ class MonteCarloSim:
         if self.step_size is None:
             show_error(True, "DataError", "No step size defined.")
             return False
-
-        # Je nach Prozess-Typ die Übergangsregel prüfen
-        elif self.process_type == "markov":
-            if self.transition_markov is None:
-                show_error(True, "DataError", "No Transitionrule defined.")
-                return False
-            
-        elif self.process_type == "variational":
-            if self.transition_variational is None:
-                show_error(True, "DataError", "No Transitionrule defined.")
-                return False
-            
-        elif self.process_type == "adaptive":
-            if self.transition_adaptive is None:
-                show_error(True, "DataError", "No Transitionrule defined.")
-                return False
         
         return True

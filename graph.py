@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
-from utils import clear_cli, progress_iterator
+from utils import clear_cli, printProgressBar
 #=========================================================================
 # Verschiedenes
 

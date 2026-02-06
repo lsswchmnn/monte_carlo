@@ -2,7 +2,7 @@ import random
 #=========================================================================
 # Beschreibungen und Namen jeder Funktion
 
-transition_data_marcov = {
+transition_data_markov = {
     "random_walk": {
         "Name": "Random Walk",
         "Desc": (

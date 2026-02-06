@@ -1,12 +1,13 @@
-from utils import clear_cli, print_separation, input_int, print_thin_separation, enter_continue, input_float, show_error, progress_iterator, print_heading
+from utils import clear_cli, print_separation, input_int, print_thin_separation, enter_continue, input_float, show_error, printProgressBar, print_heading
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
 from ergodicity import calculate_ergodicity
 import math
+import transition_rules
 
 # Dict mit Beschreibungen der Übergangsfunktionen
-from transition_rules import transition_data_marcov as tdm
+from transition_rules import transition_data_markov as tdm
 from transition_rules import transition_data_variational as tdv
 from transition_rules import transition_data_adaptive as tda
 #=========================================================================
@@ -25,8 +26,8 @@ class CLI:
             print("1 - Change Settings")
             print("2 - Show Settings")
             print("3 - Start Simulation")
-            print(f"4 - Change Transition Rule")
-            if self.sim.last_result is not None:
+            print(f"4 - Load Transition Rule (Current: {self.sim.function_name})")
+            if self.sim.last_result:
                 print("5 - Show Result")
             print("H - Help")
             print("C - Close CLI")
@@ -34,21 +35,32 @@ class CLI:
             choice = input("> ").strip().lower()
 
             if choice == "1":
+                if not self.sim.transition_function :
+                    show_error(True, "SimulationError", "No Transitional Function loaded.")
+                    continue
+
                 self._load_data()
                 continue
 
             elif choice == "2":
+                if not self.sim.transition_function :
+                    show_error(True, "SimulationError", "No Transitional Function loaded.")
+                    continue
+
+                if not self.sim.check_if_complete():
+                    return
+
                 self._show_rules(True)
-                enter_continue()
                 continue
 
             elif choice == "3":
                 if not self.sim.check_if_complete():
                     continue
+
                 self._start_sim()
 
             elif choice == "4":
-                self._change_process_type()
+                self.change_transitional_function()
                 continue
 
             elif choice == "5" and self.sim.last_result is not None:
@@ -97,9 +109,6 @@ class CLI:
         else:
             print_heading("- MONTE CARLO SIMULATION -")
         print("SETTINGS: \n")
-
-        if not self.sim.check_if_complete():
-            return
         
         print(f"Number of steps:            {self.sim.n_steps}")
         print(f"Number of Paths:            {self.sim.n_paths}")
@@ -115,27 +124,8 @@ class CLI:
              print(f"Description: {sd[key]['Desc']}")
 
         # Transitions-Regel. Langfristig umbauen mit Dict
-        if self.sim.process_type == "markov":
-            key = self.sim.transition_markov.__name__
-            print(f"\nFunction for transitions: {tdm[key]['Name']}")
-            if info:
-                print(f"Description: {tdm[key]['Desc']}\n")
-
-        elif self.sim.process_type == "variational":
-            key = self.sim.transition_variational.__name__
-            print(f"\nFunction for transitions: {tdv[key]['Name']}")
-            if info:
-                 print(f"Description: {tdv[key]['Desc']}\n")
-
-        elif self.sim.process_type == "adaptive":
-            key = self.sim.transition_adaptive.__name__
-            print(f"\nFunction for transitions: {tda[key]['Name']}")
-            if info:
-                 print(f"Description: {tda[key]['Desc']}\n")
-
-        else:
-            show_error(True, "Error", "Unknown process type.")
-            return
+        print(f"\nTransition Rule: {self.sim.function_name}")
+        enter_continue()
 
     # Ergebnis anziegen
     def result_menu(self, paths:list):
@@ -242,8 +232,8 @@ class CLI:
         
         dp = self.sim.n_steps * self.sim.n_paths
 
-        if self.sim.process_type == "markov" and dp > self.sim.marcov_max_datapoints:
-            show_error(True, "DataError", f"Number of datapoints ({dp}) exceeds maximum allowed for Markov processes ({self.sim.marcov_max_datapoints}). Proceeding with maximal allowed datapoints.")
+        if self.sim.process_type == "markov" and dp > self.sim.markov_max_datapoints:
+            show_error(True, "DataError", f"Number of datapoints ({dp}) exceeds maximum allowed for markov processes ({self.sim.markov_max_datapoints}). Proceeding with maximal allowed datapoints.")
             self.sim.n_steps, self.sim.n_paths = self.get_allowed_datapoints("markov")
             self._start_sim()   # Rekursiver Aufruf mit angepassten Daten
 
@@ -262,11 +252,11 @@ class CLI:
         self.sim.run()                       # Simulation aufrufen; entscheidung zwischen Typ in der Sim-Klasse
         self.result_menu(self.sim.last_result)        # Direkt Menü
 
-    def _change_process_type(self):
+    def change_transitional_function(self):
         while True:
             print_heading("- MONTE CARLO SIMULATION -")
-            print("CHANGE PROCESS TYPE: ")
-            print("1 - Markov Process")
+            print("Choose PROCESS TYPE: ")
+            print("1 - markov Process")
             print("2 - Variational Process")
             print("3 - Adaptive Process")
             print("H - Help")
@@ -276,21 +266,18 @@ class CLI:
 
             if choice == "1":
                 self.sim.process_type = "markov"
-                print("\nProcess type set to Markov Process.")
-                enter_continue()
-                return
+                print("\nProcess type set to markov Process.")
+                self.choose_markov()
 
             elif choice == "2":
                 self.sim.process_type = "variational"
                 print("\nProcess type set to Variational Process.")
-                enter_continue()
-                return
+                self.choose_variational()
 
             elif choice == "3":
                 self.sim.process_type = "adaptive"
                 print("\nProcess type set to Adaptive Process.")
-                enter_continue()
-                return
+                self.choose_adaptive()
 
             elif choice == "h":
                 print_heading("Help-Menu")
@@ -303,15 +290,73 @@ class CLI:
                 return
 
             else:
-                print("\nInvalid choice. Process type not changed.")
-                enter_continue()
-                return
+                continue
+
+            enter_continue()
+            return
+
 #-------------------------------------------------------------------------
-# Hilfsmethoden
+# Übergangsfunktion wählen
+
+    def choose_markov(self):
+        self.sim.process_type = "markov"
+        self._choose_transition_from_dict(tdm)
+
+    def choose_variational(self):
+        self.sim.process_type = "variational"
+        self._choose_transition_from_dict(tdv)
+
+    def choose_adaptive(self):
+        self.sim.process_type = "adaptive"
+        self._choose_transition_from_dict(tda)
+
+    def _choose_transition_from_dict(self, data_dict: dict):
+        while True:
+            print_heading("TRANSITION RULES")
+
+            keys = list(data_dict.keys())
+
+            for i, key in enumerate(keys, start=1):
+                meta = data_dict[key]
+                print(f"{i} - {meta['Name']}")
+                print(f"    {meta['Desc']}")
+
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "c":
+                return
+            
+            try:
+                idx = int(choice)
+            except:
+                show_error("True", "InputError", "Input must be 'C' or an Integer.")
+                continue
+
+            if 1 <= idx <= len(keys):
+                func_name = keys[idx - 1]
+
+                try:
+                    func = getattr(transition_rules, func_name)
+                except AttributeError:
+                    show_error(True, "TransitionError", f"Function {func_name} not found in Dictionary.")
+                    enter_continue()
+                    return
+                
+                self.sim.transition_function  = func
+                self.sim.function_name = {data_dict[func_name]['Name']}
+                print(f"\nTransition function set to: {data_dict[func_name]['Name']}")
+                return
+
+            print("\nInvalid choice.")
+            
+#-------------------------------------------------------------------------
+# Übrige Hilfsmethoden
 
     def get_allowed_datapoints(self, type:str) -> int:
         if type == "markov":
-            adp = self.sim.marcov_max_datapoints
+            adp = self.sim.markov_max_datapoints
         
         elif type == "variational":
             adp = self.sim.variational_max_datapoints

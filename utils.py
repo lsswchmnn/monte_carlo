@@ -87,14 +87,7 @@ def clear_cli():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 # Fortschritts-Iterator mit tqdm; funktioniert bei for-Schleifen
-def progress_iterator(
-        iterable: Iterable,
-        *,
-        desc: str = "Progress",
-        unit: str = "it",
-        total: Optional[int] = None,
-        callback: Optional[Callable] = None
-    ) -> list:
+def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     """
     Ein Iterator, der über einen iterierbaren Prozess läuft,
     dabei eine Fortschrittsleiste anzeigt und optional eine Callback-Funktion
@@ -109,15 +102,27 @@ def progress_iterator(
 
     Rückgabe:
     - Liste mit Ergebnissen der Callback-Verarbeitung (falls callback gesetzt),
-      sonst eine Liste der Elemente selbst.
+    sonst eine Liste der Elemente selbst.
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
-    results = []
-    for item in tqdm(iterable, desc=desc, unit=unit, total=total):
-        if callback:
-            results.append(callback(item))
-        else:
-            results.append(item)
-    return results
+
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
 
 #=========================================================================
 # Hardware-Utilities
