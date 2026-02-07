@@ -3,6 +3,7 @@ from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
 from ergodicity import calculate_ergodicity
+from help import help_three_types, help_full
 import math
 import transition_rules
 
@@ -22,26 +23,21 @@ class CLI:
     def run(self):
         while True:
             print_heading("- MONTE CARLO SIMULATION -")
-            print("MAINMENU: ")
-            print("1 - Change Settings")
+            print(f"1 - Load Transition Rule (Current: {self.sim.function_name})")
             print("2 - Show Settings")
             print("3 - Start Simulation")
-            print(f"4 - Load Transition Rule (Current: {self.sim.function_name})")
+            print("4 - Change Settings")
             if self.sim.last_result:
                 print("5 - Show Result")
             print("H - Help")
             print("C - Close CLI")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
-
+        
             if choice == "1":
-                if not self.sim.transition_function :
-                    show_error(True, "SimulationError", "No Transitional Function loaded.")
-                    continue
-
-                self._load_data()
+                self.change_transitional_function()
                 continue
-
+        
             elif choice == "2":
                 if not self.sim.transition_function :
                     show_error(True, "SimulationError", "No Transitional Function loaded.")
@@ -51,6 +47,7 @@ class CLI:
                     return
 
                 self._show_rules(True)
+                enter_continue()
                 continue
 
             elif choice == "3":
@@ -60,20 +57,25 @@ class CLI:
                 self._start_sim()
 
             elif choice == "4":
-                self.change_transitional_function()
+                if not self.sim.transition_function :
+                    show_error(True, "SimulationError", "No Transitional Function loaded.")
+                    continue
+
+                self._load_data()
                 continue
 
             elif choice == "5" and self.sim.last_result is not None:
                 self.result_menu(self.sim.last_result)
 
             elif choice == "h":
-                print_heading("Help-Menu")
-                print("...")
+                help_full() # Siehe help.py
                 enter_continue("Press enter to return to the main menu")
 
             elif choice == "c":
-                print("Close simulation...")
                 clear_cli()
+                enter_continue("Press Enter to Leave the Simulation", seperation=False)
+                clear_cli()
+                print("Goodbye! :) \n")
                 break
 
             else:
@@ -104,11 +106,7 @@ class CLI:
 
     # Regeln der Simulation anzeigen
     def _show_rules(self, info: bool = True, clear: bool = True):
-        if clear:
-            print_heading("- MONTE CARLO SIMULATION -")
-        else:
-            print_heading("- MONTE CARLO SIMULATION -")
-        print("SETTINGS: \n")
+        print_heading("SETTINGS:")
         
         print(f"Number of steps:            {self.sim.n_steps}")
         print(f"Number of Paths:            {self.sim.n_paths}")
@@ -125,13 +123,12 @@ class CLI:
 
         # Transitions-Regel. Langfristig umbauen mit Dict
         print(f"\nTransition Rule: {self.sim.function_name}")
-        enter_continue()
 
     # Ergebnis anziegen
     def result_menu(self, paths:list):
         while True:
             print_heading("- MONTE CARLO SIMULATION -")
-            print("RESULT: ")
+            print(f"Result ({self.sim.function_name}): ")
             print("1 - Print Data")
             print("2 - Show Sample Paths")
             print("3 - Show Mean Path and Volatility")
@@ -254,9 +251,9 @@ class CLI:
 
     def change_transitional_function(self):
         while True:
-            print_heading("- MONTE CARLO SIMULATION -")
-            print("Choose PROCESS TYPE: ")
-            print("1 - markov Process")
+            print_heading("TRANSITION RULES")
+            print("Choose Type of Process: ")
+            print("1 - Markov Process")
             print("2 - Variational Process")
             print("3 - Adaptive Process")
             print("H - Help")
@@ -280,10 +277,7 @@ class CLI:
                 self.choose_adaptive()
 
             elif choice == "h":
-                print_heading("Help-Menu")
-                print("You can choose several transition rules from three categories.")
-                print("...\n")
-                enter_continue("Press enter to return to the settings")
+                help_three_types()  # Siehe help.py
                 continue
 
             elif choice == "c":
@@ -292,7 +286,6 @@ class CLI:
             else:
                 continue
 
-            enter_continue()
             return
 
 #-------------------------------------------------------------------------
@@ -316,10 +309,11 @@ class CLI:
 
             keys = list(data_dict.keys())
 
+            print("Choose Transition Rule:")
             for i, key in enumerate(keys, start=1):
                 meta = data_dict[key]
                 print(f"{i} - {meta['Name']}")
-                print(f"    {meta['Desc']}")
+                #print(f"    {meta['Desc']}")
 
             print("C - Cancel")
             print_thin_separation(linebreak=False)
@@ -341,16 +335,20 @@ class CLI:
                     func = getattr(transition_rules, func_name)
                 except AttributeError:
                     show_error(True, "TransitionError", f"Function {func_name} not found in Dictionary.")
-                    enter_continue()
-                    return
+                    continue
                 
                 self.sim.transition_function  = func
                 self.sim.function_name = {data_dict[func_name]['Name']}
-                print(f"\nTransition function set to: {data_dict[func_name]['Name']}")
+                print(f"\nTransition function set to: {data_dict[func_name]['Name']}\n")
+                self.show_desc(data_dict, func_name)
                 return
 
             print("\nInvalid choice.")
-            
+
+    def show_desc(self, dict, func_name):
+        print(f"{dict[func_name]['Desc']}")
+        enter_continue()
+
 #-------------------------------------------------------------------------
 # Übrige Hilfsmethoden
 

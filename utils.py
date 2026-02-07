@@ -87,7 +87,14 @@ def clear_cli():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 # Fortschritts-Iterator mit tqdm; funktioniert bei for-Schleifen
-def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+def printProgressBar(iteration, 
+                     total, 
+                     prefix = '', 
+                     suffix = '', 
+                     decimals = 1, 
+                     length = 100, 
+                     fill = '█',
+                     printEnd = "\r"):
     """
     Ein Iterator, der über einen iterierbaren Prozess läuft,
     dabei eine Fortschrittsleiste anzeigt und optional eine Callback-Funktion
@@ -118,11 +125,15 @@ def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, l
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
     
-    # Print New Line on Complete
-    if iteration == total: 
-        print()
+    
+    sys.stdout.write(
+        f"\r{prefix} |{bar}| {percent}% {suffix}"
+    )
+
+    if iteration == total:
+        sys.stdout.write("\n")
+        sys.stdout.flush()
 
 #=========================================================================
 # Hardware-Utilities

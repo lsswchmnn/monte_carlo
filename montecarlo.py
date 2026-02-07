@@ -1,4 +1,4 @@
-from utils import show_error, printProgressBar, enter_continue                 # Hilfsfunktionen
+from utils import show_error, printProgressBar, clear_cli             # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
 import random
 
@@ -11,22 +11,22 @@ from transition_rules import variational_baseline, variational_trend_feedback
 #=========================================================================
 class MonteCarloSim:
     def __init__(self):
-        self.n_steps            = 1000                      # Schritte eines Pfades
-        self.n_paths            = 500                      # Anzahl an simulierten Pfaden
+        self.n_steps : int      = 1000                      # Schritte eines Pfades
+        self.n_paths : int      = 400                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
         self.seed               = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
-        self.step_size          = 1.0                       # Paramter für die Übergangsfunktionen
+        self.step_size : float  = 1.0                       # Paramter für die Übergangsfunktionen
 
         # Höchstgrenzen für Datenpunkte (Performance)
-        self.markov_max_datapoints       = 10_000_000
-        self.variational_max_datapoints  = 500_000
-        self.adaptive_max_datapoints     = 200_000
+        self.markov_max_datapoints : int        = 50_000_000
+        self.variational_max_datapoints : int   = 5_000_000
+        self.adaptive_max_datapoints : int      = 200_000
 
         # Standard-Übergangsfunktion
-        self.process_type       = "variational" # Aktueller Prozess-Typ: markov, variational, adaptive
-        self.transition_function        = None  # Funktion
-        self.function_name = None
+        self.process_type : str     = "variational"     # Aktueller Prozess-Typ: markov, variational, adaptive
+        self.transition_function    = None              # Funktion
+        self.function_name          = None
 
         # Ergebnis der Simulation
         self.last_result        = None  # Auf letztes Ergebnis zugreifen
@@ -60,7 +60,7 @@ class MonteCarloSim:
             
             all_paths.append(path)
 
-            printProgressBar(i, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
+            printProgressBar(i+1, self.n_paths, prefix='Generating Trajectories:', suffix='Finished', length=50)
 
         self.last_result = all_paths
 
