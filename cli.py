@@ -24,11 +24,12 @@ class CLI:
         while True:
             print_heading("- MONTE CARLO SIMULATION -")
             print(f"1 - Load Transition Rule (Current: {self.sim.function_name})")
-            print("2 - Show Settings")
-            print("3 - Start Simulation")
-            print("4 - Change Settings")
+            print("2 - Show Sim-Settings")
+            print("3 - Change Sim-Settings")
+            print("4 - Start Simulation")
             if self.sim.last_result:
                 print("5 - Show Result")
+            print("S - Program Settings")
             print("H - Help")
             print("C - Close CLI")
             print_thin_separation(linebreak=False)
@@ -51,12 +52,6 @@ class CLI:
                 continue
 
             elif choice == "3":
-                if not self.sim.check_if_complete():
-                    continue
-
-                self._start_sim()
-
-            elif choice == "4":
                 if not self.sim.transition_function :
                     show_error(True, "SimulationError", "No Transitional Function loaded.")
                     continue
@@ -64,8 +59,18 @@ class CLI:
                 self._load_data()
                 continue
 
+            elif choice == "4":
+                if not self.sim.check_if_complete():
+                    continue
+
+                self._start_sim()
+
             elif choice == "5" and self.sim.last_result is not None:
                 self.result_menu(self.sim.last_result)
+
+            elif choice == "s":
+                self.system_settings()
+                continue
 
             elif choice == "h":
                 help_full() # Siehe help.py
@@ -121,8 +126,11 @@ class CLI:
         if info:
              print(f"Description: {sd[key]['Desc']}")
 
-        # Transitions-Regel. Langfristig umbauen mit Dict
-        print(f"\nTransition Rule: {self.sim.function_name}")
+        # Transitions-Regel
+        key = self.sim.transition_function.__name__
+        print(f"\nTransition Rule: {self.sim.dict_transition_function[key]['Name']}")
+        if info:
+            print(f"Description: {self.sim.dict_transition_function[key]['Desc']}")
 
     # Ergebnis anziegen
     def result_menu(self, paths:list):
@@ -147,7 +155,7 @@ class CLI:
             elif choice == "2":
                 clear_cli()
                 print("Is loading...")
-                plot_paths(paths, self.sim.seed, self.sim.n_paths)
+                plot_paths(paths, self.sim.seed, self.sim.n_paths, self.sim.n_steps)
                 continue
 
             elif choice == "3":
@@ -159,7 +167,7 @@ class CLI:
             elif choice == "4":
                 clear_cli()
                 print("Is loading...")
-                plot_final_distribution(paths, self.sim.seed, self.sim.n_paths)
+                plot_final_distribution(paths, self.sim.seed)
                 continue
 
             elif choice == "5":
@@ -249,6 +257,7 @@ class CLI:
         self.sim.run()                       # Simulation aufrufen; entscheidung zwischen Typ in der Sim-Klasse
         self.result_menu(self.sim.last_result)        # Direkt Menü
 
+    # Übergangsfunktion laden/ändern
     def change_transitional_function(self):
         while True:
             print_heading("TRANSITION RULES")
@@ -288,19 +297,41 @@ class CLI:
 
             return
 
+    # System-Einstellungen
+    def system_settings(self):
+        while True:
+            print_heading("SYSTEM-SETTINGS")
+            print("1 - Change Seed")
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                print(f"Current Seed: {self.sim.seed}")
+                new = input_int(1, 10000, 10, "new Seed", True)
+                self.sim.seed = new
+                print(f"Seed set to {new}.")
+                continue
+
+            elif choice == "c":
+                return
+
 #-------------------------------------------------------------------------
 # Übergangsfunktion wählen
 
     def choose_markov(self):
         self.sim.process_type = "markov"
+        self.sim.dict_transition_function = tdm
         self._choose_transition_from_dict(tdm)
 
     def choose_variational(self):
         self.sim.process_type = "variational"
+        self.sim.dict_transition_function = tdv
         self._choose_transition_from_dict(tdv)
 
     def choose_adaptive(self):
         self.sim.process_type = "adaptive"
+        self.sim.dict_transition_function = tda
         self._choose_transition_from_dict(tda)
 
     def _choose_transition_from_dict(self, data_dict: dict):

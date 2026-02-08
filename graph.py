@@ -8,23 +8,27 @@ from utils import clear_cli, printProgressBar
 # Default-Speicherpfad
 plt.rcParams["savefig.directory"] = r"C:/Users/Lasse/Pictures/Projekte/Monte Carlo Sim"
 
+ALPHA : int = 0.5
+
 # Für Glättung der Linien
 def smooth_path(path, window=10):
-    return np.convolve(path, np.ones(window)/window, mode="valid")
+    if len(path) < window:
+        return np.array(path)
+    return np.convolve(path, np.ones(window)/window, mode="same")
 
 #=========================================================================
 # Funktionen für Visualisierung
 
 # Zeichent alle Sample Paths
-def plot_paths(paths: List[List[float]], seed: int, num_paths: int) -> None:
+def plot_paths(paths: List[List[float]], seed: int, num_paths: int, length_paths: int) -> None:
     for path in paths:
         smooth = smooth_path(path, window=10)
-        plt.plot(smooth, alpha=0.5)
+        plt.plot(smooth, alpha=ALPHA)
 
     plt.title("All Sample-paths")
     plt.xlabel("Step")
     plt.ylabel("State")
-    plt.grid(True, which='both', linestyle='--', alpha=0.5)
+    plt.grid(True, which='both', linestyle='--', alpha=ALPHA)
 
     # Seed ausgeben
     if seed is not None:
@@ -34,7 +38,7 @@ def plot_paths(paths: List[List[float]], seed: int, num_paths: int) -> None:
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',
-            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+            bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
     clear_cli()
@@ -63,7 +67,7 @@ def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> No
     plt.xlabel("Step")
     plt.ylabel("State")
     plt.legend()
-    plt.grid(True, which='both', linestyle='--', alpha=0.5)
+    plt.grid(True, which='both', linestyle='--', alpha=ALPHA)
 
 
     # Seed ausgeben
@@ -74,7 +78,7 @@ def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> No
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',
-            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+            bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
     clear_cli()
@@ -88,7 +92,7 @@ def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int)
     plt.title("Distribution of Final States")
     plt.xlabel("Final State")
     plt.ylabel("Frequency")
-    plt.grid(True, which='both', linestyle='--', alpha=0.5)
+    plt.grid(True, which='both', linestyle='--', alpha=ALPHA)
 
     # Seed ausgeben
     if seed is not None:
@@ -98,8 +102,19 @@ def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int)
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',
-            bbox=dict(facecolor='white', alpha=0.5, edgecolor='none')
+            bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
     clear_cli()
     plt.show()
+
+
+
+
+    # if length_paths >= 20:
+    #     for path in paths:
+    #         smooth = smooth_path(path, window=10)
+    #         plt.plot(smooth, alpha=ALPHA)
+    # else:
+    #     for path in paths:
+    #         plt.plot(alpha=ALPHA)

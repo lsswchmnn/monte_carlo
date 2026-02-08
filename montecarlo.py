@@ -14,7 +14,7 @@ class MonteCarloSim:
         self.n_steps : int      = 1000                      # Schritte eines Pfades
         self.n_paths : int      = 400                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
-        self.seed               = 12                        
+        self.seed : int         = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
         self.step_size : float  = 1.0                       # Paramter für die Übergangsfunktionen
 
@@ -27,6 +27,7 @@ class MonteCarloSim:
         self.process_type : str     = "variational"     # Aktueller Prozess-Typ: markov, variational, adaptive
         self.transition_function    = None              # Funktion
         self.function_name          = None
+        self.dict_transition_function = None
 
         # Ergebnis der Simulation
         self.last_result        = None  # Auf letztes Ergebnis zugreifen
