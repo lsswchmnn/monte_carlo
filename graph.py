@@ -107,14 +107,3 @@ def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int)
 
     clear_cli()
     plt.show()
-
-
-
-
-    # if length_paths >= 20:
-    #     for path in paths:
-    #         smooth = smooth_path(path, window=10)
-    #         plt.plot(smooth, alpha=ALPHA)
-    # else:
-    #     for path in paths:
-    #         plt.plot(alpha=ALPHA)

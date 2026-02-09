@@ -1,7 +1,5 @@
 import random
 #=========================================================================
-# Beschreibungen und Namen jeder Funktion
-
 transition_data_markov = {
     "random_walk": {
         "Name": "Random Walk",
@@ -65,20 +63,6 @@ transition_data_markov = {
             "The Process creates one linear line."
         )
     },
-
-    "more_volatility": {
-        "Name": "Taleb fair Game",
-        "Desc": (
-            "Gain or loose 10k."
-        )
-    },
-
-    "polya_process": {
-        "Name": "Polya Process",
-        "Desc": (
-            "More likely to win after other wins"
-        )
-    }
 }
 
 transition_data_variational = {
@@ -100,7 +84,25 @@ transition_data_variational = {
 }
 
 transition_data_adaptive = {
-    # Placeholder for future adaptive transition functions
+    "adaptive_random_walk": {
+        "Name": "Adaptive Random Walk",
+        "Desc": (
+            "A simple adaptive Random Walk with trivial increasing of the value as placeholder."
+        )
+    },
+
+    "adaptive_volatility_walk": {
+        "Name": "Adaptive Volatility Walk",
+        "Desc": (
+            "an adaptive random walk in which the step size is endogenously "
+            "adjusted based on recently observed volatility. Each step is stochastic, "
+            "but the magnitude of future steps depends on an exponential moving average "
+            "of past step sizes. Higher realized volatility leads to a reduction in step size, "
+            "introducing negative feedback and non-stationarity. As a result, the process "
+            "is path-dependent and no longer ergodic in the classical sense, since its dynamics evolve "
+            "with its own history."
+        )
+    }
 }
 #=========================================================================
 '''
@@ -108,11 +110,16 @@ Sammlung an Übergangsfunktionen. Simulation benutzt jeweils nur EINE
 dieser Methoden und kennt deren Logik auch nicht. Die Funktionen sind in
 drei Typen unterteilt, je nachdem, wieviel Kontext sie für die
 Übergangsentscheidung nutzen dürfen und mit welcher run-Methode sie kombiniert
- werden können.
+werden können.
+
+Die Dynamik wird zunehmend kontextabhängig und abnehmend ergodisch.
 '''
 #=========================================================================
-# TYP 1: Lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer Monte-Carlo-Ansatz)
-
+'''
+TYP 2: 
+Lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer 
+Monte-Carlo-Ansatz)
+'''
 # Zufällig Nach oben und unten gehen
 def random_walk(x_t: float, rng, step_size: float = 1.0) -> float:
     step = rng.choice([-step_size, step_size])
@@ -161,21 +168,12 @@ def regime_switch(x_t, rng, step_size):
 def linear_step(x_t, rng, step_size):
     return x_t + 0
 
-# Stärkere Volatilität
-def more_volatility(x_t: float, rng, step_size: float = 1.0):
-    luck = random.random()
-    mult = random.randint(1, 100)
-
-    if luck >= 0.5:
-        step = step_size * mult
-    else:
-        step = step_size * -mult
-
-    return x_t + step
-
 #=========================================================================
-# TYP 2: Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den aktuellen Zustand nutzen
-
+''' 
+TYP 2: 
+Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den 
+aktuellen Zustand nutzen, nämlich gesamten bisherigen Verlauf und die Zeit.
+'''
 # Minimaler variationaler Übergang
 def variational_baseline(
     x_t: float,
@@ -245,3 +243,69 @@ def variational_trend_feedback(
     noise = rng.gauss(0, vol)
 
     return x_t + feedback + trend + noise
+
+#=========================================================================
+''' 
+TYP 3: 
+
+'''
+def adaptive_random_walk(
+    x_t: float,
+    t: int,
+    path: list,
+    adaptive_state: dict,
+    rng,
+    step_size: float = 1.0
+) -> tuple[float, dict]:
+    
+    # Initialisierung des adaptiven Zustands
+    if not adaptive_state:
+        adaptive_state = {
+            "step_size": step_size,
+            "n_steps": 0
+        }
+
+    # stochastischer Schritt (noch völlig klassisch)
+    step = rng.choice([-adaptive_state["step_size"], adaptive_state["step_size"]])
+    x_next = x_t + step
+
+    # triviale Adaption: Zähler erhöhen (reine Platzhalter-Logik)
+    adaptive_state["n_steps"] += 1
+
+    return x_next, adaptive_state
+
+def adaptive_volatility_walk(
+    x_t: float,
+    t: int,
+    path: list,
+    adaptive_state: dict,
+    rng,
+    step_size: float = 1.0  # Step Size ebenfalls randomisieren!
+) -> tuple[float, dict]:
+
+    # Initialisierung
+    if not adaptive_state:
+        adaptive_state = {
+            "step_size": step_size,
+            "ema_vol": 0.0,      # exponentieller Volatilitätsschätzer
+            "alpha": 0.2         # Adaptionsrate
+        }
+
+    # stochastischer Schritt
+    step = rng.choice([-adaptive_state["step_size"],
+                        adaptive_state["step_size"]])
+    x_next = x_t + step
+
+    # beobachtete lokale "Volatilität"
+    realized_vol = abs(step)
+
+    # exponentiell gleitender Mittelwert
+    adaptive_state["ema_vol"] = (
+        adaptive_state["alpha"] * realized_vol
+        + (1 - adaptive_state["alpha"]) * adaptive_state["ema_vol"]
+    )
+
+    # adaptive Regel: hohe Volatilität → kleinere Schritte
+    adaptive_state["step_size"] = step_size / (1 + adaptive_state["ema_vol"])
+
+    return x_next, adaptive_state

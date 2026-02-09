@@ -167,7 +167,7 @@ class CLI:
             elif choice == "4":
                 clear_cli()
                 print("Is loading...")
-                plot_final_distribution(paths, self.sim.seed)
+                plot_final_distribution(paths, self.sim.seed, self.sim.n_paths)
                 continue
 
             elif choice == "5":
@@ -185,8 +185,7 @@ class CLI:
         self.sim.last_erg_data = ergodicity_data
 
         while True:
-            print_heading("- MONTE CARLO SIMULATION -")
-            print("RESULT/ERGODICITY: ")
+            print_heading("ERGODICITY")
             print("1 - Show Ergodicitiy Data")
             print("2 - Check if ergodic (heuristic)")
             print("H - Help")
@@ -201,7 +200,7 @@ class CLI:
                 
                 data = self.sim.last_erg_data
                 
-                print("RESULT/ERGODICITY/ERGODICITY DATA: ")
+                print_heading("ERGODICITY DATA")
                 print(f"Ensemble Mean:         {data['ensemble_mean']:.4f}")
                 print(f"Mean of Time Means:    {data['time_mean_mean']:.4f}")
                 print(f"Std of Time Means:     {data['time_mean_std']:.4f}")
@@ -220,8 +219,12 @@ class CLI:
                 continue
 
             elif choice == "h":
-                print_heading("Helpmenu")
-                print("Ergodicity is ...")
+                print_heading("HELP")
+                print("Ergodicity describes whether time averages equal ensemble averages." \
+                "A process is ergodic if observing a single system over sufficient time yields the same " \
+                "statistical properties as observing many identical systems at one moment. " \
+                "In non-ergodic systems, individual trajectories matter: long-term outcomes depend on " \
+                "path history, not just expected values.")
                 enter_continue("Press enter to return to menu")
                 continue
 
@@ -344,7 +347,6 @@ class CLI:
             for i, key in enumerate(keys, start=1):
                 meta = data_dict[key]
                 print(f"{i} - {meta['Name']}")
-                #print(f"    {meta['Desc']}")
 
             print("C - Cancel")
             print_thin_separation(linebreak=False)
@@ -369,7 +371,7 @@ class CLI:
                     continue
                 
                 self.sim.transition_function  = func
-                self.sim.function_name = {data_dict[func_name]['Name']}
+                self.sim.function_name = data_dict[func_name]["Name"]
                 print(f"\nTransition function set to: {data_dict[func_name]['Name']}\n")
                 self.show_desc(data_dict, func_name)
                 return
