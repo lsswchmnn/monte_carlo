@@ -3,7 +3,8 @@ from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
 from ergodicity import calculate_ergodicity
-from help import help_three_types, help_full
+from help import help_three_types, help_full, help_settings
+import start_state
 import math
 import transition_rules
 
@@ -155,7 +156,8 @@ class CLI:
             elif choice == "2":
                 clear_cli()
                 print("Is loading...")
-                plot_paths(paths, self.sim.seed, self.sim.n_paths, self.sim.n_steps)
+                plot_paths(paths, self.sim.seed, self.sim.n_paths, 
+                           self.sim.n_steps, self.sim.function_name)
                 continue
 
             elif choice == "3":
@@ -304,18 +306,28 @@ class CLI:
     def system_settings(self):
         while True:
             print_heading("SYSTEM-SETTINGS")
-            print("1 - Change Seed")
+            print(f"1 - Seed (Current: {self.sim.seed})")
+            print("2 - Start State")
+            print("H - Help")
             print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
             if choice == "1":
-                print(f"Current Seed: {self.sim.seed}")
-                new = input_int(1, 10000, 10, "new Seed", True)
+                print_heading("SETTINGS: SEED")
+                print(f"Current Seed: {self.sim.seed}\n")
+                new = input_int(1, 10000, 10, "Enter new Seed (Integer)", True)
                 self.sim.seed = new
                 print(f"Seed set to {new}.")
                 continue
 
+            elif choice == "2":
+                self.change_start_state()   # Abschnitt "Hilfsfunktionen"
+
+            elif choice == "h":
+                help_settings()
+                continue
+            
             elif choice == "c":
                 return
 
@@ -358,7 +370,7 @@ class CLI:
             try:
                 idx = int(choice)
             except:
-                show_error("True", "InputError", "Input must be 'C' or an Integer.")
+                show_error(True, "InputError", "Input must be 'C' or Integer")
                 continue
 
             if 1 <= idx <= len(keys):
@@ -370,9 +382,10 @@ class CLI:
                     show_error(True, "TransitionError", f"Function {func_name} not found in Dictionary.")
                     continue
                 
+                print_heading("TRANSITION RULES")
                 self.sim.transition_function  = func
                 self.sim.function_name = data_dict[func_name]["Name"]
-                print(f"\nTransition function set to: {data_dict[func_name]['Name']}\n")
+                print(f"Transition function set to: {data_dict[func_name]['Name']}\n")
                 self.show_desc(data_dict, func_name)
                 return
 
@@ -383,7 +396,7 @@ class CLI:
         enter_continue()
 
 #-------------------------------------------------------------------------
-# Übrige Hilfsmethoden
+# Hilfsfunktionen
 
     def get_allowed_datapoints(self, type:str) -> int:
         if type == "markov":
@@ -400,3 +413,43 @@ class CLI:
         paths = math.floor(root)
 
         return steps, paths
+    
+    def change_start_state(self):
+        while True:
+            print_heading("SETTINGS: START STATE")
+            print
+
+            keys = list(sd.keys())
+            print("Choose Start State:")
+
+            for i, key in enumerate(keys, start=1):
+                meta = sd[key]
+                print(f"{i} - {meta['Name']}")
+
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "c":
+                return
+            
+            try:
+                idx = int(choice)
+            except:
+                show_error(True, "InputError", "Input must be 'C' or Integer")
+
+            if 1 <= idx <= len(keys):
+                func_name = keys[idx - 1]
+
+                try:
+                    func = getattr(start_state, func_name)
+                except AttributeError:
+                    show_error(True, "TransitionError", f"Function {func_name} not found in Dictionary.")
+                    continue
+                
+                print_heading("SETTINGS: START STATE")
+                self.sim.start_state  = func
+                self.sim.function_name = sd[func_name]["Name"]
+                print(f"Start State set to: {sd[func_name]['Name']}\n")
+                self.show_desc(sd, func_name)
+                return

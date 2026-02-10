@@ -7,8 +7,8 @@ import random
 #=========================================================================
 class MonteCarloSim:
     def __init__(self):
-        self.n_steps : int      = 3000                      # Schritte eines Pfades
-        self.n_paths : int      = 500                      # Anzahl an simulierten Pfaden
+        self.n_steps : int      = 10000                      # Schritte eines Pfades
+        self.n_paths : int      = 50                      # Anzahl an simulierten Pfaden
         self.start_state        = fixed_state               # Startbedingung
         self.seed : int         = 12                        
         self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed

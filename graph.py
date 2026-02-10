@@ -20,7 +20,9 @@ def smooth_path(path, window=10):
 # Funktionen für Visualisierung
 
 # Zeichent alle Sample Paths
-def plot_paths(paths: List[List[float]], seed: int, num_paths: int, length_paths: int) -> None:
+def plot_paths(paths: List[List[float]], seed: int, 
+               num_paths: int, length_paths: int,
+               function_name : int) -> None:
     for path in paths:
         smooth = smooth_path(path, window=10)
         plt.plot(smooth, alpha=ALPHA)
@@ -34,7 +36,7 @@ def plot_paths(paths: List[List[float]], seed: int, num_paths: int, length_paths
     if seed is not None:
         plt.text(
             0.02, 0.95,
-            f"Seed: {seed} | Paths: {num_paths}",
+            f"Transition Function: {function_name}\nSeed: {seed} | Paths: {num_paths}",
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',

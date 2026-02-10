@@ -9,7 +9,7 @@ start_state_data = {
     },
 
     "random_state": {
-        "Name": "Drifted Random Walk",
+        "Name": "Random State",
         "Desc": (
             "Starting at a random Value."
         )

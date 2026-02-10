@@ -2,6 +2,14 @@ import numpy as np
 from typing import List
 from utils import printProgressBar, clear_cli
 #=========================================================================
+'''
+Misst ergodisches Verhalten im (begrenzten) Rahmen dieser Simulation. Man kann 
+hiermit prinzipiell keine Aussage über die Ergodizität des Systems treffen, da 
+Ergodizität eine Eigenschaft der Prozesse ohne Einschränkung von t ist (die es
+in einer solchen Simulation zwangsläufig geben muss). Innerhalb dieser Einschränkungen
+sind die Methoden aber (heuristisch) brauchbar.
+'''
+#=========================================================================
 def calculate_ergodicity(paths: List[List[float]],
                          observable = lambda x: x,
                          tail_fraction: float = 0.5) -> dict:   
@@ -33,7 +41,6 @@ def calculate_ergodicity(paths: List[List[float]],
         "time_means": time_means,
         "ergodic_heuristic": ergodic
     }
-
 
 def time_average(path) -> float:
     return path.mean()
