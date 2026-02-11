@@ -48,7 +48,8 @@ def plot_paths(paths: List[List[float]], seed: int,
 
 
 # Komprimiert zu Erwartungswert und Streuung
-def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> None:
+def plot_mean_and_std(paths: List[List[float]], seed: int, 
+                      num_paths: int, function_name: int) -> None:
     data = np.array(paths)
 
     mean = data.mean(axis=0)
@@ -76,7 +77,7 @@ def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> No
     if seed is not None:
         plt.text(
             0.02, 0.95,
-            f"Seed: {seed} | Paths: {num_paths}",
+            f"Transition Function: {function_name}\nSeed: {seed} | Paths: {num_paths}",
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',
@@ -87,7 +88,8 @@ def plot_mean_and_std(paths: List[List[float]], seed: int, num_paths: int) -> No
     plt.show()
 
 # Fokus auf Ergebnis statt Weg
-def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int) -> None:
+def plot_final_distribution(paths: List[List[float]], seed: int, 
+                            num_paths: int, function_name: int) -> None:
     final_values = [path[-1] for path in paths]
 
     plt.hist(final_values, bins=30, alpha=0.7)
@@ -100,7 +102,7 @@ def plot_final_distribution(paths: List[List[float]], seed: int, num_paths: int)
     if seed is not None:
         plt.text(
             0.02, 0.95,
-            f"Seed: {seed} | Paths: {num_paths}",
+            f"Transition Function: {function_name}\nSeed: {seed} | Paths: {num_paths}",
             transform=plt.gca().transAxes,
             fontsize=10,
             verticalalignment='top',
