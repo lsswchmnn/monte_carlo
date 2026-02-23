@@ -98,7 +98,7 @@ class CLI:
 
         # Daten abfragen
         n_steps = input_int(10, 10000, 1000, "Input Number of steps", True)
-        n_paths = input_int(5, 10000, 100, "Input Number of paths", True)
+        n_paths = input_int(1, 10000, 100, "Input Number of paths", True)
         step_size = input_float(0.1, 100, 1, "Step Size", True)
 
         # Daten festlegen

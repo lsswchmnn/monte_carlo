@@ -15,9 +15,9 @@ class MonteCarloSim:
         self.step_size : float  = 1.0                       # Paramter für die Übergangsfunktionen
 
         # Höchstgrenzen für Datenpunkte (Performance)
-        self.markov_max_datapoints : int        = 50_000_000
-        self.variational_max_datapoints : int   = 5_000_000
-        self.adaptive_max_datapoints : int      = 5_000_000
+        self.markov_max_datapoints : int        = 100_000_000
+        self.variational_max_datapoints : int   = 50_000_000
+        self.adaptive_max_datapoints : int      = 50_000_000
 
         # Standard-Übergangsfunktion
         self.process_type : str     = "variational"     # Aktueller Prozess-Typ: markov, variational, adaptive
@@ -60,7 +60,7 @@ class MonteCarloSim:
             printProgressBar(
                 i+1, self.n_paths, 
                 prefix='Generating Trajectories:', 
-                suffix='Finished', length=50)
+                suffix='Finished', length=520)
 
         self.last_result = all_paths
 
