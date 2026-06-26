@@ -3,9 +3,10 @@ Implementierung für abstrakte Monte-Carlo Versuche
 
 ---
 
-## Fragen und Probleme
+## ToDo
 
-- Schrittgröße ebenfalls randomisieren bzw. auswahl ermöglichen
+- Großes Refactor des gesamten Codes
+- Danach neue Funktionen
 
 ---
 
