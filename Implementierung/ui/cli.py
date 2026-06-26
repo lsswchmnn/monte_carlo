@@ -1,29 +1,25 @@
 from ui.utils.display   import clear_cli, print_heading, print_separation, print_thin_separation, enter_continue
 from ui.utils.errors    import enter_continue, show_error
-from ui.utils.input     import input_float, input_confirm
+from ui.utils.input     import input_float, input_int
 from ui.utils.progress  import printProgressBar, finishProgressBar, Spinner
+from ui.help            import help_three_types, help_full, help_settings
 
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
 from ergodicity import calculate_ergodicity
-from help import help_three_types, help_full, help_settings
+
 import start_state
 import math
 import transition_rules
-
-# Dict mit Beschreibungen der Übergangsfunktionen
-from transition_rules import transition_data_markov as tdm
-from transition_rules import transition_data_variational as tdv
-from transition_rules import transition_data_adaptive as tda
 #=========================================================================
-# CLI-KLasse
 class CLI:
+
     def __init__(self, simulation: MonteCarloSim):
         self.sim = simulation
 
-#=========================================================================
-# Hauptmenü
+#-------------------------------------------------------------------------
+# # Hauptmenü
     
     def run(self):
         while True:
