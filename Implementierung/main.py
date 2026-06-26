@@ -1,5 +1,5 @@
 from montecarlo import MonteCarloSim
-from cli import CLI
+from ui.cli import CLI
 #=========================================================================
 if __name__ == "__main__":
     sim = MonteCarloSim()

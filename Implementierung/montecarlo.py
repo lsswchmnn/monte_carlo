@@ -1,4 +1,3 @@
-from utils import show_error, printProgressBar, clear_cli             # Hilfsfunktionen
 from start_state import fixed_state, random_state               # Startwert auswählen
 import random
 #=========================================================================
@@ -57,10 +56,11 @@ class MonteCarloSim:
             
             all_paths.append(path)
 
-            printProgressBar(
-                i+1, self.n_paths, 
-                prefix='Generating Trajectories:', 
-                suffix='Finished', length=520)
+            # nichts in cli zu suchen
+            # printProgressBar(
+            #     i+1, self.n_paths, 
+            #     prefix='Generating Trajectories:', 
+            #     suffix='Finished', length=520)
 
         self.last_result = all_paths
 
@@ -89,10 +89,11 @@ class MonteCarloSim:
 
             all_paths.append(path)
 
-            printProgressBar(
-                i, self.n_paths, 
-                prefix='Generating Variational Trajectories:', 
-                suffix='Finished', length=50)
+            # nichts in backend zu suchen
+            # printProgressBar(
+            #     i, self.n_paths, 
+            #     prefix='Generating Variational Trajectories:', 
+            #     suffix='Finished', length=50)
 
         self.last_result = all_paths
         return all_paths
@@ -126,11 +127,12 @@ class MonteCarloSim:
             all_paths.append(path)
             all_adaptive_states.append(adaptive_state)
 
-            printProgressBar(
-                i + 1, self.n_paths, 
-                prefix="Generating Adaptive Trajectories",
-                suffix="Finished", length=50
-            )
+            # Nichts in Backend zu suchen
+            # printProgressBar(
+            #     i + 1, self.n_paths, 
+            #     prefix="Generating Adaptive Trajectories",
+            #     suffix="Finished", length=50
+            # )
 
         self.last_result = all_paths
         self.last_adaptive_state = all_adaptive_states
@@ -141,32 +143,35 @@ class MonteCarloSim:
 # Hilfsmethoden
 
     def check_if_complete(self)-> bool:
+
+        # ShowError entfernen, hat nichts in Backend zu suchen
+
         if self.transition_function  is None:
-            show_error(True, "DataError", "No Transitional Function loaded.")
+            #show_error(True, "DataError", "No Transitional Function loaded.")
             return False
 
         if self.n_steps is None:
-            show_error(True, "DataError", "No Number of steps defined.")
+            #show_error(True, "DataError", "No Number of steps defined.")
             return False
 
         if self.n_paths is None:
-            show_error(True, "DataError", "No Number of paths defined.")
+            #show_error(True, "DataError", "No Number of paths defined.")
             return False
 
         if self.start_state is None:
-            show_error(True, "DataError", "No Startstate defined.")
+            #show_error(True, "DataError", "No Startstate defined.")
             return False
 
         if self.seed is None:
-            show_error(True, "DataError", "No Seed defined.")
+            #show_error(True, "DataError", "No Seed defined.")
             return False
 
         if self.process_type is None:
-            show_error(True, "DataError", "No Process type defined.")
+            #show_error(True, "DataError", "No Process type defined.")
             return False
 
         if self.step_size is None:
-            show_error(True, "DataError", "No step size defined.")
+            #show_error(True, "DataError", "No step size defined.")
             return False
 
         return True

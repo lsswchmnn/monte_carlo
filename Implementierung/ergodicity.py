@@ -1,6 +1,5 @@
 import numpy as np
 from typing import List
-from utils import printProgressBar, clear_cli
 #=========================================================================
 '''
 Misst ergodisches Verhalten im (begrenzten) Rahmen dieser Simulation. Man kann 
@@ -23,11 +22,10 @@ def calculate_ergodicity(paths: List[List[float]],
     time_means = []
     total = tail_data.shape[0]
     
-    clear_cli()
     
     for i, path in enumerate(tail_data, 1):
         time_means.append(time_average(path))
-        printProgressBar(i, total, prefix='Calculating Ergodicity:', suffix='Finished', length=50)
+        #printProgressBar(i, total, prefix='Calculating Ergodicity:', suffix='Finished', length=50) # hat nichts in backend zu suchen
     
     time_means = np.array(time_means)
     ensemble_mean = ensemble_average(tail_data)

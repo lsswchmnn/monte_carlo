@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List
-from utils import clear_cli, printProgressBar
 #=========================================================================
 # Verschiedenes
 
@@ -43,7 +42,6 @@ def plot_paths(paths: List[List[float]], seed: int,
             bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
-    clear_cli()
     plt.show()
 
 
@@ -84,7 +82,6 @@ def plot_mean_and_std(paths: List[List[float]], seed: int,
             bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
-    clear_cli()
     plt.show()
 
 # Fokus auf Ergebnis statt Weg
@@ -109,5 +106,4 @@ def plot_final_distribution(paths: List[List[float]], seed: int,
             bbox=dict(facecolor='white', alpha=ALPHA, edgecolor='none')
         )
 
-    clear_cli()
     plt.show()

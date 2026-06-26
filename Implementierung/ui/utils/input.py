@@ -1,5 +1,5 @@
-from python.errors import show_error
-from python.display import print_thin_separation
+from ui.utils.errors import show_error
+from ui.utils.display import print_thin_separation
 #=========================================================================
 
 def input_int(min_value: int=0, max_value: int=10000, default: int=100, 

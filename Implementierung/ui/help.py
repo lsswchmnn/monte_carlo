@@ -1,4 +1,4 @@
-from utils import print_heading, enter_continue
+from ui.utils.display import print_heading, enter_continue
 
 def help_full():
     print_heading("HELP-MENU")

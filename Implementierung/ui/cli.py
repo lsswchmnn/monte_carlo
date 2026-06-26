@@ -1,4 +1,8 @@
-from utils import clear_cli, print_separation, input_int, print_thin_separation, enter_continue, input_float, show_error, printProgressBar, print_heading
+from ui.utils.display   import clear_cli, print_heading, print_separation, print_thin_separation, enter_continue
+from ui.utils.errors    import enter_continue, show_error
+from ui.utils.input     import input_float, input_confirm
+from ui.utils.progress  import printProgressBar, finishProgressBar, Spinner
+
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
 from montecarlo import MonteCarloSim
@@ -32,7 +36,7 @@ class CLI:
                 print("5 - Show Result")
             print("S - Program Settings")
             print("H - Help")
-            print("C - Close CLI")
+            print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
         
