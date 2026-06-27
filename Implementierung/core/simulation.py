@@ -1,39 +1,27 @@
 from   process.registry import START_STATE_REGISTRY
+from   core.config      import SimConfig
 from   typing           import Callable
 import random
 #=========================================================================
 # Simulation
 # Verantwortlichkeit: Pfade berechnen und korrekte run-Methode auswählen.
 # Fortschritt durch (optionalen) Callback nach außen gegeben.
+
+# Config noch in _run*-Methoden einbauen!
 #=========================================================================
 class MonteCarloSim:
 
     def __init__(self):
 
-        self.n_steps    : int    = 1000
-        self.n_paths    : int    = 100
-        self.step_size  : float  = 1.0
-        self.seed       : float  = 42
-        self.rng                 = random.Random(self.seed)
-
-        # Höchstgrenzen für Datenpunkte (Performance)
-        self.markov_max_datapoints : int        = 100_000_000
-        self.variational_max_datapoints : int   = 50_000_000
-        self.adaptive_max_datapoints : int      = 50_000_000
-
-        # Standard-Übergangsfunktio         
-        self.process_type     : str        = "variational"
-        self.transition_fn    : Callable   = None
-        self.start_state_fn   : Callable   = None
-
         # Später evtl auslagern in dedizierten HistoryManager
         self.last_result      : list | None = None  # Auf letztes Ergebnis zugreifen
         self.last_erg_data    : list | None = None  # Ergodizitäts-Ergebnis
+        self.last_adaptive_states
 
 #-------------------------------------------------------------------------
 # Entrypoint (Öffentlich)
 
-    def run(self, on_progress: Callable | None):
+    def run(self, config: SimConfig, on_progress: Callable | None):
         '''
         Startet Simulation für gesetzten process_type. 
         '''
@@ -51,7 +39,7 @@ class MonteCarloSim:
         self.last_result    = None
         self.last_erg_data  = None
 
-        return runner(on_progress)
+        return runner(config, on_progress)
 
 #-------------------------------------------------------------------------
 # Run-Methoden (Privat)
