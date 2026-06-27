@@ -1,49 +1,62 @@
-from start_state import fixed_state, random_state               # Startwert auswählen
+from   process.registry import START_STATE_REGISTRY
+from   typing           import Callable
 import random
 #=========================================================================
-# Methoden für Startzustand in start_state.py; für Transitionsregeln in 
-# transition_rule.py. Sim darf nicht wissen, welche Regeln sie nutzt
+# Simulation
+# Verantwortlichkeit: Pfade berechnen und korrekte run-Methode auswählen.
+# Fortschritt durch (optionalen) Callback nach außen gegeben.
 #=========================================================================
 class MonteCarloSim:
+
     def __init__(self):
-        self.n_steps : int      = 10000                      # Schritte eines Pfades
-        self.n_paths : int      = 50                      # Anzahl an simulierten Pfaden
-        self.start_state        = fixed_state               # Startbedingung
-        self.seed : int         = 12                        
-        self.rng                = random.Random(self.seed)  # Eigener Random-Numbers-Generator mit Seed
-        self.step_size : float  = 1.0                       # Paramter für die Übergangsfunktionen
+
+        self.n_steps    : int    = 1000
+        self.n_paths    : int    = 100
+        self.step_size  : float  = 1.0
+        self.seed       : float  = 42
+        self.rng                 = random.Random(self.seed)
 
         # Höchstgrenzen für Datenpunkte (Performance)
         self.markov_max_datapoints : int        = 100_000_000
         self.variational_max_datapoints : int   = 50_000_000
         self.adaptive_max_datapoints : int      = 50_000_000
 
-        # Standard-Übergangsfunktion
-        self.process_type : str     = "variational"     # Aktueller Prozess-Typ: markov, variational, adaptive
-        self.transition_function    = None              # Funktion
-        self.function_name          = None
-        self.dict_transition_function = None
+        # Standard-Übergangsfunktio         
+        self.process_type     : str        = "variational"
+        self.transition_fn    : Callable   = None
+        self.start_state_fn   : Callable   = None
 
-        # Ergebnis der Simulation
-        self.last_result        = None  # Auf letztes Ergebnis zugreifen
-        self.last_erg_data      = None  # Ergodizitäts-Ergebnis
+        # Später evtl auslagern in dedizierten HistoryManager
+        self.last_result      : list | None = None  # Auf letztes Ergebnis zugreifen
+        self.last_erg_data    : list | None = None  # Ergodizitäts-Ergebnis
 
 #-------------------------------------------------------------------------
-# Sim-Methoden
+# Entrypoint (Öffentlich)
 
-    def run(self):
-        if self.process_type == "markov":
-            return self.run_markov()
-        elif self.process_type == "variational":
-            return self.run_variational()
-        elif self.process_type == "adaptive":
-            return self.run_adaptive()
+    def run(self, on_progress: Callable | None):
+        '''
+        Startet Simulation für gesetzten process_type. 
+        '''
+        runners = {
+            "markov": self._run_markov,
+            "variational": self._run_variational,
+            "adaptive": self._run_adaptive
+        }
 
-    # für lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer Monte-Carlo-Ansatz)
-    def run_markov(self)-> list:
-        self.last_result = None     # Ergebnis zurücksetzen
-        self.last_erg_data = None
+        runner = runners.get(self.process_type)
+        if runner is None:
+            raise ValueError(f"Unknown process type: '{self.process_type}")
+        
+        # History zurücksetzen
+        self.last_result    = None
+        self.last_erg_data  = None
 
+        return runner(on_progress)
+
+#-------------------------------------------------------------------------
+# Run-Methoden (Privat)
+
+    def _run_markov(self, on_progress: Callable | None)-> list:
         all_paths = []
 
         for i in range(self.n_paths):
@@ -56,21 +69,13 @@ class MonteCarloSim:
             
             all_paths.append(path)
 
-            # nichts in cli zu suchen
-            # printProgressBar(
-            #     i+1, self.n_paths, 
-            #     prefix='Generating Trajectories:', 
-            #     suffix='Finished', length=520)
+            if on_progress:
+                on_progress(i + 1, self.n_paths)
 
         self.last_result = all_paths
-
         return all_paths
 
-    # Pfadabhnägige, nicht lokale Prozesse. Darf mehr kontext als nur den aktuellen Zustand nutzen
-    def run_variational(self)-> list:
-        self.last_result = None
-        self.last_erg_data = None
-
+    def _run_variational(self, on_progress: Callable | None)-> list:
         all_paths = []
 
         for i in range(self.n_paths):
@@ -89,32 +94,23 @@ class MonteCarloSim:
 
             all_paths.append(path)
 
-            # nichts in backend zu suchen
-            # printProgressBar(
-            #     i, self.n_paths, 
-            #     prefix='Generating Variational Trajectories:', 
-            #     suffix='Finished', length=50)
+            if on_progress:
+                on_progress(i + 1, self.n_paths)
 
         self.last_result = all_paths
         return all_paths
-        
-    # Zustands- und Verlaufsabhängige Prozesse
-    def run_adaptive(self)-> list:
-        self.last_result =  None
-        self.last_erg_data = None
 
+    def _run_adaptive(self, on_progress: Callable | None)-> list:
         all_paths = []
         all_adaptive_states = []
 
         for i in range(self.n_paths):
             path = []
             x = self.start_state(self.rng)
-
             adaptive_state = {}
 
             for t in range(self.n_steps):
                 path.append(x)
-
                 x, adaptive_state = self.transition_function(
                     x_t=x,
                     t=t,
@@ -127,52 +123,37 @@ class MonteCarloSim:
             all_paths.append(path)
             all_adaptive_states.append(adaptive_state)
 
-            # Nichts in Backend zu suchen
-            # printProgressBar(
-            #     i + 1, self.n_paths, 
-            #     prefix="Generating Adaptive Trajectories",
-            #     suffix="Finished", length=50
-            # )
+            if on_progress:
+                on_progress(i + 1, self.n_paths)
 
         self.last_result = all_paths
         self.last_adaptive_state = all_adaptive_states
-
         return all_paths
 
 #-------------------------------------------------------------------------
-# Hilfsmethoden
+# Hilfsmethoden (evtl. auslagern)
 
-    # Prüft ob konfiguration vollständig ist -> auslagern in controller
-    def check_if_complete(self)-> bool:
-
-        # ShowError entfernen, hat nichts in Backend zu suchen
-
-        if self.transition_function  is None:
-            #show_error(True, "DataError", "No Transitional Function loaded.")
-            return False
-
-        if self.n_steps is None:
-            #show_error(True, "DataError", "No Number of steps defined.")
-            return False
-
-        if self.n_paths is None:
-            #show_error(True, "DataError", "No Number of paths defined.")
-            return False
-
-        if self.start_state is None:
-            #show_error(True, "DataError", "No Startstate defined.")
-            return False
-
-        if self.seed is None:
-            #show_error(True, "DataError", "No Seed defined.")
-            return False
-
-        if self.process_type is None:
-            #show_error(True, "DataError", "No Process type defined.")
-            return False
-
-        if self.step_size is None:
-            #show_error(True, "DataError", "No step size defined.")
-            return False
-
-        return True
+    def is_ready(self) -> bool:
+        '''Gibt True zurück wenn alle Pflichtfelder gesetzt sind.'''
+        return all([
+            self.transition_fn      is not None,
+            self.start_state_fn     is not None,
+            self.process_type       is not None,
+            self.n_steps            is not None,
+            self.n_paths            is not None,
+            self.seed               is not None,
+            self.step_size          is not None,
+        ])
+ 
+    def missing_fields(self) -> list[str]:
+        '''Gibt eine Liste der noch nicht gesetzten Pflichtfelder zurück.'''
+        checks = {
+            "transition_fn":    self.transition_fn,
+            "start_state_fn":   self.start_state_fn,
+            "process_type":     self.process_type,
+            "n_steps":          self.n_steps,
+            "n_paths":          self.n_paths,
+            "seed":             self.seed,
+            "step_size":        self.step_size,
+        }
+        return [name for name, value in checks.items() if value is None]
