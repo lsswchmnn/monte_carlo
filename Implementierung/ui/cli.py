@@ -6,7 +6,7 @@ from ui.help            import help_three_types, help_full, help_settings
 
 from start_state import start_state_data as sd
 from graph import plot_paths, plot_mean_and_std, plot_final_distribution
-from montecarlo import MonteCarloSim
+from simulation import MonteCarloSim
 from ergodicity import calculate_ergodicity
 
 import start_state
