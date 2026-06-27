@@ -1,9 +1,7 @@
 #=========================================================================
-'''
-TYP 1: 
-Lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer 
-Monte-Carlo-Ansatz)
-'''
+# TYP 1: 
+# Lokale, stochastische markov-Prozesse (zeitdiskret und additiv, klassischer 
+# Monte-Carlo-Ansatz)
 #=========================================================================
 
 # Zufällig Nach oben und unten gehen
@@ -52,4 +50,4 @@ def regime_switch(x_t, rng, step_size):
     return x_t + noise
 
 def linear_step(x_t, rng, step_size):
-    return x_t + 0
+    return x_t

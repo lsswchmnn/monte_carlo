@@ -1,9 +1,7 @@
 #=========================================================================
-''' 
-TYP 2: 
-Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den 
-aktuellen Zustand nutzen, nämlich gesamten bisherigen Verlauf und die Zeit.
-'''
+# TYP 2: 
+# Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den 
+# aktuellen Zustand nutzen, nämlich gesamten bisherigen Verlauf und die Zeit.
 #=========================================================================
 # Minimaler variationaler Übergang
 def variational_baseline(
