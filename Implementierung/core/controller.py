@@ -1,0 +1,142 @@
+from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY
+from   core.config      import SimConfig
+from   core.simulation  import MonteCarloSim
+from   typing           import Callable
+import math
+import random
+#=========================================================================
+# Controller
+# Verantwortlichkeit: Koordination aller Kernkomponenten und Zustandsver-
+# waltung. Einzige Vermittlung zwischen UI und Backend.
+#=========================================================================
+class Controller:
+    
+    def __init__(self):
+
+        self.config      = SimConfig()
+        self.simulation  = MonteCarloSim()
+        self._setup()
+    
+    def _setup(self) -> None:
+
+        # Startzustand-Default setzen
+        default_start                 = START_STATE_REGISTRY["fixed_state"]
+        self.config.start_state_fn    = default_start["fn"]
+        self.config.start_state_name  = default_start["name"]
+
+        # Übergangsfunktion-Default setzen
+        self.config.process_type      = "markov"
+        default_transition            = TRANSITION_REGISTRY["markov"]["random_walk"]
+        self.config.transition_fn     = default_transition["fn"]
+        self.config.transition_name   = default_transition["name"]
+
+#-------------------------------------------------------------------------
+# Konfiguration
+
+    def get_start_state(self) -> str:
+        return self.config.start_state_name
+
+    def set_start_state(self, key: str) -> None:
+        '''Setzt den Startzustand anhand eines Registry-Keys.'''
+        try:
+            entry = START_STATE_REGISTRY[key]
+            self.config.start_state_fn      = entry["fn"]
+            self.config.start_state_name    = entry["name"]
+        except Exception:
+            raise
+
+    def get_transition(self) -> str:
+        return self.config.transition_name
+
+    def set_transition(self, process_type: str, key: str) -> None:
+        '''
+        Setzt Prozesstyp und Übergangsfunktion anhand von Registry-Keys.
+        '''
+        try:
+            entry = TRANSITION_REGISTRY[process_type][key]
+            self.config.process_type        = process_type
+            self.config.transition_fn       = entry["fn"]
+            self.config.transition_name     = entry["name"]
+        except Exception:
+            raise
+ 
+    def set_parameters(self, n_steps: int, n_paths: int, step_size: float) -> None:
+        '''Setzt die numerischen Simulationsparameter.'''
+        self.config.n_steps     = n_steps
+        self.config.n_paths     = n_paths
+        self.config.step_size   = step_size
+ 
+    def set_seed(self, seed: int) -> None:
+        self.config.seed = seed
+
+#-------------------------------------------------------------------------
+# Registry-Zugriff
+
+    def get_transition_options(self, process_type: str) -> dict:
+        '''Rückgabe aller Transitionsfunktionen eines Prozesstypes.'''
+        return TRANSITION_REGISTRY[process_type]
+    
+    def get_start_state_options(self) -> dict:
+        '''Rückgabe aller Startzustandsfunktionen.'''
+        return START_STATE_REGISTRY
+    
+#-------------------------------------------------------------------------
+# Simulation
+
+    def run_simulation(self, on_progress: Callable | None = None) -> list:
+        '''Ausführung der Montecarlo-Simulation.'''
+
+        if not self.config.is_valid():
+            missing = ", ".join(self.config.missing_fields())
+            raise ValueError(f"Simulation config imcomplete. Missing: {missing}")
+        
+        if self.config.exceeds_limit():
+            raise ValueError(
+                    f"Datapoint count ({self.config.datapoint_count():,}) exceeds limit "
+                    f"for '{self.config.process_type}' ({self.config.get_limit():,}). "
+                    f"Reduce n_steps or n_paths."
+                )
+        
+        self._apply_config()
+        return self.simulation.run(on_progress=on_progress)
+    
+    def get_safe_datapoints(self) -> tuple[int, int]:
+            '''
+            Berechnet n_steps und n_paths die das Limit nicht überschreiten.
+            Gibt ein quadratisches (steps, paths) Paar zurück.
+            '''
+            limit = self.config.get_limit()
+            root = math.isqrt(limit)
+            return root, root
+    
+#-------------------------------------------------------------------------
+# Ergebniszugriff (evtl. später an HistoryManager auslagern)
+
+    @property
+    def last_result(self) -> list | None:
+        return self.simulation.last_result
+ 
+    @property
+    def last_erg_data(self) -> dict | None:
+        return self.simulation.last_erg_data
+ 
+    @last_erg_data.setter
+    def last_erg_data(self, value: dict) -> None:
+        self.simulation.last_erg_data = value
+ 
+ #-------------------------------------------------------------------------
+ # Hilfsmethoden (privat)
+ 
+    def _apply_config(self) -> None:
+        '''Überträgt die aktuelle Config auf die Simulation.'''
+        sim = self.simulation
+        cfg = self.config
+ 
+        sim.n_steps         = cfg.n_steps
+        sim.n_paths         = cfg.n_paths
+        sim.step_size       = cfg.step_size
+        sim.seed            = cfg.seed
+        sim.rng             = random.Random(cfg.seed)
+        sim.process_type    = cfg.process_type
+        sim.transition_fn   = cfg.transition_fn
+        sim.start_state_fn  = cfg.start_state_fn
