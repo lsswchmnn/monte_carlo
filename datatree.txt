@@ -1,5 +1,10 @@
-D:\Lasse\Documents\1projekte\Informatik-Projekte\monte_carlo_simulation
+D:\Lasse\Documents\1projekte\informatik\monte_carlo
 ├── Implementierung
+│   ├── core
+│   │   ├── config.py
+│   │   ├── controller.py
+│   │   ├── ergodicity.py
+│   │   └── simulation.py
 │   ├── process
 │   │   ├── transitions
 │   │   │   ├── adaptive.py
@@ -15,8 +20,6 @@ D:\Lasse\Documents\1projekte\Informatik-Projekte\monte_carlo_simulation
 │   │   │   └── progress.py
 │   │   ├── cli.py
 │   │   └── help.py
-│   ├── ergodicity.py
 │   ├── graph.py
-│   ├── main.py
-│   └── montecarlo.py
+│   └── main.py
 └── README.md
