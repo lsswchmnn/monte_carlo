@@ -1,6 +1,7 @@
 from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
+from   core.history     import HistoryManager
 from   typing           import Callable
 import math
 import random
@@ -15,6 +16,7 @@ class Controller:
 
         self.config      = SimConfig()
         self.simulation  = MonteCarloSim()
+        self.history     = HistoryManager()
         self._setup()
     
     def _setup(self) -> None:
@@ -33,9 +35,6 @@ class Controller:
 #-------------------------------------------------------------------------
 # Konfiguration
 
-    def get_start_state(self) -> str:
-        return self.config.start_state_name
-
     def set_start_state(self, key: str) -> None:
         '''Setzt den Startzustand anhand eines Registry-Keys.'''
         try:
@@ -44,9 +43,6 @@ class Controller:
             self.config.start_state_name    = entry["name"]
         except Exception:
             raise
-
-    def get_transition(self) -> str:
-        return self.config.transition_name
 
     def set_transition(self, process_type: str, key: str) -> None:
         '''
@@ -84,7 +80,7 @@ class Controller:
 # Simulation
 
     def run_simulation(self, on_progress: Callable | None = None) -> list:
-        '''Ausführung der Montecarlo-Simulation.'''
+        '''Führt Monte Carlo Simulation aus. Config wird automatisch übergeben.'''
 
         if not self.config.is_valid():
             missing = ", ".join(self.config.missing_fields())
@@ -98,8 +94,10 @@ class Controller:
                 )
         
         self._apply_config()
-        return self.simulation.run(on_progress=on_progress)
-    
+        result = self.simulation.run(config=self.config, on_progress=on_progress)
+        self.history.add(result, self.config)
+        return result
+
     def get_safe_datapoints(self) -> tuple[int, int]:
             '''
             Berechnet n_steps und n_paths die das Limit nicht überschreiten.
@@ -112,17 +110,20 @@ class Controller:
 #-------------------------------------------------------------------------
 # Ergebniszugriff (evtl. später an HistoryManager auslagern)
 
-    @property
-    def last_result(self) -> list | None:
-        return self.simulation.last_result
+    def delete_history_entry(self, index: int):
+        self.history.delete(index)
+
+    # @property
+    # def last_result(self) -> list | None:
+    #     return self.simulation.last_result
  
-    @property
-    def last_erg_data(self) -> dict | None:
-        return self.simulation.last_erg_data
+    # @property
+    # def last_erg_data(self) -> dict | None:
+    #     return self.simulation.last_erg_data
  
-    @last_erg_data.setter
-    def last_erg_data(self, value: dict) -> None:
-        self.simulation.last_erg_data = value
+    # @last_erg_data.setter
+    # def last_erg_data(self, value: dict) -> None:
+    #     self.simulation.last_erg_data = value
  
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
