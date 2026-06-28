@@ -29,6 +29,9 @@ class HistoryManager:
     def clear(self) -> None:
         self._entries.clear()
  
+    def delete(self, index: int) -> None:
+        self._entries.pop(index)
+
     def is_empty(self) -> bool:
         return len(self._entries) == 0
  
