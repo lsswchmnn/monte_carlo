@@ -6,7 +6,6 @@ if __name__ == "__main__":
     controller = Controller()
     
     while True:
-        print("MONTE-CARLO-SIMULATION\n")
         print("1 - Start CLI")
         print("C - Cancel")
         # evtl. später GUI oder Web
