@@ -32,7 +32,7 @@ class Spinner:
 #-------------------------------------------------------------------------
 
 # Fortschritts-Iterator mit tqdm; funktioniert bei for-Schleifen
-def printProgressBar(iteration, 
+def print_progress_bar(iteration, 
                      total, 
                      prefix = '', 
                      suffix = '', 
