@@ -6,11 +6,14 @@ if __name__ == "__main__":
     controller = Controller()
     
     while True:
-        print("1 - Start CLI")
-        print("C - Cancel")
-        # evtl. später GUI oder Web
-        choice = input("> ").strip().lower()
+        # Sobald GUI oder Web implementiert, hier Startmenü
+
+        # print("1 - Start CLI")
+        # print("C - Cancel")
+        # choice = input("> ").strip().lower()
     
+        choice = "1"
+
         if choice == "1":
             cli = CLI(controller)
             cli.run()
