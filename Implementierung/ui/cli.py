@@ -1,7 +1,7 @@
 from ui.utils.display   import clear_cli, print_heading, print_thin_separation, enter_continue
 from ui.utils.errors    import show_error, cli_blocking_message
 from ui.utils.input     import input_float, input_int, input_confirm
-from ui.utils.progress  import print_progress_bar, finishProgressBar, Spinner
+from ui.utils.progress  import print_progress_bar, Spinner
 from ui.help            import help_three_types, help_full, help_settings
 from core.controller    import Controller
 #=========================================================================
@@ -36,11 +36,13 @@ class CLI:
             elif choice == "h":
                 help_full()
                 enter_continue()
+
             elif choice == "c":
+                if not self.controller.history_is_empty():
+                    if not input_confirm("Are you sure? Results that are not exported will be lost upon exiting the CLI."):
+                        continue
+                print("Exit CLI...")
                 clear_cli()
-                enter_continue("Press Enter to Leave the Simulation", seperation=False)
-                clear_cli()
-                print("Goodbye! :) \n")
                 break
 
 #-------------------------------------------------------------------------
@@ -92,16 +94,16 @@ class CLI:
                 self._settings_transition()
 
             elif choice == "3":
-                n_paths = input_int(1, 10000, self.controller.config.n_paths, "Number of paths", error=False)
+                n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", error=False)
                 self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
             elif choice == "4":
-                n_steps = input_int(10, 100000, self.controller.config.n_steps, "Number of steps", error=False)
+                n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", error=False)
                 self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
             elif choice == "5":
-                step_size = input_float(0.01, 100.0, self.controller.config.step_size, "Step size", error=False)
+                step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", error=False)
                 self.controller.set_parameters(self.controller.config.n_steps, self.controller.config.n_paths, step_size)
             elif choice == "6":
-                seed = input_int(1, 99999, self.controller.config.seed, "Seed", error=False)
+                seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", error=False)
                 self.controller.set_seed(seed)
 
             elif choice == "c":
@@ -191,11 +193,12 @@ class CLI:
     def _menu_result(self, result: list):
         while True:
             print_heading("RESULT")
-            print("1 - Print data")
-            print("2 - Sample paths")
-            print("3 - Mean and volatility")
-            print("4 - Final distribution")
-            print("5 - Ergodicity")
+            print("1 - Print summary")
+            print("2 - Print full data")
+            print("3 - Sample paths")
+            print("4 - Mean and volatility")
+            print("5 - Final distribution")
+            print("6 - Ergodicity")
             print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
@@ -203,12 +206,14 @@ class CLI:
             if choice == "1":
                 self._show_result_terminal(result)
             elif choice == "2":
-                self._run_show_graph(result, "sample_paths")
+                self._show_full_result_terminal(result)
             elif choice == "3":
-                self._run_show_graph(result, "mean_volatility")
+                self._run_show_graph(result, "sample_paths")
             elif choice == "4":
-                self._run_show_graph(result, "final_dist")
+                self._run_show_graph(result, "mean_volatility")
             elif choice == "5":
+                self._run_show_graph(result, "final_dist")
+            elif choice == "6":
                 self._menu_ergodicity(result)
             elif choice == "c":
                 break
@@ -387,12 +392,16 @@ class CLI:
         print(f"  Steps:        {self.controller.config.n_steps}")
         print(f"  Step Size:    {self.controller.config.step_size}")
         print(f"  Seed:         {self.controller.config.seed}")
-        print(f"  Datapoints:   {self.controller.config.datapoint_count():,}")
+        print(f"  Datapoints:   {self.controller.config.datapoint_count()}")
  
     def _show_result_terminal(self, result: list):
-        print_heading("RESULT DATA")
+        print_heading("RESULT DATA (SUMMARY)")
         print(f"Paths:   {len(result)}")
         print(f"Steps:   {len(result[0]) if result else 0}")
         print(f"First path (first 10 values): {result[0][:10] if result else '—'}")
         enter_continue()
-        print(result)   # später sinnvolle Ausgabe implementieren
+
+    def _show_full_result_terminal(self, result: list):
+        print_heading("RESULT DATA (FULL)")
+        print(result)
+        enter_continue()
