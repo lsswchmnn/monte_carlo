@@ -64,6 +64,7 @@ class Controller:
  
     def set_seed(self, seed: int) -> None:
         self.config.seed = seed
+        self.config.rng  = random.Random(seed)
 
 #-------------------------------------------------------------------------
 # Registry-Zugriff
@@ -95,7 +96,7 @@ class Controller:
         
         self._apply_config()
         result = self.simulation.run(config=self.config, on_progress=on_progress)
-        self.add_history_entry(result, self.config)
+        self.add_history_entry(result)
         return result
 
     def get_safe_datapoints(self) -> tuple[int, int]:
