@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field
-from typing      import Callable
+from   dataclasses import dataclass, field
+from   typing      import Callable
+import random
 #=========================================================================
 # SimConfig
 # Verantwortlichkeit: Simulationsparameter und Einstellungen zentralisieren.
@@ -7,12 +8,17 @@ from typing      import Callable
 #=========================================================================
 @dataclass
 class SimConfig:
+    
+    seed        : int   = 42
+    rng: random.Random  = field(init=False)  # Intern gesetzt
+
+    def __post_init__(self):
+        self.rng = random.Random(self.seed)  # Aus Seed ableiten
 
     # Simulationsparameter
     n_steps     : int   = 1000
     n_paths     : int   = 100
     step_size   : float = 1.0
-    seed        : int   = 42
 
     # Prozess (siehe process/)
     process_type      : str      | None = None
