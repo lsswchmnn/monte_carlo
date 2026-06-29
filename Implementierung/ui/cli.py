@@ -109,11 +109,12 @@ class CLI:
         
     def _menu_history(self):
         if self.controller.history.is_empty():
-            cli_blocking_message("HISTORY", "HistoryError", "No simulation results available yet.")
+            cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
             return
 
         while True:
             print_heading("HISTORY")
+            print(f"Number of results: {len(self.controller.get_history_entries())}\n")
             print("1 - Show result")
             print("2 - Export result")
             print("3 - Delete entry")
@@ -123,32 +124,44 @@ class CLI:
             choice = input("> ").strip().lower()
 
             if choice == "1":
-                entry = self._pick_history_entry()
+                entry = self._menu_pick_history_entry()
                 if entry:
                     self._menu_result(entry.result)
+
             elif choice == "2":
-                entry = self._pick_history_entry()
+                entry = self._menu_pick_history_entry()
                 if entry:
                     self._menu_export(entry.result)
+
             elif choice == "3":
-                entry_idx = self._pick_history_entry(return_index=True)
-                if entry_idx is not None:
-                    self.controller.delete_history_entry()
+                idx = self._menu_pick_history_entry(return_index=True)
+                if idx is not None:
+                    self.controller.delete_history_entry(idx)
+                    print("\nEntry deleted.")
+                    enter_continue()
+                    if self.controller.history_is_empty():
+                        break
+
             elif choice == "4":
                 if input_confirm("Clear all history?", default_true=False):
-                    self.controller.history.clear()
+                    self.controller.clear_history()
                     print("\nHistory cleared.")
                     enter_continue()
                     break
+
             elif choice == "c":
                 break
 
-    def _pick_history_entry(self, return_index: bool = False):
+    def _menu_pick_history_entry(self, return_index: bool = False):
         '''
         Zeigt alle History-Einträge an und lässt den Nutzer einen auswählen.
         Gibt den Eintrag zurück, oder den Index wenn return_index=True.
         '''
-        entries = self.controller.history.all()
+        entries = self.controller.get_history_entries()
+
+        # Ein Eintrag: direkte Rückgabe
+        if len(entries) == 1:
+            return 0 if return_index else entries[0]
 
         print_heading("SELECT RESULT")
         for i, entry in enumerate(entries, start=1):
@@ -266,7 +279,7 @@ class CLI:
         #     plot_mean_and_std(result, cfg.seed, cfg.n_paths, cfg.transition_name)
         # elif type == "final_dist":
         #     plot_final_distribution(result, cfg.seed, cfg.n_paths, cfg.transition_name)
- 
+
 #-------------------------------------------------------------------------
 # Einstellungsmenüs
 
@@ -367,7 +380,6 @@ class CLI:
 # Anzeige von Einstellungen und Ergebnissen
 
     def _show_simulation_settings(self):
-        print_thin_separation(linebreak=False)
         print(f"  Start State:  {self.controller.config.start_state_name}")
         print(f"  Transition:   {self.controller.config.transition_name}")
         print(f"  Process Type: {self.controller.config.process_type}")
@@ -376,7 +388,6 @@ class CLI:
         print(f"  Step Size:    {self.controller.config.step_size}")
         print(f"  Seed:         {self.controller.config.seed}")
         print(f"  Datapoints:   {self.controller.config.datapoint_count():,}")
-        print_thin_separation(linebreak=False)
  
     def _show_result_terminal(self, result: list):
         print_heading("RESULT DATA")
