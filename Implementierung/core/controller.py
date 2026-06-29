@@ -11,14 +11,14 @@ import random
 # waltung. Einzige Vermittlung zwischen UI und Backend.
 #=========================================================================
 class Controller:
-    
+
     def __init__(self):
 
         self.config      = SimConfig()
         self.simulation  = MonteCarloSim()
         self.history     = HistoryManager()
         self._setup()
-    
+
     def _setup(self) -> None:
 
         # Startzustand-Default setzen
@@ -61,7 +61,7 @@ class Controller:
         self.config.n_steps     = n_steps
         self.config.n_paths     = n_paths
         self.config.step_size   = step_size
- 
+
     def set_seed(self, seed: int) -> None:
         self.config.seed = seed
         self.config.rng  = random.Random(seed)
@@ -72,11 +72,11 @@ class Controller:
     def get_transition_options(self, process_type: str) -> dict:
         '''Rückgabe aller Transitionsfunktionen eines Prozesstypes.'''
         return TRANSITION_REGISTRY[process_type]
-    
+
     def get_start_state_options(self) -> dict:
         '''Rückgabe aller Startzustandsfunktionen.'''
         return START_STATE_REGISTRY
-    
+
 #-------------------------------------------------------------------------
 # Simulation (-> simulation.py)
 
@@ -107,7 +107,7 @@ class Controller:
             limit = self.config.get_limit()
             root = math.isqrt(limit)
             return root, root
-    
+
 #-------------------------------------------------------------------------
 # Ergebniszugriff (-> history.py)
 
@@ -128,7 +128,7 @@ class Controller:
 
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
- 
+
     def _apply_config(self) -> None:
         '''Überträgt die aktuelle Config auf die Simulation.'''
         sim = self.simulation
