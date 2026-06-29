@@ -3,6 +3,8 @@ from ui.utils.errors    import show_error, cli_blocking_message
 from ui.utils.input     import input_float, input_int, input_confirm
 from ui.utils.progress  import print_progress_bar, Spinner
 from ui.help            import help_three_types, help_full, help_settings
+from ui.plots           import show
+from core.config        import SimConfig
 from core.controller    import Controller
 #=========================================================================
 class CLI:
@@ -128,7 +130,7 @@ class CLI:
             if choice == "1":
                 entry = self._menu_pick_history_entry()
                 if entry:
-                    self._menu_result(entry.result)
+                    self._menu_result(entry.result, entry.config)
 
             elif choice == "2":
                 entry = self._menu_pick_history_entry()
@@ -190,7 +192,7 @@ class CLI:
         show_error("InputError", "Invalid choice.")
         return None
 
-    def _menu_result(self, result: list):
+    def _menu_result(self, result: list, config: SimConfig):
         while True:
             print_heading("RESULT")
             print("1 - Print summary")
@@ -208,11 +210,11 @@ class CLI:
             elif choice == "2":
                 self._show_full_result_terminal(result)
             elif choice == "3":
-                self._run_show_graph(result, "sample_paths")
+                show(result, "sample_paths", config)
             elif choice == "4":
-                self._run_show_graph(result, "mean_volatility")
+                show(result, "mean_volatility", config)
             elif choice == "5":
-                self._run_show_graph(result, "final_dist")
+                show(result, "final_dist", config)
             elif choice == "6":
                 self._menu_ergodicity(result)
             elif choice == "c":
@@ -271,20 +273,8 @@ class CLI:
         except ValueError as e:
             show_error("SimulationError", str(e))
             return
-        self._menu_result(result)
+        self._menu_result(result, self.controller.config)
  
-    def _run_show_graph(self, result: list, type: str):
-        cfg = self.controller.config
-        clear_cli()
-        print("Loading graph...")
- 
-        # if type == "sample_paths":
-        #     plot_paths(result, cfg.seed, cfg.n_paths, cfg.n_steps, cfg.transition_name)
-        # elif type == "mean_volatility":
-        #     plot_mean_and_std(result, cfg.seed, cfg.n_paths, cfg.transition_name)
-        # elif type == "final_dist":
-        #     plot_final_distribution(result, cfg.seed, cfg.n_paths, cfg.transition_name)
-
 #-------------------------------------------------------------------------
 # Einstellungsmenüs
 
