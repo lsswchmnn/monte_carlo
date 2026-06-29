@@ -77,7 +77,7 @@ class Controller:
         return START_STATE_REGISTRY
     
 #-------------------------------------------------------------------------
-# Simulation
+# Simulation (-> simulation.py)
 
     def run_simulation(self, on_progress: Callable | None = None) -> list:
         '''Führt Monte Carlo Simulation aus. Config wird automatisch übergeben.'''
@@ -95,7 +95,7 @@ class Controller:
         
         self._apply_config()
         result = self.simulation.run(config=self.config, on_progress=on_progress)
-        self.history.add(result, self.config)
+        self.add_history_entry(result, self.config)
         return result
 
     def get_safe_datapoints(self) -> tuple[int, int]:
@@ -108,23 +108,23 @@ class Controller:
             return root, root
     
 #-------------------------------------------------------------------------
-# Ergebniszugriff (evtl. später an HistoryManager auslagern)
+# Ergebniszugriff (-> history.py)
 
-    def delete_history_entry(self, index: int):
+    def add_history_entry(self, result: list) -> None:
+        self.history.add(result, self.config)
+
+    def get_history_entries(self) -> list:
+        return self.history.all()
+
+    def delete_history_entry(self, index: int) -> None:
         self.history.delete(index)
 
-    # @property
-    # def last_result(self) -> list | None:
-    #     return self.simulation.last_result
- 
-    # @property
-    # def last_erg_data(self) -> dict | None:
-    #     return self.simulation.last_erg_data
- 
-    # @last_erg_data.setter
-    # def last_erg_data(self, value: dict) -> None:
-    #     self.simulation.last_erg_data = value
- 
+    def clear_history(self) -> None:
+        self.history.clear()
+
+    def history_is_empty(self) -> bool:
+        return self.history.is_empty()
+
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
  
