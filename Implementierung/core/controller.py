@@ -1,7 +1,8 @@
 from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
-from   core.history     import HistoryManager
+from   core.history     import HistoryManager, HistoryEntry
+from   core.analyzer    import Analyzer, ErgodicityResult
 from   typing           import Callable
 import math
 import random
@@ -17,6 +18,7 @@ class Controller:
         self.config      = SimConfig()
         self.simulation  = MonteCarloSim()
         self.history     = HistoryManager()
+        self.analyzer    = Analyzer()
         self._setup()
 
     def _setup(self) -> None:
@@ -114,6 +116,9 @@ class Controller:
     def add_history_entry(self, result: list) -> None:
         self.history.add(result, self.config)
 
+    def get_history_entry(self, index: int) -> HistoryEntry:
+        return self.history.get(index)
+
     def get_history_entries(self) -> list:
         return self.history.all()
 
@@ -125,6 +130,16 @@ class Controller:
 
     def history_is_empty(self) -> bool:
         return self.history.is_empty()
+
+#-------------------------------------------------------------------------
+# Analyse auf Ergebnis (-> analyzer.py)
+
+    def calculate_ergodicity(self, index: int) -> ErgodicityResult:
+        '''Untersucht ergodisches Verhalten eines Prozesses.'''
+        entry = self.get_history_entry(index)
+        result = self.analyzer.calculate_ergodicity(entry.result)
+        entry.erg_result = result   # Ergebnis hinzufügen
+        return result
 
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
