@@ -2,10 +2,11 @@ from ui.utils.display   import clear_cli, print_heading, print_thin_separation, 
 from ui.utils.errors    import show_error, cli_blocking_message
 from ui.utils.input     import input_float, input_int, input_confirm
 from ui.utils.progress  import print_progress_bar, Spinner
-from ui.help            import help_three_types, help_full, help_settings
+from ui.help            import help_three_types, help_full, help_ergodicity
 from ui.plots           import show
 from core.config        import SimConfig
 from core.controller    import Controller
+from core.history       import HistoryEntry
 #=========================================================================
 class CLI:
 
@@ -112,7 +113,7 @@ class CLI:
                 break
         
     def _menu_history(self):
-        if self.controller.history.is_empty():
+        if self.controller.history_is_empty():
             cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
             return
 
@@ -128,17 +129,17 @@ class CLI:
             choice = input("> ").strip().lower()
 
             if choice == "1":
-                entry = self._menu_pick_history_entry()
+                entry, idx = self._menu_pick_history_entry()
                 if entry:
-                    self._menu_result(entry.result, entry.config)
+                    self._menu_result(entry, idx)
 
             elif choice == "2":
-                entry = self._menu_pick_history_entry()
+                entry, idx = self._menu_pick_history_entry()
                 if entry:
                     self._menu_export(entry.result)
 
             elif choice == "3":
-                idx = self._menu_pick_history_entry(return_index=True)
+                entry, idx = self._menu_pick_history_entry()
                 if idx is not None:
                     self.controller.delete_history_entry(idx)
                     print("\nEntry deleted.")
@@ -156,7 +157,7 @@ class CLI:
             elif choice == "c":
                 break
 
-    def _menu_pick_history_entry(self, return_index: bool = False):
+    def _menu_pick_history_entry(self) -> tuple[HistoryEntry, int] | tuple[None, None]:
         '''
         Zeigt alle History-Einträge an und lässt den Nutzer einen auswählen.
         Gibt den Eintrag zurück, oder den Index wenn return_index=True.
@@ -165,34 +166,32 @@ class CLI:
 
         # Ein Eintrag: direkte Rückgabe
         if len(entries) == 1:
-            return 0 if return_index else entries[0]
+            return entries[0], 0
 
         print_heading("SELECT RESULT")
         for i, entry in enumerate(entries, start=1):
             cfg = entry.config
-            print(f"{i} - {cfg.transition_name} | "
-                f"{cfg.n_paths} paths × {cfg.n_steps} steps | "
-                f"seed {cfg.seed}")
+            print(f"{i} - {cfg.transition_name} | {cfg.n_paths} paths × {cfg.n_steps} steps | seed {cfg.seed}")
         print("C - Cancel")
         print_thin_separation(linebreak=False)
         choice = input("> ").strip().lower()
 
         if choice == "c":
-            return None
+            return None, None
 
         try:
             idx = int(choice) - 1
         except ValueError:
             show_error("InputError", "Enter a number or C.")
-            return None
+            return None, None
 
         if 0 <= idx < len(entries):
-            return idx if return_index else entries[idx]
-
+            return entries[idx], idx
+        
         show_error("InputError", "Invalid choice.")
-        return None
+        return None, None
 
-    def _menu_result(self, result: list, config: SimConfig):
+    def _menu_result(self, entry: HistoryEntry, index: int):
         while True:
             print_heading("RESULT")
             print("1 - Print summary")
@@ -206,32 +205,40 @@ class CLI:
             choice = input("> ").strip().lower()
  
             if choice == "1":
-                self._show_result_terminal(result)
+                self._show_result_terminal(entry, index)
             elif choice == "2":
-                self._show_full_result_terminal(result)
+                self._show_full_result_terminal(entry, index)
             elif choice == "3":
-                show(result, "sample_paths", config)
+                show(entry.result, "sample_paths", entry.config)
             elif choice == "4":
-                show(result, "mean_volatility", config)
+                show(entry.result, "mean_volatility", entry.config)
             elif choice == "5":
-                show(result, "final_dist", config)
+                show(entry.result, "final_dist", entry.config)
             elif choice == "6":
-                self._menu_ergodicity(result)
+                self._menu_ergodicity(entry, index)
             elif choice == "c":
                 break
  
     def _menu_export(self, result: list):
         pass # später implementieren. Z.B. als PDF mit allen drei Garfiken etc. Klasse Exporter dann im Controller bei Bedarf initialisiert (lazy)
 
-    def _menu_ergodicity(self, result: list):
-        spinner = Spinner()
-        spinner.start("Calculating ergodicity")
-        erg_data = 1#calculate_ergodicity(result)
-        spinner.stop()
-        self.controller.last_erg_data = erg_data
- 
+    def _menu_ergodicity(self, entry: HistoryEntry, index: int):
+        if entry.erg_result is None:    # Langfristig: sollte CLI über Status entscheiden?
+            spinner = Spinner()
+            print()
+            spinner.start("Calculating ergodicity")
+            try:
+                entry.erg_result = self.controller.calculate_ergodicity(index)
+            except Exception as e:
+                spinner.stop()
+                show_error("Error", str(e))
+                return
+            spinner.stop()
+
+        erg_data = entry.erg_result
+
         while True:
-            print_heading("ERGODICITY")
+            print_heading("ERGODICITY DATA")
             print("1 - Show ergodicity data")
             print("2 - Heuristic check")
             print("H - Help")
@@ -241,25 +248,17 @@ class CLI:
  
             if choice == "1":
                 print_heading("ERGODICITY DATA")
-                print(f"Ensemble Mean:       {erg_data['ensemble_mean']:.4f}")
-                print(f"Mean of Time Means:  {erg_data['time_mean_mean']:.4f}")
-                print(f"Std of Time Means:   {erg_data['time_mean_std']:.4f}")
-                print(f"Number of Paths:     {len(erg_data['time_means'])}")
+                print(f"Ensemble Mean:       {erg_data.ensemble_mean:.4f}")
+                print(f"Mean of Time Means:  {erg_data.time_mean_mean:.4f}")
+                print(f"Std of Time Means:   {erg_data.time_mean_std:.4f}")
+                print(f"Number of Paths:     {len(erg_data.time_means)}")
                 enter_continue()
             elif choice == "2":
-                result_str = "ergodic" if erg_data["ergodic_heuristic"] else "not ergodic"
+                result_str = "ergodic" if erg_data.ergodic_heuristic else "not ergodic"
                 print(f"\nProcess is {result_str} (heuristic).")
                 enter_continue()
             elif choice == "h":
-                print_heading("HELP: ERGODICITY")
-                print(
-                    "Ergodicity describes whether time averages equal ensemble averages.\n"
-                    "A process is ergodic if observing a single system over sufficient time\n"
-                    "yields the same statistical properties as observing many identical\n"
-                    "systems at one moment. In non-ergodic systems, individual trajectories\n"
-                    "matter: long-term outcomes depend on path history, not just expected values."
-                )
-                enter_continue()
+                help_ergodicity()
             elif choice == "c":
                 break
  
@@ -269,12 +268,15 @@ class CLI:
     def _run_simulation(self):
         clear_cli()
         try:
-            result = self.controller.run_simulation(on_progress=print_progress_bar)
+            self.controller.run_simulation(on_progress=print_progress_bar)
         except ValueError as e:
             show_error("SimulationError", str(e))
             return
-        self._menu_result(result, self.controller.config)
- 
+
+        last_index = len(self.controller.get_history_entries()) - 1     # Index
+        entry = self.controller.get_history_entries()[last_index]       # Eintrag
+        self._menu_result(entry, last_index)                            # Ergebnismenü
+
 #-------------------------------------------------------------------------
 # Einstellungsmenüs
 
@@ -384,14 +386,15 @@ class CLI:
         print(f"  Seed:         {self.controller.config.seed}")
         print(f"  Datapoints:   {self.controller.config.datapoint_count()}")
  
-    def _show_result_terminal(self, result: list):
+    def _show_result_terminal(self, entry: HistoryEntry, index: int):
+        result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
         print(f"Paths:   {len(result)}")
         print(f"Steps:   {len(result[0]) if result else 0}")
         print(f"First path (first 10 values): {result[0][:10] if result else '—'}")
         enter_continue()
 
-    def _show_full_result_terminal(self, result: list):
+    def _show_full_result_terminal(self, entry: HistoryEntry, index: int):
         print_heading("RESULT DATA (FULL)")
-        print(result)
+        print(entry.result)
         enter_continue()
