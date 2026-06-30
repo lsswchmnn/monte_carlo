@@ -33,3 +33,14 @@ def help_three_types():
     print("    The process is non-stationary and self-modifying.\n")
 
     enter_continue("Press enter to return to the settings")
+
+def help_ergodicity():
+    print_heading("HELP-MENU")
+    print(
+    "Ergodicity describes whether time averages equal ensemble averages.\n"
+    "A process is ergodic if observing a single system over sufficient time\n"
+    "yields the same statistical properties as observing many identical\n"
+    "systems at one moment. In non-ergodic systems, individual trajectories\n"
+    "matter: long-term outcomes depend on path history, not just expected values."
+    )
+    enter_continue()
