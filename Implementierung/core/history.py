@@ -1,5 +1,6 @@
-from dataclasses import dataclass, replace
-from core.config import SimConfig
+from dataclasses        import dataclass, replace
+from core.config        import SimConfig
+from core.analyzer    import ErgodicityResult
 #=========================================================================
 # HistoryManager
 # Verantwortlichkeit: Ergebnisse während runtime halten.
@@ -7,8 +8,9 @@ from core.config import SimConfig
 #=========================================================================
 @dataclass
 class HistoryEntry:
-    result : list
-    config : SimConfig
+    result      : list
+    config      : SimConfig
+    erg_result  : ErgodicityResult | None = None    # Ergodizität optoinal
 
 #=========================================================================
 class HistoryManager:
