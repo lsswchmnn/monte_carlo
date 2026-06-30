@@ -17,5 +17,6 @@ if __name__ == "__main__":
         if choice == "1":
             cli = CLI(controller)
             cli.run()
+            break
         elif choice == "c":
             break
