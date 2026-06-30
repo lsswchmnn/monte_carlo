@@ -3,7 +3,7 @@ from ui.utils.display import print_thin_separation
 #=========================================================================
 
 def input_int(min_value: int=0, max_value: int=10000, default: int=100, 
-        forbidden: list = [], msg: str="value", loop: bool = True,
+        forbidden: list = None, msg: str="value", loop: bool = True,
         error: bool=True) -> int | None:
     
     if forbidden is None:
@@ -67,7 +67,7 @@ def input_int(min_value: int=0, max_value: int=10000, default: int=100,
         return value
 
 def input_float(min_value: float=0, max_value: float=10000, default: float=100, 
-                forbidden: list = [], msg: str="value", loop: bool=True,
+                forbidden: list = None, msg: str="value", loop: bool=True,
                 error: bool=True) -> float:
     if forbidden is None:
         forbidden = []
