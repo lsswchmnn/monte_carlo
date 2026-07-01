@@ -1,11 +1,10 @@
-from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY
+from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY, TRANSITION_REGISTRY_ND, START_STATE_REGISTRY_ND
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
 from   core.analyzer    import Analyzer, ErgodicityResult
 from   typing           import Callable
-import math
-import random
+import math, random
 #=========================================================================
 # Controller
 # Verantwortlichkeit: Koordination aller Kernkomponenten und Zustandsver-
@@ -35,14 +34,15 @@ class Controller:
         self.config.transition_name   = default_transition["name"]
 
 #-------------------------------------------------------------------------
-# Konfiguration
+# Allgemeine Konfiguration
 
     def set_start_state(self, key: str) -> None:
         '''Setzt den Startzustand anhand eines Registry-Keys.'''
         try:
-            entry = START_STATE_REGISTRY[key]
-            self.config.start_state_fn      = entry["fn"]
-            self.config.start_state_name    = entry["name"]
+            registry = self._start_state_registry()
+            entry = registry[key]
+            self.config.start_state_fn   = entry["fn"]
+            self.config.start_state_name = entry["name"]
         except Exception:
             raise
 
@@ -51,10 +51,11 @@ class Controller:
         Setzt Prozesstyp und Übergangsfunktion anhand von Registry-Keys.
         '''
         try:
-            entry = TRANSITION_REGISTRY[process_type][key]
-            self.config.process_type        = process_type
-            self.config.transition_fn       = entry["fn"]
-            self.config.transition_name     = entry["name"]
+            registry = self._transition_registry()    # gibt je nach dimensionality die richtige zurück
+            entry = registry[process_type][key]
+            self.config.process_type    = process_type
+            self.config.transition_fn   = entry["fn"]
+            self.config.transition_name = entry["name"]
         except Exception:
             raise
  
@@ -69,15 +70,46 @@ class Controller:
         self.config.rng  = random.Random(seed)
 
 #-------------------------------------------------------------------------
+# Dimensionalität (1D oder ND)
+ 
+    def set_dimensionality(self, mode: str, n_dimensions: int = 2) -> None:
+        '''
+        Wechselt zwischen "1d" und "nd".
+        Setzt dabei automatisch passende Defaults zurück.
+        '''
+        if mode not in ("1d", "nd"):
+            raise ValueError(f"Invalid dimensionality: '{mode}'. Use '1d' or 'nd'.")
+
+        self.config.dimensionality = mode
+        self.config.n_dimensions   = n_dimensions
+
+        # Transition und Startzustand auf passende Defaults zurücksetzen
+        if mode == "nd":
+            default_start = START_STATE_REGISTRY_ND["fixed_state_nd"]
+            default_tr    = TRANSITION_REGISTRY_ND["markov"]["random_walk_nd"]
+        else:
+            default_start = START_STATE_REGISTRY["fixed_state"]
+            default_tr    = TRANSITION_REGISTRY["markov"]["random_walk"]
+
+        self.config.start_state_fn   = default_start["fn"]
+        self.config.start_state_name = default_start["name"]
+        self.config.transition_fn    = default_tr["fn"]
+        self.config.transition_name  = default_tr["name"]
+        self.config.process_type     = "markov"
+
+    def get_dimensionality(self) -> str:
+        return self.config.dimensionality
+
+#-------------------------------------------------------------------------
 # Registry-Zugriff
 
     def get_transition_options(self, process_type: str) -> dict:
-        '''Rückgabe aller Transitionsfunktionen eines Prozesstypes.'''
-        return TRANSITION_REGISTRY[process_type]
+        '''Gibt passende Trnasition-Optionen zurück, abhängig von Dimensionalität und Prozesstyp.'''
+        return self._transition_registry()[process_type]
 
     def get_start_state_options(self) -> dict:
-        '''Rückgabe aller Startzustandsfunktionen.'''
-        return START_STATE_REGISTRY
+        '''Gibt passende Startzustand-Optionen zurück, abhängig von Dimensionalität.'''
+        return self._start_state_registry()
 
 #-------------------------------------------------------------------------
 # Simulation (-> simulation.py)
@@ -96,7 +128,6 @@ class Controller:
                     f"Reduce n_steps or n_paths."
                 )
         
-        self._apply_config()
         result = self.simulation.run(config=self.config, on_progress=on_progress)
         self.add_history_entry(result)
         return result
@@ -136,6 +167,8 @@ class Controller:
 
     def calculate_ergodicity(self, index: int) -> ErgodicityResult:
         '''Untersucht ergodisches Verhalten eines Prozesses.'''
+        if self.config.dimensionality != "1d":
+            raise ValueError("Ergodicity is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
         result = self.analyzer.calculate_ergodicity(entry.result)
         entry.erg_result = result   # Ergebnis hinzufügen
@@ -144,16 +177,16 @@ class Controller:
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
 
-    def _apply_config(self) -> None:
-        '''Überträgt die aktuelle Config auf die Simulation.'''
-        sim = self.simulation
-        cfg = self.config
- 
-        sim.n_steps         = cfg.n_steps
-        sim.n_paths         = cfg.n_paths
-        sim.step_size       = cfg.step_size
-        sim.seed            = cfg.seed
-        sim.rng             = random.Random(cfg.seed)
-        sim.process_type    = cfg.process_type
-        sim.transition_fn   = cfg.transition_fn
-        sim.start_state_fn  = cfg.start_state_fn
+    def _start_state_registry(self) -> dict[str, dict]:
+        '''Gibt die passende Startzustands-Registry zurück, abhängig von Dimensionalität.'''
+        if self.config.dimensionality == "1d":
+            return START_STATE_REGISTRY
+        else:
+            return START_STATE_REGISTRY_ND
+
+    def _transition_registry(self) -> dict[str, dict]:
+        '''Gibt die passende Transition-Registry zurück, abhängig von Dimensionalität.'''
+        if self.config.dimensionality == "1d":
+            return TRANSITION_REGISTRY
+        else:
+            return TRANSITION_REGISTRY_ND
