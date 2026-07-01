@@ -1,15 +1,20 @@
 D:\Lasse\Documents\1projekte\informatik\monte_carlo
 ├── Implementierung
 │   ├── core
+│   │   ├── analyzer.py
 │   │   ├── config.py
 │   │   ├── controller.py
-│   │   ├── ergodicity.py
+│   │   ├── history.py
 │   │   └── simulation.py
 │   ├── process
-│   │   ├── transitions
+│   │   ├── transitions_1d
 │   │   │   ├── adaptive.py
 │   │   │   ├── markov.py
 │   │   │   └── variational.py
+│   │   ├── transitions_nd
+│   │   │   ├── adaptive_nd.py
+│   │   │   ├── markov_nd.py
+│   │   │   └── variational_nd.py
 │   │   ├── registry.py
 │   │   └── start_states.py
 │   ├── ui
@@ -19,7 +24,7 @@ D:\Lasse\Documents\1projekte\informatik\monte_carlo
 │   │   │   ├── input.py
 │   │   │   └── progress.py
 │   │   ├── cli.py
-│   │   └── help.py
-│   ├── graph.py
+│   │   ├── help.py
+│   │   └── plots.py
 │   └── main.py
 └── README.md
