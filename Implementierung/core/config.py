@@ -9,8 +9,8 @@ import random
 @dataclass
 class SimConfig:
     
-    seed        : int   = 42
-    rng: random.Random  = field(init=False)  # Intern gesetzt
+    seed : int            = 42
+    rng  : random.Random  = field(init=False)  # Intern gesetzt
 
     def __post_init__(self):
         self.rng = random.Random(self.seed)  # Aus Seed ableiten
@@ -19,6 +19,10 @@ class SimConfig:
     n_steps     : int   = 1000
     n_paths     : int   = 100
     step_size   : float = 1.0
+
+    # Dimensionalität
+    dimensionality : str = "1d"  # "1d" | "nd"
+    n_dimensions   : int = 2     # Nur relevant wenn dimensionality == "nd"
 
     # Prozess (siehe process/)
     process_type      : str      | None = None
