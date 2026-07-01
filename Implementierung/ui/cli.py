@@ -80,32 +80,35 @@ class CLI:
     def _menu_sim_settings(self):
         while True:
             print_heading("SIMULATION SETTINGS")
-            print(f"1 - Startstate (Current: {self.controller.config.start_state_name})")
-            print(f"2 - Transition (Current: {self.controller.config.transition_name})")
-            print(f"3 - Paths      (Current: {self.controller.config.n_paths})")
-            print(f"4 - Steps      (Current: {self.controller.config.n_steps})")
-            print(f"5 - Step size  (Current: {self.controller.config.step_size})")
-            print(f"6 - Seed       (Current: {self.controller.config.seed})")
+            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensionality()})")
+            print(f"2 - Startstate      (Current: {self.controller.config.start_state_name})")
+            print(f"3 - Transition      (Current: {self.controller.config.transition_name})")
+            print(f"4 - Paths           (Current: {self.controller.config.n_paths})")
+            print(f"5 - Steps           (Current: {self.controller.config.n_steps})")
+            print(f"6 - Step size       (Current: {self.controller.config.step_size})")
+            print(f"7 - Seed            (Current: {self.controller.config.seed})")
             print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
             print()
 
             if choice == "1":
-                self._settings_startstate()
+                self.controller.set_dimensionality(mode=("1d" if self.controller.get_dimensionality() == "nd" else "nd"))
             elif choice == "2":
+                self._settings_startstate()
+            elif choice == "3":
                 self._settings_transition()
 
-            elif choice == "3":
+            elif choice == "4":
                 n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", error=False)
                 self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
-            elif choice == "4":
+            elif choice == "5":
                 n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", error=False)
                 self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
-            elif choice == "5":
+            elif choice == "6":
                 step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", error=False)
                 self.controller.set_parameters(self.controller.config.n_steps, self.controller.config.n_paths, step_size)
-            elif choice == "6":
+            elif choice == "7":
                 seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", error=False)
                 self.controller.set_seed(seed)
 
@@ -231,7 +234,7 @@ class CLI:
                 entry.erg_result = self.controller.calculate_ergodicity(index)
             except Exception as e:
                 spinner.stop()
-                show_error("Error", str(e))
+                cli_blocking_message("COULD NOT CALCULATE ERGODICITY", "CalculatingError", str(e))
                 return
             spinner.stop()
 
