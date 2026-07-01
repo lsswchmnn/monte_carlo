@@ -1,15 +1,16 @@
-from process.transitions    import markov, variational, adaptive
+from process.transitions_1d import markov, variational, adaptive
+from process.transitions_nd import markov_nd, variational_nd, adaptive_nd
 from process                import start_states
 #=========================================================================
 # Zentrales Register: Metadaten und Funktionsreferenz an einem Ort.
-# Die CLI und MonteCarloSim importieren nur noch von hier.
+# Für 1D- und ND-Transitions und Startzustände.
 #
 # Struktur pro Eintrag:
 #   "fn"   → direkte Referenz auf Funktion
 #   "name" → Anzeigename
 #   "desc" → Beschreibung für den Nutzer
 #=========================================================================
-TRANSITION_REGISTRY:  dict[str, dict] = {
+TRANSITION_REGISTRY:     dict[str, dict] = {
     "markov": {
         "random_walk": {
             "fn":   markov.random_walk,
@@ -111,7 +112,7 @@ TRANSITION_REGISTRY:  dict[str, dict] = {
         },
     },
 }
-START_STATE_REGISTRY: dict[str, dict] = {
+START_STATE_REGISTRY:    dict[str, dict] = {
     "fixed_state": {
         "fn":   start_states.fixed_state,
         "name": "Fixed State",
@@ -121,5 +122,49 @@ START_STATE_REGISTRY: dict[str, dict] = {
         "fn":   start_states.random_state,
         "name": "Random State",
         "desc": "Every path starts at a random value drawn from N(0, 1).",
+    },
+}
+TRANSITION_REGISTRY_ND:  dict[str, dict] = {
+    "markov": {
+        "random_walk_nd": {
+            "fn":   markov_nd.random_walk_nd,
+            "name": "Random Walk (ND)",
+            "desc": (
+                "At each step, moves by ±step_size along one randomly "
+                "chosen axis. Direct n-dimensional analogue of the 1D random walk."
+            ),
+        },
+    },
+    "variational": {
+        "variational_baseline_nd": {
+            "fn":   variational_nd.variational_baseline_nd,
+            "name": "Variational Baseline (ND)",
+            "desc": (
+                "N-dimensional analogue of the variational baseline: weak "
+                "feedback toward the path mean, applied independently per axis."
+            ),
+        },
+    },
+    "adaptive": {
+        "adaptive_random_walk_nd": {
+            "fn":   adaptive_nd.adaptive_random_walk_nd,
+            "name": "Adaptive Random Walk (ND)",
+            "desc": (
+                "N-dimensional analogue of the adaptive random walk: random axis, "
+                "random sign, trivial step counter as placeholder."
+            ),
+        },
+    },
+}
+START_STATE_REGISTRY_ND: dict[str, dict] = {
+    "fixed_state_nd": {
+        "fn":   start_states.fixed_state_nd,
+        "name": "Fixed State (ND)",
+        "desc": "Every path starts at the origin (0, 0, ..., 0).",
+    },
+    "random_state_nd": {
+        "fn":   start_states.random_state_nd,
+        "name": "Random State (ND)",
+        "desc": "Every path starts at a random point, each axis drawn from N(0, 1).",
     },
 }
