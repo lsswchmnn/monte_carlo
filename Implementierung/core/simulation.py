@@ -15,20 +15,27 @@ class MonteCarloSim:
         Startet Simulation für gesetzten process_type. 
         '''
         runners = {
-            "markov": self._run_markov,
-            "variational": self._run_variational,
-            "adaptive": self._run_adaptive
+            "markov":       self._run_markov,
+            "variational":  self._run_variational,
+            "adaptive":     self._run_adaptive
         }
 
         runner = runners.get(config.process_type)
         if runner is None:
             raise ValueError(f"Unknown process type: '{config.process_type}")
-        
-        # History zurücksetzen
-        self.last_result    = None
-        self.last_erg_data  = None
 
         return runner(config, on_progress)
+
+#-------------------------------------------------------------------------
+# Hilfsmethode: Startzustand erzeugen (Privat)
+
+    @staticmethod
+    def _init_state(config: SimConfig):
+        '''Erzeugt passenden Startzustand, abhängig von Dimensionalität.'''
+        if config.dimensionality == "nd":
+            return config.start_state_fn(config.rng, n_dimensions=config.n_dimensions)
+        else:
+            return config.start_state_fn(config.rng)
 
 #-------------------------------------------------------------------------
 # Run-Methoden (Privat)
@@ -38,7 +45,7 @@ class MonteCarloSim:
 
         for i in range(config.n_paths):
             path = []
-            x = config.start_state_fn(config.rng)
+            x = self._init_state(config)
 
             for _ in range(config.n_steps):
                 path.append(x)
@@ -57,7 +64,7 @@ class MonteCarloSim:
 
         for i in range(config.n_paths):
             path = []
-            x = config.start_state_fn(config.rng)
+            x = self._init_state(config)
 
             for t in range(config.n_steps):
                 path.append(x)
@@ -83,7 +90,7 @@ class MonteCarloSim:
 
         for i in range(config.n_paths):
             path = []
-            x = config.start_state_fn(config.rng)
+            x = self._init_state(config)
             adaptive_state = {}
 
             for t in range(config.n_steps):
