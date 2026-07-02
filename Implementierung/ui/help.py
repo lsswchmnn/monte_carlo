@@ -1,11 +1,11 @@
 from ui.utils.display import print_heading, enter_continue
 
 def help_full():
-    print_heading("HELP-MENU")
+    print_heading("HELP MENU")
     print("...")
 
 def help_settings():
-    print_heading("HELP-MENU")
+    print_heading("HELP MENU")
     print("You can not only change the simulations parameters, but also the programs settings:\n")
     print(" 1. Seed:")
     print("    Parameter which determines the outcomes of the functions. You can recreate and confirm past results when using the same seed.")
@@ -13,7 +13,7 @@ def help_settings():
     print("    You can change how the simulations chooses the starting point.")
 
 def help_three_types():
-    print_heading("HELP-MENU")
+    print_heading("HELP MENU")
     print("You can choose several transition rules from three categories:\n")
 
     print(" 1. Markov Process:")
@@ -35,7 +35,7 @@ def help_three_types():
     enter_continue("Press enter to return to the settings")
 
 def help_ergodicity():
-    print_heading("HELP-MENU")
+    print_heading("HELP MENU")
     print(
     "Ergodicity describes whether time averages equal ensemble averages.\n"
     "A process is ergodic if observing a single system over sufficient time\n"
