@@ -27,8 +27,26 @@ def _add_label(config: SimConfig) -> None:
 # Entry-Point
  
 def show(result: list, plot_type: str, config: SimConfig) -> None:
+    '''
+    Verteilt auf die passende Plot-Funktion abhängig von Dimensionalität
+    und Plot-Typ.
+    '''
+    # ND Plotting
+    if config.dimensionality == "nd":
+        if plot_type == "sample_paths":
+            if config.n_dimensions == 2:
+                _plot_paths_2d(result, config)
+            elif config.n_dimensions == 3:
+                _plot_paths_3d(result, config)
+            else:
+                raise ValueError(f"Plotting not supported for {config.n_dimensions}D.")
+        else:
+            raise ValueError(f"Plot type '{plot_type}' is not available for ND results.")
+        return
+
+    # 1D Plotting
     plots = {
-        "sample_paths":    _plot_paths,
+        "sample_paths":    _plot_paths_1d,
         "mean_volatility": _plot_mean_and_std,
         "final_dist":      _plot_final_distribution,
     }
@@ -40,7 +58,7 @@ def show(result: list, plot_type: str, config: SimConfig) -> None:
 #-------------------------------------------------------------------------
 # Private Plotting-Funktionen
 
-def _plot_paths(paths: List[List[float]], config: SimConfig) -> None:
+def _plot_paths_1d(paths: List[List[float]], config: SimConfig) -> None:
     for path in paths:
         plt.plot(_smooth_path(path), alpha=ALPHA)
 
@@ -50,7 +68,46 @@ def _plot_paths(paths: List[List[float]], config: SimConfig) -> None:
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
     plt.show()
+
+def _plot_paths_2d(paths: list, config: SimConfig) -> None:
+    '''
+    Zeichnet alle Sample Paths im 2D-Raum.
+    x- und y-Achse sind die beiden Dimensionen, Zeit ist implizit der Verlauf.
+    Startpunkt als Marker hervorgehoben.
+    '''
+    for path in paths:
+        coords = np.array(path)         # shape: (n_steps, 2)
+        plt.plot(coords[:, 0], coords[:, 1], alpha=ALPHA, linewidth=0.8)
+        plt.plot(coords[0, 0], coords[0, 1],                   # Startpunkt
+                 marker="o", markersize=3, color="black", alpha=ALPHA)
  
+    plt.title("All Sample Paths (2D)")
+    plt.xlabel("Dimension 1")
+    plt.ylabel("Dimension 2")
+    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
+    plt.axis("equal")                   # gleiche Skalierung beider Achsen
+    _add_label(config)
+    plt.show()
+
+def _plot_paths_3d(paths: list, config: SimConfig) -> None:
+    '''
+    Zeichnet alle Sample Paths im 3D-Raum.
+    Drei Dimensionen auf x/y/z-Achsen, Zeit implizit als Verlauf der Linie.
+    '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+ 
+    for path in paths:
+        coords = np.array(path)         # shape: (n_steps, 3)
+        ax.plot(coords[:, 0], coords[:, 1], coords[:, 2],
+                alpha=ALPHA, linewidth=0.8)
+ 
+    ax.set_title("All Sample Paths (3D)")
+    ax.set_xlabel("Dimension 1")
+    ax.set_ylabel("Dimension 2")
+    ax.set_zlabel("Dimension 3")
+    plt.show()
+
 def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
     data = np.array(paths)
     mean = data.mean(axis=0)
