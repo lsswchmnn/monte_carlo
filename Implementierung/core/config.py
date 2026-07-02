@@ -22,7 +22,7 @@ class SimConfig:
 
     # Dimensionalität
     dimensionality : str = "1d"  # "1d" | "nd"
-    n_dimensions   : int = 2     # Nur relevant wenn dimensionality == "nd"
+    n_dimensions   : int = 1
 
     # Prozess (siehe process/)
     process_type      : str      | None = None
