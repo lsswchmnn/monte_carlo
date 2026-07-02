@@ -1,11 +1,14 @@
-from ui.utils.display   import clear_cli, print_heading, print_thin_separation, enter_continue
-from ui.utils.errors    import show_error, cli_blocking_message
-from ui.utils.input     import input_float, input_int, input_confirm
-from ui.utils.progress  import print_progress_bar, Spinner
-from ui.help            import help_three_types, help_full, help_ergodicity
-from ui.plots           import show
-from core.controller    import Controller
-from core.history       import HistoryEntry
+from   ui.utils.display   import clear_cli, print_heading, print_thin_separation, enter_continue
+from   ui.utils.errors    import show_error, cli_blocking_message
+from   ui.utils.input     import input_float, input_int, input_confirm
+from   ui.utils.progress  import print_progress_bar, Spinner
+from   ui.help            import help_three_types, help_full, help_ergodicity
+from   ui.plots           import show
+from   core.controller    import Controller
+from   core.history       import HistoryEntry
+from   pathlib            import Path
+from   tkinter            import filedialog
+import tkinter            as     tk
 #=========================================================================
 class CLI:
 
@@ -126,32 +129,41 @@ class CLI:
                 break
         
     def _menu_history(self):
-        if self.controller.history_is_empty():
-            cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
-            return
-
         while True:
             print_heading("HISTORY")
             print(f"Number of results: {len(self.controller.get_history_entries())}\n")
             print("1 - Show result")
             print("2 - Export result")
-            print("3 - Delete entry")
-            print("4 - Clear all")
+            print("3 - Import result")
+            print("4 - Delete entry")
+            print("5 - Clear all")
             print("C - Cancel")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
             if choice == "1":
+                if self.controller.history_is_empty():
+                    cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
+                    return
                 entry, idx = self._menu_pick_history_entry()
                 if entry:
                     self._menu_result(entry, idx)
 
             elif choice == "2":
+                if self.controller.history_is_empty():
+                    cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
+                    return
                 entry, idx = self._menu_pick_history_entry()
                 if entry:
                     self._menu_export(entry, idx)
 
-            elif choice == "3":
+            elif choice == "3": 
+                self._menu_import()
+
+            elif choice == "4":
+                if self.controller.history_is_empty():
+                    cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
+                    return
                 entry, idx = self._menu_pick_history_entry()
                 if idx is not None:
                     self.controller.delete_history_entry(idx)
@@ -160,7 +172,10 @@ class CLI:
                     if self.controller.history_is_empty():
                         break
 
-            elif choice == "4":
+            elif choice == "5":
+                if self.controller.history_is_empty():
+                    cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
+                    return
                 if input_confirm("Clear all history?", default_true=False):
                     self.controller.clear_history()
                     print("\nHistory cleared.")
@@ -277,6 +292,31 @@ class CLI:
             else:
                 show_error("InputError", "Invalid choice.")
                 enter_continue()
+
+    def _menu_import(self):
+        while True:
+            print_heading("IMPORT")
+            print("1 - Import from JSON")
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                filepath = self._pick_json_file()
+                if filepath is None:
+                    print("\nImport cancelled.")
+                    enter_continue()
+                    return
+
+                try:
+                    self.controller.import_result(filepath)
+                    print(f"\nImported successfully: {filepath.name}")
+                    enter_continue()
+                except Exception as e:
+                    show_error("ImportError", str(e))
+
+            elif choice == "c":
+                return
 
     def _menu_ergodicity(self, entry: HistoryEntry, index: int):
         if entry.erg_result is None:    # Langfristig: sollte CLI über Status entscheiden?
@@ -463,3 +503,17 @@ class CLI:
         print_heading("RESULT DATA (FULL)")
         print(entry.result)
         enter_continue()
+
+#-------------------------------------------------------------------------
+# TKinter-Interaktion
+
+    def _pick_json_file(self) -> Path | None:
+        '''Öffnet nativen Dateidialog zur JSON-Auswahl.'''
+        root = tk.Tk()
+        root.withdraw()
+        path = filedialog.askopenfilename(
+            title="Select result file",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+        root.destroy()
+        return Path(path) if path else None
