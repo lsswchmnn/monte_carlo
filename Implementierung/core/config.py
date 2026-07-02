@@ -33,9 +33,9 @@ class SimConfig:
 
     # Datapoint-limits (Performance; später evtl. abhängig von Hardware)
     max_datapoints : dict = field(default_factory=lambda: {
-        "markov":        100_000_000,
-        "variational":   50_000_000,
-        "adaptive":      50_000_000,
+        "markov":        80_000_000,
+        "variational":   60_000_000,
+        "adaptive":      40_000_000,
     })
 
 #-------------------------------------------------------------------------
@@ -53,7 +53,7 @@ class SimConfig:
         return [name for name, value in checks.items() if value is None]
  
     def datapoint_count(self) -> int:       # Anzahl Datenpunkte
-        return int(self.n_steps * self.n_paths)
+        return int(self.n_steps * self.n_paths * self.n_dimensions)
  
     def exceeds_limit(self) -> bool:        # Datenpunkte unter Limit?
         if self.process_type is None:
