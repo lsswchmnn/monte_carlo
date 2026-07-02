@@ -80,6 +80,16 @@ class CLI:
     def _menu_sim_settings(self):
         while True:
             print_heading("SIMULATION SETTINGS")
+
+            dp = self.controller.config.datapoint_count()
+            limit = self.controller.config.get_limit()
+
+            if limit is None:
+                print(f"⚪ Datapoints: {dp} (Limit: — no process type set)\n")
+            else:
+                symbol = "🟢" if dp <= limit else "🔴"
+                print(f"{symbol} Datapoints: {dp:_} (Limit: {limit:_})\n")
+
             print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()}) ({self.controller.get_dimensionality()})")
             print(f"2 - Startstate      (Current: {self.controller.config.start_state_name})")
             print(f"3 - Transition      (Current: {self.controller.config.transition_name})")
@@ -88,6 +98,7 @@ class CLI:
             print(f"6 - Step size       (Current: {self.controller.config.step_size})")
             print(f"7 - Seed            (Current: {self.controller.config.seed})")
             print("C - Close")
+
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
             print()
