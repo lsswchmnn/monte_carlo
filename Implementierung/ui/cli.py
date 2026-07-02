@@ -80,7 +80,7 @@ class CLI:
     def _menu_sim_settings(self):
         while True:
             print_heading("SIMULATION SETTINGS")
-            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensionality()})")
+            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()}) ({self.controller.get_dimensionality()})")
             print(f"2 - Startstate      (Current: {self.controller.config.start_state_name})")
             print(f"3 - Transition      (Current: {self.controller.config.transition_name})")
             print(f"4 - Paths           (Current: {self.controller.config.n_paths})")
@@ -93,7 +93,7 @@ class CLI:
             print()
 
             if choice == "1":
-                self.controller.set_dimensionality(mode=("1d" if self.controller.get_dimensionality() == "nd" else "nd"))
+                self._settings_dimensions()
             elif choice == "2":
                 self._settings_startstate()
             elif choice == "3":
@@ -195,29 +195,39 @@ class CLI:
         return None, None
 
     def _menu_result(self, entry: HistoryEntry, index: int):
+        is_nd = entry.config.dimensionality == "nd"
+        n_dim = entry.config.n_dimensions
+
         while True:
             print_heading("RESULT")
             print("1 - Print summary")
             print("2 - Print full data")
-            print("3 - Sample paths")
-            print("4 - Mean and volatility")
-            print("5 - Final distribution")
-            print("6 - Ergodicity")
+
+            if not is_nd:
+                print("3 - Sample paths")
+                print("4 - Mean and volatility")
+                print("5 - Final distribution")
+                print("6 - Ergodicity")
+            elif n_dim <= 3:
+                print(f"3 - Sample paths ({n_dim}D)")
+            else:
+                print("  (Plotting not available for >3D)")
+
             print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
- 
+
             if choice == "1":
                 self._show_result_terminal(entry, index)
             elif choice == "2":
                 self._show_full_result_terminal(entry, index)
-            elif choice == "3":
+            elif choice == "3" and (not is_nd or n_dim <= 3):
                 show(entry.result, "sample_paths", entry.config)
-            elif choice == "4":
+            elif choice == "4" and not is_nd:
                 show(entry.result, "mean_volatility", entry.config)
-            elif choice == "5":
+            elif choice == "5" and not is_nd:
                 show(entry.result, "final_dist", entry.config)
-            elif choice == "6":
+            elif choice == "6" and not is_nd:
                 self._menu_ergodicity(entry, index)
             elif choice == "c":
                 break
@@ -376,10 +386,18 @@ class CLI:
             elif choice == "c":
                 return None
 
+    def _settings_dimensions(self):
+        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions")
+        if n_dim > 1:
+            self.controller.set_dimensionality("nd", n_dimensions=n_dim)
+            return
+        self.controller.set_dimensionality("1d", n_dimensions=1)        
+
 #-------------------------------------------------------------------------
 # Anzeige von Einstellungen und Ergebnissen
 
     def _show_simulation_settings(self):
+        print(f"  Dimensions:   {self.controller.config.n_dimensions}")
         print(f"  Start State:  {self.controller.config.start_state_name}")
         print(f"  Transition:   {self.controller.config.transition_name}")
         print(f"  Process Type: {self.controller.config.process_type}")
@@ -392,8 +410,9 @@ class CLI:
     def _show_result_terminal(self, entry: HistoryEntry, index: int):
         result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
-        print(f"Paths:   {len(result)}")
-        print(f"Steps:   {len(result[0]) if result else 0}")
+        print(f"Dimensions: {self.controller.get_dimensions()}")
+        print(f"Paths:      {len(result)}")
+        print(f"Steps:      {len(result[0]) if result else 0}")
         print(f"First path (first 10 values): {result[0][:10] if result else '—'}")
         enter_continue()
 
