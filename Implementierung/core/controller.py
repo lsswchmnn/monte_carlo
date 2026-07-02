@@ -181,7 +181,7 @@ class Controller:
         return result
 
 #-------------------------------------------------------------------------
-# Export (-> exporter.py)
+# Export/Import (-> exporter.py)
 
     @property
     def exporter(self) -> Exporter:
@@ -193,6 +193,11 @@ class Controller:
         '''Exportiert gewählten Eintrag in gewünschtem Format.'''
         entry = self.get_history_entry(index)
         return self.exporter.export(entry.result, entry.config, fmt=fmt, output_dir=output_dir)
+
+    def import_result(self, filepath) -> None:
+        '''Importiert eine JSON-Datei und fügt sie zur History hinzu.'''
+        result, config = self.exporter.import_result(filepath)
+        self.history.add(result, config)
 
     def supported_export_formats(self) -> list[str]:
         return self.exporter.supported_formats()
