@@ -3,7 +3,9 @@ from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
 from   core.analyzer    import Analyzer, ErgodicityResult
+from   exporter         import Exporter          
 from   typing           import Callable
+from   pathlib          import Path
 import math, random
 #=========================================================================
 # Controller
@@ -14,10 +16,11 @@ class Controller:
 
     def __init__(self):
 
-        self.config      = SimConfig()
-        self.simulation  = MonteCarloSim()
-        self.history     = HistoryManager()
-        self.analyzer    = Analyzer()
+        self.config      : SimConfig        = SimConfig()
+        self.simulation  : MonteCarloSim    = MonteCarloSim()
+        self.history     : HistoryManager   = HistoryManager()
+        self.analyzer    : Analyzer         = Analyzer()
+        self._exporter   : Exporter | None  = None
         self._setup()
 
     def _setup(self) -> None:
@@ -176,6 +179,23 @@ class Controller:
         result = self.analyzer.calculate_ergodicity(entry.result)
         entry.erg_result = result   # Ergebnis hinzufügen
         return result
+
+#-------------------------------------------------------------------------
+# Export (-> exporter.py)
+
+    @property
+    def exporter(self) -> Exporter:
+        if self._exporter is None:
+            self._exporter = Exporter()
+        return self._exporter
+    
+    def export_result(self, index: int, fmt: str = "json", output_dir=None) -> Path:
+        '''Exportiert gewählten Eintrag in gewünschtem Format.'''
+        entry = self.get_history_entry(index)
+        return self.exporter.export(entry.result, entry.config, fmt=fmt, output_dir=output_dir)
+
+    def supported_export_formats(self) -> list[str]:
+        return self.exporter.supported_formats()
 
  #-------------------------------------------------------------------------
  # Hilfsmethoden (privat)
