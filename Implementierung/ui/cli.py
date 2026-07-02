@@ -4,7 +4,6 @@ from ui.utils.input     import input_float, input_int, input_confirm
 from ui.utils.progress  import print_progress_bar, Spinner
 from ui.help            import help_three_types, help_full, help_ergodicity
 from ui.plots           import show
-from core.config        import SimConfig
 from core.controller    import Controller
 from core.history       import HistoryEntry
 #=========================================================================
@@ -150,7 +149,7 @@ class CLI:
             elif choice == "2":
                 entry, idx = self._menu_pick_history_entry()
                 if entry:
-                    self._menu_export(entry.result)
+                    self._menu_export(entry, idx)
 
             elif choice == "3":
                 entry, idx = self._menu_pick_history_entry()
@@ -222,7 +221,7 @@ class CLI:
             elif n_dim <= 3:
                 print(f"3 - Sample paths ({n_dim}D)")
             else:
-                print("  (Plotting not available for >3D)")
+                print("    (Plotting not available for >3D)")
 
             print("C - Close")
             print_thin_separation(linebreak=False)
@@ -243,8 +242,41 @@ class CLI:
             elif choice == "c":
                 break
  
-    def _menu_export(self, result: list):
-        pass # später implementieren. Z.B. als PDF mit allen drei Garfiken etc. Klasse Exporter dann im Controller bei Bedarf initialisiert (lazy)
+    def _menu_export(self, entry: HistoryEntry, index: int):
+        while True:
+            print_heading("EXPORT")
+            print(f"Transition: {entry.config.transition_name} | "
+                f"{entry.config.n_paths} paths × {entry.config.n_steps} steps\n")
+            
+            formats = self.controller.supported_export_formats()
+            for i, fmt in enumerate(formats, start=1):
+                print(f"{i} - Export as {fmt.upper()}")
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "c":
+                return
+
+            try:
+                idx = int(choice) - 1
+            except ValueError:
+                show_error("InputError", "Enter a number or C.")
+                continue
+
+            if 0 <= idx < len(formats):
+                fmt = formats[idx]
+                try:
+                    path = self.controller.export_result(index, fmt=fmt)
+                    print(f"\nExported to: {path}")
+                    enter_continue()
+                    return
+                except Exception as e:
+                    show_error("ExportError", str(e))
+                    enter_continue()
+            else:
+                show_error("InputError", "Invalid choice.")
+                enter_continue()
 
     def _menu_ergodicity(self, entry: HistoryEntry, index: int):
         if entry.erg_result is None:    # Langfristig: sollte CLI über Status entscheiden?
