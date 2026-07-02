@@ -100,6 +100,9 @@ class Controller:
     def get_dimensionality(self) -> str:
         return self.config.dimensionality
 
+    def get_dimensions(self) -> int:
+        return self.config.n_dimensions
+
 #-------------------------------------------------------------------------
 # Registry-Zugriff
 
