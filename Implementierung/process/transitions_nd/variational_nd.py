@@ -25,5 +25,5 @@ def variational_baseline_nd(
     else:
         feedback = np.zeros(n_dimensions)
 
-    noise = np.array([rng.gauss(0, step_size) for _ in range(n_dimensions)])
+    noise = np.array([rng.normal(0, step_size) for _ in range(n_dimensions)])
     return x_t + feedback + noise

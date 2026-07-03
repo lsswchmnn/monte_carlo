@@ -25,8 +25,8 @@ def adaptive_random_walk_nd(
             "n_steps": 0,
         }
 
-    direction = rng.randrange(n_dimensions)
-    sign = rng.choice([-1.0, 1.0])
+    direction = int(rng.integers(n_dimensions))
+    sign = rng.choice(np.array([-1.0, 1.0]))
 
     step = np.zeros(n_dimensions)
     step[direction] = sign * adaptive_state["step_size"]

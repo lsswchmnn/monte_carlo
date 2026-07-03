@@ -1,3 +1,4 @@
+import numpy as np
 #=========================================================================
 # TYP 3: 
 # ...
@@ -19,7 +20,7 @@ def adaptive_random_walk(
         }
 
     # stochastischer Schritt (noch völlig klassisch)
-    step = rng.choice([-adaptive_state["step_size"], adaptive_state["step_size"]])
+    step = rng.choice(np.array([-adaptive_state["step_size"], adaptive_state["step_size"]]))
     x_next = x_t + step
 
     # triviale Adaption: Zähler erhöhen (reine Platzhalter-Logik)
@@ -45,8 +46,8 @@ def adaptive_volatility_walk(
         }
 
     # stochastischer Schritt
-    step = rng.choice([-adaptive_state["step_size"],
-                        adaptive_state["step_size"]])
+    step = rng.choice(np.array([-adaptive_state["step_size"],
+                                adaptive_state["step_size"]]))
     x_next = x_t + step
 
     # beobachtete lokale "Volatilität"

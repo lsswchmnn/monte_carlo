@@ -24,7 +24,7 @@ def variational_baseline(
     else:
         feedback = 0.0
 
-    noise = rng.gauss(0, step_size)
+    noise = rng.normal(0, step_size)
 
     return x_t + feedback + noise
 
@@ -69,6 +69,6 @@ def variational_trend_feedback(
     else:
         vol = step_size
 
-    noise = rng.gauss(0, vol)
+    noise = rng.normal(0, vol)
 
     return x_t + feedback + trend + noise

@@ -12,8 +12,8 @@ def random_walk_nd(x_t: np.ndarray, rng, step_size: float = 1.0) -> np.ndarray:
     einer zufällig gewählten Dimension (z.B. Norden/Süden/Osten/Westen in 2D).
     '''
     n_dimensions = len(x_t)
-    direction = rng.randrange(n_dimensions)
-    sign = rng.choice([-1.0, 1.0])
+    direction = int(rng.integers(n_dimensions))
+    sign = rng.choice(np.array([-1.0, 1.0]))
  
     step = np.zeros(n_dimensions)
     step[direction] = sign * step_size
