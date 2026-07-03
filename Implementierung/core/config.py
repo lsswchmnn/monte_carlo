@@ -1,6 +1,6 @@
 from   dataclasses import dataclass, field
 from   typing      import Callable
-import random
+import numpy       as     np
 #=========================================================================
 # SimConfig
 # Verantwortlichkeit: Simulationsparameter und Einstellungen zentralisieren.
@@ -9,11 +9,11 @@ import random
 @dataclass
 class SimConfig:
     
-    seed : int            = 42
-    rng  : random.Random  = field(init=False)  # Intern gesetzt
+    seed : int                  = 42
+    rng  : np.random.Generator  = field(init=False)  # Intern gesetzt
 
     def __post_init__(self):
-        self.rng = random.Random(self.seed)  # Aus Seed ableiten
+        self.rng = np.random.default_rng(self.seed)  # Aus Seed ableiten
 
     # Simulationsparameter
     n_steps     : int   = 1000
