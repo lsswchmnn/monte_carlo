@@ -37,6 +37,7 @@ class SimConfig:
         "variational":   60_000_000,
         "adaptive":      40_000_000,
     })
+    limit_graph_warning : int = 75_000_000
 
 #-------------------------------------------------------------------------
 # Öffentliche Funktionen

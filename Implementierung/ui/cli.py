@@ -248,6 +248,9 @@ class CLI:
             elif choice == "2":
                 self._show_full_result_terminal(entry, index)
             elif choice == "3" and (not is_nd or n_dim <= 3):
+                if entry.config.datapoint_count() > entry.config.limit_graph_warning:
+                    if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?"):
+                        continue
                 show(entry.result, "sample_paths", entry.config)
             elif choice == "4" and not is_nd:
                 show(entry.result, "mean_volatility", entry.config)
