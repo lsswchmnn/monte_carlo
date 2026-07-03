@@ -37,7 +37,41 @@ class Controller:
         self.config.transition_name   = default_transition["name"]
 
 #-------------------------------------------------------------------------
-# Allgemeine Konfiguration
+# Dimensionalität (1D oder ND)
+ 
+    def set_dimensionality(self, mode: str, n_dimensions: int = 2) -> None:
+        '''
+        Wechselt zwischen "1d" und "nd".
+        Setzt dabei automatisch passende Defaults zurück.
+        '''
+        if mode not in ("1d", "nd"):
+            raise ValueError(f"Invalid dimensionality: '{mode}'. Use '1d' or 'nd'.")
+
+        self.config.dimensionality = mode
+        self.config.n_dimensions   = n_dimensions
+
+        # Transition und Startzustand auf passende Defaults zurücksetzen
+        if mode == "nd":
+            default_start = START_STATE_REGISTRY_ND["fixed_state_nd"]
+            default_tr    = TRANSITION_REGISTRY_ND["markov"]["random_walk_nd"]
+        else:
+            default_start = START_STATE_REGISTRY["fixed_state"]
+            default_tr    = TRANSITION_REGISTRY["markov"]["random_walk"]
+
+        self.config.start_state_fn   = default_start["fn"]
+        self.config.start_state_name = default_start["name"]
+        self.config.transition_fn    = default_tr["fn"]
+        self.config.transition_name  = default_tr["name"]
+        self.config.process_type     = "markov"
+
+    def get_dimensionality(self) -> str:
+        return self.config.dimensionality
+
+    def get_dimensions(self) -> int:
+        return self.config.n_dimensions
+
+#-------------------------------------------------------------------------
+# Allgemeine Konfiguration (-> config.py)
 
     def set_start_state(self, key: str) -> None:
         '''Setzt den Startzustand anhand eines Registry-Keys.'''
@@ -73,41 +107,7 @@ class Controller:
         self.config.rng  = np.random.default_rng(seed)
 
 #-------------------------------------------------------------------------
-# Dimensionalität (1D oder ND)
- 
-    def set_dimensionality(self, mode: str, n_dimensions: int = 2) -> None:
-        '''
-        Wechselt zwischen "1d" und "nd".
-        Setzt dabei automatisch passende Defaults zurück.
-        '''
-        if mode not in ("1d", "nd"):
-            raise ValueError(f"Invalid dimensionality: '{mode}'. Use '1d' or 'nd'.")
-
-        self.config.dimensionality = mode
-        self.config.n_dimensions   = n_dimensions
-
-        # Transition und Startzustand auf passende Defaults zurücksetzen
-        if mode == "nd":
-            default_start = START_STATE_REGISTRY_ND["fixed_state_nd"]
-            default_tr    = TRANSITION_REGISTRY_ND["markov"]["random_walk_nd"]
-        else:
-            default_start = START_STATE_REGISTRY["fixed_state"]
-            default_tr    = TRANSITION_REGISTRY["markov"]["random_walk"]
-
-        self.config.start_state_fn   = default_start["fn"]
-        self.config.start_state_name = default_start["name"]
-        self.config.transition_fn    = default_tr["fn"]
-        self.config.transition_name  = default_tr["name"]
-        self.config.process_type     = "markov"
-
-    def get_dimensionality(self) -> str:
-        return self.config.dimensionality
-
-    def get_dimensions(self) -> int:
-        return self.config.n_dimensions
-
-#-------------------------------------------------------------------------
-# Registry-Zugriff
+# Registry-Zugriff (-> process/registry.py)
 
     def get_transition_options(self, process_type: str) -> dict:
         '''Gibt passende Trnasition-Optionen zurück, abhängig von Dimensionalität und Prozesstyp.'''
@@ -140,13 +140,13 @@ class Controller:
         return result
 
     def get_safe_datapoints(self) -> tuple[int, int]:
-            '''
-            Berechnet n_steps und n_paths die das Limit nicht überschreiten.
-            Gibt ein quadratisches (steps, paths) Paar zurück.
-            '''
-            limit = self.config.get_limit()
-            root = math.isqrt(limit)
-            return root, root
+        '''
+        Berechnet n_steps und n_paths die das Limit nicht überschreiten.
+        Gibt ein quadratisches (steps, paths) Paar zurück.
+        '''
+        limit = self.config.get_limit() // max(self.config.n_dimensions, 1) # Dimension berücksichtigen
+        root = math.isqrt(limit)
+        return root, root
 
 #-------------------------------------------------------------------------
 # Ergebniszugriff (-> history.py)
