@@ -1,6 +1,7 @@
-from dataclasses        import dataclass, replace
-from core.config        import SimConfig
-from core.analyzer    import ErgodicityResult
+from   dataclasses    import dataclass, replace
+from   core.config    import SimConfig
+from   core.analyzer  import ErgodicityResult
+import numpy          as     np
 #=========================================================================
 # HistoryManager
 # Verantwortlichkeit: Ergebnisse während runtime halten.
@@ -19,7 +20,7 @@ class HistoryManager:
         self._entries: list[HistoryEntry] = []
 
     def add(self, result: list, config: SimConfig) -> None:
-        snapshot = replace(config)      # flache Kopie der Dataclass
+        snapshot = replace(config, rng=np.random.default_rng(config.seed))      # flache Kopie der Dataclass
         self._entries.append(HistoryEntry(result=result, config=snapshot))
  
     def get(self, index: int) -> HistoryEntry:
