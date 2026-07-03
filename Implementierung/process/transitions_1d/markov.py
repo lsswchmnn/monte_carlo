@@ -6,7 +6,7 @@ import numpy as np
 #=========================================================================
 
 def _size(x_t) -> int | None:
-    """Gibt die Anzahl der Pfade zurück, oder None für skalaren Aufruf."""
+    '''Gibt die Anzahl der Pfade zurück, oder None für skalaren Aufruf.'''
     return len(x_t) if isinstance(x_t, np.ndarray) else None
  
  
