@@ -79,7 +79,6 @@ class MonteCarloSim:
             if on_progress:
                 on_progress(i + 1, config.n_paths)
 
-        self.last_result = all_paths
         return all_paths
 
     def _run_adaptive(self, config: SimConfig, on_progress: Callable | None)-> list:
@@ -108,6 +107,4 @@ class MonteCarloSim:
             if on_progress:
                 on_progress(i + 1, config.n_paths)
 
-        self.last_result = all_paths
-        self.last_adaptive_state = all_adaptive_states
         return all_paths
