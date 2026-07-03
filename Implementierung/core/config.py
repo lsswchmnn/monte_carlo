@@ -33,7 +33,7 @@ class SimConfig:
 
     # Datapoint-limits (Performance; später evtl. abhängig von Hardware)
     max_datapoints : dict = field(default_factory=lambda: {
-        "markov":        80_000_000,
+        "markov":        150_000_000,
         "variational":   60_000_000,
         "adaptive":      40_000_000,
     })

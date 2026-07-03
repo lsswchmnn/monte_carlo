@@ -20,7 +20,8 @@ class HistoryManager:
         self._entries: list[HistoryEntry] = []
 
     def add(self, result: list, config: SimConfig) -> None:
-        snapshot = replace(config, rng=np.random.default_rng(config.seed))      # flache Kopie der Dataclass
+        snapshot = replace(config)
+        snapshot.rng = np.random.default_rng(config.seed)  # saubere Kopie, keine Referenz
         self._entries.append(HistoryEntry(result=result, config=snapshot))
  
     def get(self, index: int) -> HistoryEntry:
