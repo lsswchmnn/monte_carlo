@@ -6,7 +6,7 @@ from   core.analyzer    import Analyzer, ErgodicityResult
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
-import math, random
+import numpy            as     np, math
 #=========================================================================
 # Controller
 # Verantwortlichkeit: Koordination aller Kernkomponenten und Zustandsver-
@@ -70,7 +70,7 @@ class Controller:
 
     def set_seed(self, seed: int) -> None:
         self.config.seed = seed
-        self.config.rng  = random.Random(seed)
+        self.config.rng  = np.random.default_rng(seed)
 
 #-------------------------------------------------------------------------
 # Dimensionalität (1D oder ND)
@@ -202,8 +202,8 @@ class Controller:
     def supported_export_formats(self) -> list[str]:
         return self.exporter.supported_formats()
 
- #-------------------------------------------------------------------------
- # Hilfsmethoden (privat)
+#-------------------------------------------------------------------------
+# Hilfsmethoden (privat)
 
     def _start_state_registry(self) -> dict[str, dict]:
         '''Gibt die passende Startzustands-Registry zurück, abhängig von Dimensionalität.'''
