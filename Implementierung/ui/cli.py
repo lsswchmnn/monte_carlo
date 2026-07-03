@@ -6,6 +6,7 @@ from   ui.help            import help_three_types, help_full, help_ergodicity
 from   ui.plots           import show
 from   core.controller    import Controller
 from   core.history       import HistoryEntry
+from   core.config        import SimConfig
 from   pathlib            import Path
 from   tkinter            import filedialog
 import tkinter            as     tk
@@ -65,7 +66,7 @@ class CLI:
             )
             return
  
-        self._show_simulation_settings()
+        self._show_simulation_settings(config=self.controller.config)
  
         if self.controller.config.exceeds_limit():
             steps, paths = self.controller.get_safe_datapoints()
@@ -368,7 +369,7 @@ class CLI:
         # Wenn Markov: Spinner, da Fortschrittsbalken bei Numpy schwierig ist.
 
         if self.controller.config.process_type == "markov":
-            spinner.start("Simulating")
+            spinner.start("Calculating Trajectories")
             try:
                 self.controller.run_simulation(on_progress=None)
             except ValueError as e:
@@ -494,24 +495,23 @@ class CLI:
 #-------------------------------------------------------------------------
 # Anzeige von Einstellungen und Ergebnissen
 
-    def _show_simulation_settings(self):
-        print(f"  Dimensions:   {self.controller.config.n_dimensions}")
-        print(f"  Start State:  {self.controller.config.start_state_name}")
-        print(f"  Transition:   {self.controller.config.transition_name}")
-        print(f"  Process Type: {self.controller.config.process_type}")
-        print(f"  Paths:        {self.controller.config.n_paths}")
-        print(f"  Steps:        {self.controller.config.n_steps}")
-        print(f"  Step Size:    {self.controller.config.step_size}")
-        print(f"  Seed:         {self.controller.config.seed}")
-        print(f"  Datapoints:   {self.controller.config.datapoint_count()}")
+    def _show_simulation_settings(self, config: SimConfig):
+        '''Zeigt die aktuellen SimConfig-Einstellungen an.''' # Angezeigt bei Simulatinsstart und im Ergebnismenü
+        print(f"  Dimensions:   {config.n_dimensions}")
+        print(f"  Start State:  {config.start_state_name}")
+        print(f"  Transition:   {config.transition_name}")
+        print(f"  Process Type: {config.process_type}")
+        print(f"  Paths:        {config.n_paths}")
+        print(f"  Steps:        {config.n_steps}")
+        print(f"  Step Size:    {config.step_size}")
+        print(f"  Seed:         {config.seed}")
+        print(f"  Datapoints:   {config.datapoint_count():_}")
  
     def _show_result_terminal(self, entry: HistoryEntry, index: int):
         result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
-        print(f"Dimensions: {self.controller.get_dimensions()}")
-        print(f"Paths:      {len(result)}")
-        print(f"Steps:      {len(result[0]) if result else 0}")
-        print(f"First path (first 10 values): {result[0][:10] if result else '—'}")
+        self._show_simulation_settings(config=entry.config)
+        print(f"  First path (first 10 values): {result[0][:10] if result else '—'}")
         enter_continue()
 
     def _show_full_result_terminal(self, entry: HistoryEntry, index: int):
