@@ -1,5 +1,6 @@
-from   core.config      import SimConfig
-from   typing           import Callable
+from   core.config  import SimConfig
+from   typing       import Callable
+import numpy        as     np
 #=========================================================================
 # Simulation
 # Verantwortlichkeit: Pfade berechnen und korrekte run-Methode auswählen.
@@ -40,24 +41,21 @@ class MonteCarloSim:
 #-------------------------------------------------------------------------
 # Run-Methoden (Privat)
 
-    def _run_markov(self, config: SimConfig, on_progress: Callable | None)-> list:
-        all_paths = []
+    def _run_markov(self, config: SimConfig, on_progress: Callable | None) -> list:
+        x = np.array([self._init_state(config) for _ in range(config.n_paths)])
+        # 1D: shape (n_paths,)
+        # ND: shape (n_paths, n_dimensions)
 
-        for i in range(config.n_paths):
-            path = []
-            x = self._init_state(config)
+        if config.dimensionality == "nd":
+            all_steps = np.empty((config.n_steps, config.n_paths, config.n_dimensions))
+        else:
+            all_steps = np.empty((config.n_steps, config.n_paths))
 
-            for _ in range(config.n_steps):
-                path.append(x)
-                x = config.transition_fn(x, config.rng, config.step_size)
-            
-            all_paths.append(path)
+        for t in range(config.n_steps):
+            all_steps[t] = x
+            x = config.transition_fn(x, config.rng, config.step_size)
 
-            if on_progress:
-                on_progress(i + 1, config.n_paths)
-
-        self.last_result = all_paths
-        return all_paths
+        return all_steps.transpose(1, 0, *range(2, all_steps.ndim)).tolist()
 
     def _run_variational(self, config: SimConfig, on_progress: Callable | None)-> list:
         all_paths = []
