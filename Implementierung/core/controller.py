@@ -134,7 +134,8 @@ class Controller:
                     f"Reduce n_steps or n_paths."
                 )
         
-        result = self.simulation.run(config=self.config, on_progress=on_progress)
+        self.config.rng = np.random.default_rng(self.config.seed)                   # RNG-Reset (sont unt. Ergebnisse bei gleicher Seed)
+        result = self.simulation.run(config=self.config, on_progress=on_progress)   # Simulation starten
         self.add_history_entry(result)
         return result
 
