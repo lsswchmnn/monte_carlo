@@ -148,7 +148,7 @@ def input_confirm(msg: str="Are you sure?", default_true: bool=True) -> bool:
     if not default_true:
         if choice == '':
             choice = False
-        if choice == "y" or choice == True or choice == "yes":
+        if choice in ("y", "yes", "true", "ja", "j"):
             return True
         else:
             return False
@@ -156,7 +156,7 @@ def input_confirm(msg: str="Are you sure?", default_true: bool=True) -> bool:
     elif default_true:
         if choice == '':
             choice = True
-        if choice == "n" or choice == False or choice == "no":
+        if choice in ("n", "no", "false", "c", "cancel", "nein"):
             return False
         else:
             return True
