@@ -1,4 +1,4 @@
-from   core.config   import SimConfig
+from   core.config  import SimConfig
 from   pathlib      import Path
 from   datetime     import datetime
 import numpy        as     np
@@ -9,7 +9,6 @@ import csv
 # Verantwortlichkeit: Simulationsergebnisse in verschiedene Formate
 # exportieren. Wird lazy vom Controller gehalten.
 #=========================================================================
-
 class Exporter:
 
     DEFAULT_DIR = Path.home() / "Downloads"
@@ -130,12 +129,12 @@ class Exporter:
         }
 
     @staticmethod
-    def _build_filename(config: SimConfig, format: str) -> str:
+    def _build_filename(config: SimConfig, fmt: str) -> str:
         '''Generiert einen Dateinamen aus Config-Daten.'''
         transition = (config.transition_name or "unknown").lower().replace(" ", "_")
         dim = f"{config.n_dimensions}d" if config.dimensionality == "nd" else "1d"
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        return f"{transition}_{dim}_seed{config.seed}_{config.n_paths}p_{config.n_steps}s_{timestamp}.{format}"
+        return f"{transition}_{dim}_seed{config.seed}_{config.n_paths}p_{config.n_steps}s_{timestamp}.{fmt}"
     
 #-------------------------------------------------------------------------
 # Import
