@@ -362,16 +362,31 @@ class CLI:
 # Ausführung
  
     def _run_simulation(self):
-        clear_cli()
-        try:
-            self.controller.run_simulation(on_progress=print_progress_bar)
-        except ValueError as e:
-            show_error("SimulationError", str(e))
-            return
+        clear_cli()        
+        spinner = Spinner()
 
-        last_index = len(self.controller.get_history_entries()) - 1     # Index
-        entry = self.controller.get_history_entries()[last_index]       # Eintrag
-        self._menu_result(entry, last_index)                            # Ergebnismenü
+        # Wenn Markov: Spinner, da Fortschrittsbalken bei Numpy schwierig ist.
+
+        if self.controller.config.process_type == "markov":
+            spinner.start("Simulating")
+            try:
+                self.controller.run_simulation(on_progress=None)
+            except ValueError as e:
+                spinner.stop()
+                show_error("SimulationError", str(e))
+                enter_continue()
+                return
+            spinner.stop()
+        else:
+            try:
+                self.controller.run_simulation(on_progress=print_progress_bar)
+            except ValueError as e:
+                show_error("SimulationError", str(e))
+                return
+
+        last_index = len(self.controller.get_history_entries()) - 1
+        entry = self.controller.get_history_entries()[last_index]
+        self._menu_result(entry, last_index)
 
 #-------------------------------------------------------------------------
 # Einstellungsmenüs
