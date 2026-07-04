@@ -113,20 +113,29 @@ class CLI:
             elif choice == "3":
                 self._settings_transition()
 
-            elif choice == "4":
-                n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", error=False)
-                self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
-            elif choice == "5":
-                n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", error=False)
-                self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
-            elif choice == "6":
-                step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", error=False)
-                self.controller.set_parameters(self.controller.config.n_steps, self.controller.config.n_paths, step_size)
-            elif choice == "7":
-                seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", error=False)
-                self.controller.set_seed(seed)
+            try:
+                if choice == "4":
+                    n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", error=False)
+                    if n_paths is not None:
+                        self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
+                elif choice == "5":
+                    n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", error=False)
+                    if n_steps is not None:
+                        self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
+                elif choice == "6":
+                    step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", error=False)
+                    if step_size is not None:
+                        self.controller.set_parameters(self.controller.config.n_steps, self.controller.config.n_paths, step_size)
+                elif choice == "7":
+                    seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", error=False)
+                    if seed is not None:
+                        self.controller.set_seed(seed)
 
-            elif choice == "c":
+            except ValueError as e:
+                show_error("InputError", str(e))
+                enter_continue()
+
+            if choice == "c":
                 break
         
     def _menu_history(self):
@@ -177,7 +186,7 @@ class CLI:
                 if self.controller.history_is_empty():
                     cli_blocking_message("HISTORY", "HistoryEmpty", "No simulation results available yet.")
                     return
-                if input_confirm("Clear all history?", default_true=False):
+                if input_confirm("Clear all history?", default_true=False, warn_symbol=True):
                     self.controller.clear_history()
                     print("\nHistory cleared.")
                     enter_continue()
@@ -249,7 +258,7 @@ class CLI:
                 self._show_full_result_terminal(entry, index)
             elif choice == "3" and (not is_nd or n_dim <= 3):
                 if entry.config.datapoint_count() > entry.config.limit_graph_warning:
-                    if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?"):
+                    if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?", warn_symbol=True):
                         continue
                 show(entry.result, "sample_paths", entry.config)
             elif choice == "4" and not is_nd:
@@ -490,6 +499,8 @@ class CLI:
 
     def _settings_dimensions(self):
         n_dim = input_int(1, 100, 1, msg="Input number of Dimensions")
+        if n_dim is None:
+            return
         if n_dim > 1:
             self.controller.set_dimensionality("nd", n_dimensions=n_dim)
             return
