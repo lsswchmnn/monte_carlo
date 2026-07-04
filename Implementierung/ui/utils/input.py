@@ -4,13 +4,16 @@ from ui.utils.display import print_thin_separation
 
 def input_int(min_value: int=0, max_value: int=10000, default: int=100, 
         forbidden: list = None, msg: str="value", loop: bool = True,
-        error: bool=True) -> int | None:
+        error: bool=True, c_cancel: bool = True) -> int | None:
     
     if forbidden is None:
         forbidden = []
 
     while True:
-        raw = input(f"{msg} (min: {min_value}, max: {max_value}): ").strip()
+        raw = input(f"{msg} (min: {min_value}, max: {max_value}): ").strip().lower()
+
+        if c_cancel and raw in ("c", "cancel"):
+            return None
 
         # Input leer?
         if raw == '':
@@ -68,14 +71,17 @@ def input_int(min_value: int=0, max_value: int=10000, default: int=100,
 
 def input_float(min_value: float=0, max_value: float=10000, default: float=100, 
                 forbidden: list = None, msg: str="value", loop: bool=True,
-                error: bool=True) -> float:
+                error: bool=True, c_cancel: bool=True) -> float:
     if forbidden is None:
         forbidden = []
 
     while True:
 
         raw = input(f"{msg} (min: {min_value}, max: {max_value}): ").strip()
-
+        
+        if c_cancel and raw in ("c", "cancel"):
+            return None
+        
         # Input leer?
         if raw == '':
             if error:
@@ -133,17 +139,25 @@ def input_float(min_value: float=0, max_value: float=10000, default: float=100,
 
         return value
 
-def input_str(msg: str="value") -> str:
+def input_str(msg: str="value", c_cancel=False) -> str:
     value = input(f"{msg}: ").strip()
+    
+    if c_cancel and value in ("c", "cancel"):
+        return None
+    
     if value == '':
-        return None    
+        return None
+
     return value
 
-def input_confirm(msg: str="Are you sure?", default_true: bool=True) -> bool:
+def input_confirm(msg: str="Are you sure?", default_true: bool=True, warn_symbol: bool=False) -> bool:
     print()
     print_thin_separation(linebreak=False)
     print()
-    choice = input(f"{msg} (y/n): ").strip().lower()
+    if not warn_symbol:
+        choice = input(f"{msg} (y/n): ").strip().lower()
+    else:
+        choice = input(f"⚠️ {msg} (y/n): ").strip().lower()
 
     if not default_true:
         if choice == '':
