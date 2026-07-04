@@ -20,12 +20,15 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                 "Both directions are equally likely and independent of the past."
             ),
         },
-        "drifted_random_walk": {
-            "fn":   markov.drifted_random_walk,
-            "name": "Drifted Random Walk",
+        "levy_flight": {
+            "fn":   markov.levy_flight,
+            "name": "Lévy Flight",
             "desc": (
-                "A random walk with an added constant drift. "
-                "The process tends to move in one direction over time."
+                "Steps follow a stable distribution with heavy tails. "
+                "Most steps are small, but rare steps are extremely large — "
+                "orders of magnitude larger than typical. "
+                "Controlled by stability index alpha (default 1.5). "
+                "alpha=2 approximates a Gaussian random walk; alpha→0 yields increasingly extreme jumps."
             ),
         },
         "mean_reverting": {
@@ -67,11 +70,6 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                 "The process alternates between normal and high-volatility behavior. "
                 "Transitions between regimes occur randomly."
             ),
-        },
-        "linear_step": {
-            "fn":   markov.linear_step,
-            "name": "Linear Step",
-            "desc": "The state remains constant at every step.",
         },
     },
 
@@ -132,6 +130,15 @@ TRANSITION_REGISTRY_ND:  dict[str, dict] = {
             "desc": (
                 "At each step, moves by ±step_size along one randomly "
                 "chosen axis. Direct n-dimensional analogue of the 1D random walk."
+            ),
+        },
+        "levy_flight_nd": {
+            "fn":   markov_nd.levy_flight_nd,
+            "name": "Lévy Flight (ND)",
+            "desc": (
+                "N-dimensional Lévy Flight. Step length follows a stable distribution, "
+                "direction is uniformly distributed on the n-dimensional unit sphere. "
+                "Stability index alpha=1.5 by default."
             ),
         },
     },
