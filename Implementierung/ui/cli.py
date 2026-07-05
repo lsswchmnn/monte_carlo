@@ -93,7 +93,7 @@ class CLI:
                 symbol = "🟢" if dp <= limit else "🔴"
                 print(f"{symbol} Datapoints: {dp:_} (Limit: {limit:_})\n")
 
-            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()})")
+            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()}D)")
             print(f"2 - Startstate      (Current: {config.start_state_name})")
             print(f"3 - Transition      (Current: {config.transition_name})")
             print(f"4 - Paths           (Current: {config.n_paths})")
@@ -513,7 +513,8 @@ class CLI:
                 return None
 
     def _settings_dimensions(self):
-        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions")
+        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions", error=False)
+
         if n_dim is None:
             return
         if n_dim > 1:
