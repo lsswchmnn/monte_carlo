@@ -2,7 +2,7 @@ from   ui.utils.display   import clear_cli, print_heading, print_thin_separation
 from   ui.utils.errors    import show_error, cli_blocking_message
 from   ui.utils.input     import input_float, input_int, input_confirm
 from   ui.utils.progress  import print_progress_bar, Spinner
-from   ui.help            import help_three_types, help_full, help_ergodicity
+from   ui.help            import help_three_types, help_full, help_ergodicity, help_settings
 from   ui.plots           import show
 from   core.controller    import Controller
 from   core.history       import HistoryEntry
@@ -41,8 +41,6 @@ class CLI:
 
             elif choice == "h":
                 help_full()
-                enter_continue()
-
             elif choice == "c":
                 if not self.controller.history_is_empty():
                     if not input_confirm("Are you sure? Results that are not exported will be lost upon exiting the CLI."):
@@ -102,6 +100,7 @@ class CLI:
             print(f"5 - Steps           (Current: {config.n_steps})")
             print(f"6 - Step size       (Current: {config.step_size})")
             print(f"7 - Seed            (Current: {config.seed})")
+            print("H - Help")
             print("C - Close")
 
             print_thin_separation(linebreak=False)
@@ -137,7 +136,9 @@ class CLI:
                 show_error("InputError", str(e))
                 enter_continue()
 
-            if choice == "c":
+            if choice == "h":
+                help_settings()
+            elif choice == "c":
                 break
 
     def _menu_history(self):
