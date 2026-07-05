@@ -1,7 +1,6 @@
 import numpy as np
 #=========================================================================
-# TYP 1: 
-# Lokale, stochastische Markov-Prozesse in 1D. Zeitdiskret und additiv.
+# TYP 1:  Lokale, stochastische Markov-Prozesse in 1D. Zeitdiskret und additiv.
 #=========================================================================
 # Hilfsfunktionen
 
