@@ -235,6 +235,10 @@ class CLI:
 
         while True:
             print_heading("RESULT")
+
+            if (is_nd and n_dim > 3):
+                print("⚠️ Plotting is not available for >3D.\n")
+
             print("1 - Print summary")
             print("2 - Print full data")
 
@@ -245,8 +249,6 @@ class CLI:
                 print("6 - Ergodicity")
             elif n_dim <= 3:
                 print(f"3 - Sample paths ({n_dim}D)")
-            else:
-                print("    (Plotting not available for >3D)")
 
             print("C - Close")
             print_thin_separation(linebreak=False)
