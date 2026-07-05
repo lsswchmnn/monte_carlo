@@ -81,11 +81,13 @@ class CLI:
             self._run_simulation()
 
     def _menu_sim_settings(self):
+        
         while True:
             print_heading("SIMULATION SETTINGS")
-
-            dp = self.controller.config.datapoint_count()
-            limit = self.controller.config.get_limit()
+            
+            config  = self.controller.config
+            dp      = config.datapoint_count()
+            limit   = config.get_limit()
 
             if limit is None:
                 print(f"⚪ Datapoints: {dp} (Limit: — no process type set)\n")
@@ -94,12 +96,12 @@ class CLI:
                 print(f"{symbol} Datapoints: {dp:_} (Limit: {limit:_})\n")
 
             print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()})")
-            print(f"2 - Startstate      (Current: {self.controller.config.start_state_name})")
-            print(f"3 - Transition      (Current: {self.controller.config.transition_name})")
-            print(f"4 - Paths           (Current: {self.controller.config.n_paths})")
-            print(f"5 - Steps           (Current: {self.controller.config.n_steps})")
-            print(f"6 - Step size       (Current: {self.controller.config.step_size})")
-            print(f"7 - Seed            (Current: {self.controller.config.seed})")
+            print(f"2 - Startstate      (Current: {config.start_state_name})")
+            print(f"3 - Transition      (Current: {config.transition_name})")
+            print(f"4 - Paths           (Current: {config.n_paths})")
+            print(f"5 - Steps           (Current: {config.n_steps})")
+            print(f"6 - Step size       (Current: {config.step_size})")
+            print(f"7 - Seed            (Current: {config.seed})")
             print("C - Close")
 
             print_thin_separation(linebreak=False)
@@ -137,7 +139,7 @@ class CLI:
 
             if choice == "c":
                 break
-        
+
     def _menu_history(self):
         while True:
             print_heading("HISTORY")
@@ -271,7 +273,7 @@ class CLI:
                 self._menu_ergodicity(entry, index)
             elif choice == "c":
                 break
- 
+
     def _menu_export(self, entry: HistoryEntry, index: int):
         while True:
             print_heading("EXPORT")
@@ -297,10 +299,20 @@ class CLI:
             if 0 <= idx < len(formats):
                 fmt = formats[idx]
                 try:
-                    path = self.controller.export_result(index, fmt=fmt)
+                    
+                    # Verzeichnis für Export wählen
+                    output_dir = self._pick_directory()
+                    if output_dir is None:
+                        print("\nExport cancelled.")
+                        enter_continue()
+                        return
+
+                    # Exportieren
+                    path = self.controller.export_result(index, fmt=fmt, output_dir=output_dir)
                     print(f"\nExported to: {path}")
                     enter_continue()
                     return
+
                 except Exception as e:
                     show_error("ExportError", str(e))
                     enter_continue()
@@ -372,10 +384,10 @@ class CLI:
                 help_ergodicity()
             elif choice == "c":
                 break
- 
+
 #-------------------------------------------------------------------------
 # Ausführung
- 
+
     def _run_simulation(self):
         clear_cli()        
         spinner = Spinner()
@@ -444,10 +456,10 @@ class CLI:
         process_type = self._choose_process_type()
         if process_type is None:
             return
- 
+
         options = self.controller.get_transition_options(process_type)
         keys = list(options.keys())
- 
+
         while True:
             print_heading(f"SETTINGS: TRANSITION ({process_type.upper()})")
             print(f"Current: {self.controller.config.transition_name}\n")
@@ -457,16 +469,16 @@ class CLI:
             print("C - Cancel")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
- 
+
             if choice == "c":
                 return
- 
+
             try:
                 idx = int(choice)
             except ValueError:
                 show_error("InputError", "Enter a number or C.")
                 continue
- 
+
             if 1 <= idx <= len(keys):
                 key = keys[idx - 1]
                 self.controller.set_transition(process_type, key)
@@ -474,7 +486,7 @@ class CLI:
                 print(f"{options[key]['desc']}")
                 enter_continue()
                 return
- 
+
             show_error("InputError", "Invalid choice.")
 
     def _choose_process_type(self) -> str | None:
@@ -537,6 +549,14 @@ class CLI:
 
 #-------------------------------------------------------------------------
 # TKinter-Interaktion
+
+    def _pick_directory(self) -> Path | None:
+        '''Öffnet nativen Dateidialog zur Verzeichnisauswahl.'''
+        root = tk.Tk()
+        root.withdraw()
+        path = filedialog.askdirectory(title="Select output directory")
+        root.destroy()
+        return Path(path) if path else None
 
     def _pick_json_file(self) -> Path | None:
         '''Öffnet nativen Dateidialog zur JSON-Auswahl.'''
