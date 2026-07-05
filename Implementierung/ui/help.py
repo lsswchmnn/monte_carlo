@@ -1,16 +1,19 @@
 from ui.utils.display import print_heading, enter_continue
-
+#=========================================================================
 def help_full():
     print_heading("HELP MENU")
-    print("...")
+    print("This application simulates and visualizes stochastic processes in 1D, 2D, or 3D. You can choose from various transition rules, configure simulation parameters, and analyze the resulting trajectories.")
+    enter_continue()
 
 def help_settings():
     print_heading("HELP MENU")
-    print("You can not only change the simulations parameters, but also the programs settings:\n")
-    print(" 1. Seed:")
-    print("    Parameter which determines the outcomes of the functions. You can recreate and confirm past results when using the same seed.")
-    print(" 2. Start State:")
-    print("    You can change how the simulations chooses the starting point.")
+    print("Settings allow you to configure the simulation parameters, including:")
+    print(" - Dimensionality: Choose an (int) dimension in which the trajectories evolve. (Only 1D, 2D and 3D can be visualized, but higher dimensions can be calculated without problems.)")
+    print(" - Start state: Choose the initial state of the system.")
+    print(" - Transition rule: Choose the transition function that governs the evolution of the system.")
+    print(" - Number of paths and steps: Specify how many trajectories to simulate and how many time steps to compute.")
+    print(" - Seed: Set the random seed for reproducibility of results.")
+    enter_continue()
 
 def help_three_types():
     print_heading("HELP MENU")
@@ -32,7 +35,7 @@ def help_three_types():
     print("    Parameters adapt to variance, trends or regime shifts.")
     print("    The process is non-stationary and self-modifying.\n")
 
-    enter_continue("Press enter to return to the settings")
+    enter_continue()
 
 def help_ergodicity():
     print_heading("HELP MENU")
