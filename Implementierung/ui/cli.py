@@ -93,7 +93,7 @@ class CLI:
                 symbol = "🟢" if dp <= limit else "🔴"
                 print(f"{symbol} Datapoints: {dp:_} (Limit: {limit:_})\n")
 
-            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()}) ({self.controller.get_dimensionality()})")
+            print(f"1 - Dimensionality  (Current: {self.controller.get_dimensions()})")
             print(f"2 - Startstate      (Current: {self.controller.config.start_state_name})")
             print(f"3 - Transition      (Current: {self.controller.config.transition_name})")
             print(f"4 - Paths           (Current: {self.controller.config.n_paths})")
