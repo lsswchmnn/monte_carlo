@@ -21,8 +21,8 @@ class SimConfig:
     step_size   : float = 1.0
 
     # Dimensionalität
-    dimensionality : str = "1d"  # "1d" | "nd"
-    n_dimensions   : int = 1
+    dimensionality : str = "1d"  # Typ "1d" | "nd"
+    n_dimensions   : int = 1     # Anzahl Dimensionen
 
     # Prozess (siehe process/)
     process_type      : str      | None = None
@@ -37,7 +37,10 @@ class SimConfig:
         "variational":   60_000_000,
         "adaptive":      40_000_000,
     })
-    limit_graph_warning : int = 75_000_000
+    limit_graph_warning : int = 75_000_000  # Ab wann Warnung bevor Plotting?
+
+    # Parameter der aktuellen Übergangsfunktion
+    transition_params: dict = field(default_factory=dict)
 
 #-------------------------------------------------------------------------
 # Öffentliche Funktionen
