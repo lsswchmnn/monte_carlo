@@ -439,17 +439,20 @@ class CLI:
             try:
                 idx = int(choice)
             except ValueError:
-                show_error("InputError", "Enter a number or C.")
                 continue
  
             if 1 <= idx <= len(keys):
                 key = keys[idx - 1]
                 self.controller.set_start_state(key)
-                print(f"\nStart state set to: {options[key]['name']}")
-                print(f"{options[key]['desc']}")
+
+                # Zusammenfassung des Startstate
+                print_heading(f"SETTINGS: START STATE")
+                print(f"Start state set to: {options[key]['name']}")
+                print(f"\n{options[key]['desc']}")
+
                 enter_continue()
                 return
- 
+
             show_error("InputError", "Invalid choice.")
 
     def _settings_transition(self):
@@ -477,7 +480,6 @@ class CLI:
             try:
                 idx = int(choice)
             except ValueError:
-                show_error("InputError", "Enter a number or C.")
                 continue
 
             if 1 <= idx <= len(keys):
