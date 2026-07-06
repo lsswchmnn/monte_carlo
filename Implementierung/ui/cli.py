@@ -112,7 +112,7 @@ class CLI:
             elif choice == "2":
                 self._settings_startstate()
             elif choice == "3":
-                self._settings_transition()
+                self._menu_transition()
 
             try:
                 if choice == "4":
@@ -386,6 +386,25 @@ class CLI:
             elif choice == "c":
                 break
 
+    def _menu_transition(self):
+        while True:
+            print_heading("SETTINGS: TRANSITION")
+            print("1 - Change Transition")
+            print("2 - View current")
+            print("3 - Edit params")
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+ 
+            if choice == "1":
+                self._settings_change_transition()
+            elif choice == "2":
+                pass
+            elif choice == "3":
+                self._settings_transition_params()
+            elif choice == "c":
+                return
+
 #-------------------------------------------------------------------------
 # Ausführung
 
@@ -419,7 +438,17 @@ class CLI:
 #-------------------------------------------------------------------------
 # Einstellungsmenüs
 
-    def _settings_startstate(self):
+    def _settings_dimensions(self):                     # Dimensionalität
+        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions", error=False)
+
+        if n_dim is None:
+            return
+        if n_dim > 1:
+            self.controller.set_dimensionality("nd", n_dimensions=n_dim)
+            return
+        self.controller.set_dimensionality("1d", n_dimensions=1)        
+
+    def _settings_startstate(self):                     # Startzustand
         options = self.controller.get_start_state_options()
         keys = list(options.keys())
  
@@ -455,8 +484,7 @@ class CLI:
 
             show_error("InputError", "Invalid choice.")
 
-    def _settings_transition(self):
-        # Erst Prozesstyp wählen
+    def _settings_change_transition(self):              # Übergang wählen
         process_type = self._choose_process_type()
         if process_type is None:
             return
@@ -486,22 +514,103 @@ class CLI:
                 key = keys[idx - 1]
                 self.controller.set_transition(process_type, key)
 
-                # Zusammenfassung/Anzeige der Transition (evtl. später eigene Funktion)
-                print_heading(f"SETTINGS: TRANSITION ({process_type.upper()})")
-                print(f"Transition set to: {options[key]['name']}")
-                print(f"\n{options[key]['desc']}")
-                params = options[key]['params']
-                self._show_params_dict(params)  # Parameter anzeigen
-                
+                self._show_transition_complete(process_type=process_type, options=options, key=key)
+
                 enter_continue()
                 return
 
             else:
                 show_error("InputError", "Invalid choice.")
 
-    def _choose_process_type(self) -> str | None:
+    def _settings_transition_params(self):              # Parameter der Übergangsfunktion
+        params = self.controller.get_transition_params()
+
+        # Guard
+        if not params:
+            cli_blocking_message(
+                "TRANSITION PARAMETERS",
+                "NoParams",
+                f"'{self.controller.config.transition_name}' has no configurable parameters."
+            )
+            return
+
         while True:
-            print_heading("SETTINGS: PROCESS TYPE")
+            print_heading("TRANSITION PARAMETERS")
+            print(f"Transition: {self.controller.config.transition_name}\n")
+
+            # Parameter auflisten
+            keys = list(params.keys())
+            for i, key in enumerate(keys, start=1):
+                p = params[key]
+                current = self.controller.config.transition_params.get(key, p["default"])
+                print(f"{i} - {key:<20} {current}  ({p['desc']})")
+
+            print("R - Reset to defaults")
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "c":
+                return
+
+            if choice == "r":
+                self.controller.reset_transition_params() # Reset
+                print("\nParameters reset to defaults.")
+                enter_continue()
+                continue
+
+            try:
+                idx = int(choice) - 1
+            except ValueError:
+                show_error("InputError", "Enter a number, R, or C.")
+                continue
+
+            if not (0 <= idx < len(keys)):
+                show_error("InputError", "Invalid choice.")
+                continue
+
+            print()
+            key = keys[idx]
+            p   = params[key]
+
+            if p["type"] == "float":
+                value = input_float(
+                    min_value=p["min"], max_value=p["max"],
+                    default=self.controller.config.transition_params.get(key, p["default"]),
+                    msg=f"{key}", error=False
+                )
+                if value is not None:
+                    self.controller.set_transition_param(key, value)
+
+            elif p["type"] == "int":
+                value = input_int(
+                    min_value=int(p["min"]), max_value=int(p["max"]),
+                    default=self.controller.config.transition_params.get(key, p["default"]),
+                    msg=f"{key}", error=False
+                )
+                if value is not None:
+                    self.controller.set_transition_param(key, value)
+
+            elif p["type"] == "str":
+                options = p.get("options", [])
+                print(f"\nOptions for {key}:")
+                for i, opt in enumerate(options, start=1):
+                    print(f"  {i} - {opt}")
+                print_thin_separation(linebreak=False)
+                opt_choice = input("> ").strip().lower()
+
+                try:
+                    opt_idx = int(opt_choice) - 1
+                    if 0 <= opt_idx < len(options):
+                        self.controller.set_transition_param(key, options[opt_idx])
+                    else:
+                        show_error("InputError", "Invalid choice.")
+                except ValueError:
+                    show_error("InputError", "Enter a number.")
+
+    def _choose_process_type(self) -> str | None:       # Übergangstyp
+        while True:
+            print_heading("SETTINGS: CHOOSE PROCESS TYPE")
             print("1 - Markov Process")
             print("2 - Variational Process")
             print("3 - Adaptive Process")
@@ -520,16 +629,6 @@ class CLI:
                 help_three_types()
             elif choice == "c":
                 return None
-
-    def _settings_dimensions(self):
-        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions", error=False)
-
-        if n_dim is None:
-            return
-        if n_dim > 1:
-            self.controller.set_dimensionality("nd", n_dimensions=n_dim)
-            return
-        self.controller.set_dimensionality("1d", n_dimensions=1)        
 
 #-------------------------------------------------------------------------
 # Anzeige von Einstellungen und Ergebnissen
@@ -557,6 +656,13 @@ class CLI:
         print_heading("RESULT DATA (FULL)")
         print(entry.result)
         enter_continue()
+
+    def _show_transition_complete(self, process_type: str, options: dict, key):
+        print_heading(f"SETTINGS: TRANSITION ({process_type.upper()})")
+        print(f"Transition set to: {options[key]['name']}")
+        print(f"\n{options[key]['desc']}")
+        params = options[key]['params']
+        self._show_params_dict(params)  # Parameter anzeigen
 
     def _show_params_dict(self, params: dict):
         if not params:
