@@ -90,9 +90,10 @@ class Controller:
         try:
             registry = self._transition_registry()    # gibt je nach dimensionality die richtige zurück
             entry = registry[process_type][key]
-            self.config.process_type    = process_type
-            self.config.transition_fn   = entry["fn"]
-            self.config.transition_name = entry["name"]
+            self.config.process_type      = process_type
+            self.config.transition_fn     = entry["fn"]
+            self.config.transition_name   = entry["name"]
+            self.config.transition_params = {}                  # Params zurücksetzen
         except Exception:
             raise
  
@@ -105,6 +106,21 @@ class Controller:
     def set_seed(self, seed: int) -> None:
         self.config.seed = seed
         self.config.rng  = np.random.default_rng(seed)
+
+    def get_transition_params(self) -> dict:
+        '''Gibt params-Dict des aktuellen Registry-Eintrags zurück.'''
+        registry = self._transition_registry()
+        for process_entries in registry.values():
+            for key, entry in process_entries.items():
+                if entry["fn"] is self.config.transition_fn:
+                    return entry.get("params", {})
+        return {}
+
+    def set_transition_param(self, key: str, value) -> None:
+        self.config.transition_params[key] = value
+
+    def reset_transition_params(self) -> None:
+        self.config.transition_params = {}
 
 #-------------------------------------------------------------------------
 # Registry-Zugriff (-> process/registry.py)
