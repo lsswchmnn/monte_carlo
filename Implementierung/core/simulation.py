@@ -46,14 +46,18 @@ class MonteCarloSim:
         # 1D: shape (n_paths,)
         # ND: shape (n_paths, n_dimensions)
 
+        # Unterscheidung nach Dimensionsytp
         if config.dimensionality == "nd":
             all_steps = np.empty((config.n_steps, config.n_paths, config.n_dimensions))
         else:
             all_steps = np.empty((config.n_steps, config.n_paths))
 
+        # Übergangsfunktion für jeden Schritt aufrufen
         for t in range(config.n_steps):
             all_steps[t] = x
-            x = config.transition_fn(x, config.rng, config.step_size)
+            x = config.transition_fn(
+                x, config.rng, config.step_size, 
+                **config.transition_params)   # Params optional
 
         return all_steps.transpose(1, 0, *range(2, all_steps.ndim)).tolist()
 
@@ -64,14 +68,13 @@ class MonteCarloSim:
             path = []
             x = self._init_state(config)
 
+            # Übergangsfunktion für jeden Schritt aufrufen
             for t in range(config.n_steps):
                 path.append(x)
-                x = config.transition_fn (
-                    x_t= x,
-                    t= t,
-                    path= path,
-                    rng= config.rng,
-                    step_size= config.step_size
+                x = config.transition_fn(
+                x_t=x, t=t, path=path,
+                rng=config.rng, step_size=config.step_size,
+                **config.transition_params  # Params optional
                 )
 
             all_paths.append(path)
@@ -90,15 +93,14 @@ class MonteCarloSim:
             x = self._init_state(config)
             adaptive_state = {}
 
+            # Übergangsfunktion für jeden Schritt aufrufen 
             for t in range(config.n_steps):
                 path.append(x)
                 x, adaptive_state = config.transition_fn(
-                    x_t=x,
-                    t=t,
-                    path=path,
-                    adaptive_state = adaptive_state,
-                    rng=config.rng,
-                    step_size=config.step_size
+                    x_t=x, t=t, path=path,
+                    adaptive_state=adaptive_state,
+                    rng=config.rng, step_size=config.step_size,
+                    **config.transition_params  # Params optional
                 )
             
             all_paths.append(path)
