@@ -24,7 +24,7 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
             "params": {
                 "drift": {
                     "default": 0.0, "min": -10.0, "max": 10.0,
-                    "type": float,
+                    "type": "float",
                     "desc": "Constant drift added each stept (0 = symmetric)"
                 }
             }
