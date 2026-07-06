@@ -2,7 +2,7 @@ from   ui.utils.display   import clear_cli, print_heading, print_thin_separation
 from   ui.utils.errors    import show_error, cli_blocking_message
 from   ui.utils.input     import input_float, input_int, input_confirm
 from   ui.utils.progress  import print_progress_bar, Spinner
-from   ui.help            import help_three_types, help_full, help_ergodicity, help_settings
+from   ui.help            import *
 from   ui.plots           import show
 from   core.controller    import Controller
 from   core.history       import HistoryEntry
@@ -392,6 +392,7 @@ class CLI:
             print("1 - Change Transition")
             print("2 - View current")
             print("3 - Edit params")
+            print("H - Help")
             print("C - Cancel")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
@@ -402,6 +403,8 @@ class CLI:
                 pass
             elif choice == "3":
                 self._settings_transition_params()
+            elif choice == "h":
+                help_transition()
             elif choice == "c":
                 return
 
@@ -458,13 +461,16 @@ class CLI:
             print("Choose new start state:")
             for i, key in enumerate(keys, start=1):
                 print(f"{i} - {options[key]['name']}")
+            print("H - Help")
             print("C - Cancel")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
  
             if choice == "c":
                 return
- 
+            elif choice == "h":
+                help_start_states()
+
             try:
                 idx = int(choice)
             except ValueError:
