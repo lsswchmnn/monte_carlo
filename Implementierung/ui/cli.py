@@ -458,7 +458,7 @@ class CLI:
         if process_type is None:
             return
 
-        options = self.controller.get_transition_options(process_type)
+        options = self.controller.get_transition_options(process_type)  # Registry für Prozesstyp zurückgeben
         keys = list(options.keys())
 
         while True:
@@ -483,12 +483,19 @@ class CLI:
             if 1 <= idx <= len(keys):
                 key = keys[idx - 1]
                 self.controller.set_transition(process_type, key)
-                print(f"\nTransition set to: {options[key]['name']}")
-                print(f"{options[key]['desc']}")
+
+                # Zusammenfassung/Anzeige der Transition (evtl. später eigene Funktion)
+                print_heading(f"SETTINGS: TRANSITION ({process_type.upper()})")
+                print(f"Transition set to: {options[key]['name']}")
+                print(f"\n{options[key]['desc']}")
+                params = options[key]['params']
+                self._show_params_dict(params)  # Parameter anzeigen
+                
                 enter_continue()
                 return
 
-            show_error("InputError", "Invalid choice.")
+            else:
+                show_error("InputError", "Invalid choice.")
 
     def _choose_process_type(self) -> str | None:
         while True:
@@ -548,6 +555,26 @@ class CLI:
         print_heading("RESULT DATA (FULL)")
         print(entry.result)
         enter_continue()
+
+    def _show_params_dict(self, params: dict):
+        if not params:
+            print("No parameters defined.")
+            return
+
+        print("\nParams:")
+
+        for name, spec in params.items():
+            p_type = spec.get("type", "unknown")
+            default = spec.get("default", "n/a")
+            min_v = spec.get("min", "n/a")
+            max_v = spec.get("max", "n/a")
+            desc = spec.get("desc", "")
+
+            print(f"\n {name.capitalize()}")
+            print(f"  Type    : {p_type}")
+            print(f"  Default : {default}")
+            print(f"  Range   : [{min_v}, {max_v}]")
+            print(f"  Desc    : {desc}")
 
 #-------------------------------------------------------------------------
 # TKinter-Interaktion
