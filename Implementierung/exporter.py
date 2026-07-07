@@ -125,6 +125,7 @@ class Exporter:
             "n_paths":          config.n_paths,
             "n_steps":          config.n_steps,
             "step_size":        config.step_size,
+            "params":           config.transition_params,
             "exported_at":      datetime.now().isoformat(timespec="seconds"),
         }
 
