@@ -690,7 +690,8 @@ class CLI:
             print(f"\n {name.capitalize()}")
             print(f"  Type    : {p_type}")
             print(f"  Default : {default}")
-            print(f"  Range   : [{min_v}, {max_v}]")
+            if min_v is not None and max_v is not None:
+                print(f"  Range   : [{min_v}, {max_v}]")
             print(f"  Desc    : {desc}")
 
 #-------------------------------------------------------------------------

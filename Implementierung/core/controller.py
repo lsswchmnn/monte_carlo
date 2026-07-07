@@ -78,7 +78,7 @@ class Controller:
         registry = self._transition_registry()
         for process_entries in registry.values():
             for key, entry in process_entries.items():
-                if entry["fn"] is self.config.transition_fn:
+                if entry["name"] == self.config.transition_name:
                     return entry.get("params", {})
         return {}
 

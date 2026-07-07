@@ -57,12 +57,12 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
             "params": {
                 "strength": {
                     "default": 0.1, "min": 0.001, "max": 1.0,
-                    "type": float,
+                    "type": "float",
                     "desc": "Pull strength toward mean (higher = faster convergence)"
                 },
                 "mean":  {
                     "default": 0.0, "min": -10.0, "max": 10.0,
-                    "type": float,
+                    "type": "float",
                     "desc": "Target mean value"
                 },
             },
@@ -77,7 +77,7 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
             "params": {
                 "factor": {
                     "default": 0.08, "min": 0.001, "max": 5.0,
-                    "type": float,
+                    "type": "float",
                     "desc": "Volatility growth factor (higher = more extreme outliers)"
                 }
             }
