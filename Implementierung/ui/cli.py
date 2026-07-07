@@ -400,7 +400,8 @@ class CLI:
             if choice == "1":
                 self._settings_change_transition()
             elif choice == "2":
-                pass
+                self._show_transition_complete()
+                enter_continue()
             elif choice == "3":
                 self._settings_transition_params()
             elif choice == "h":
@@ -520,8 +521,7 @@ class CLI:
                 key = keys[idx - 1]
                 self.controller.set_transition(process_type, key)
 
-                self._show_transition_complete(process_type=process_type, options=options, key=key)
-
+                self._show_transition_complete()
                 enter_continue()
                 return
 
@@ -663,12 +663,15 @@ class CLI:
         print(entry.result)
         enter_continue()
 
-    def _show_transition_complete(self, process_type: str, options: dict, key):
-        print_heading(f"SETTINGS: TRANSITION ({process_type.upper()})")
-        print(f"Transition set to: {options[key]['name']}")
-        print(f"\n{options[key]['desc']}")
-        params = options[key]['params']
-        self._show_params_dict(params)  # Parameter anzeigen
+    def _show_transition_complete(self):
+        cfg     = self.controller.config
+        params  = self.controller.get_transition_params()
+        process = cfg.process_type or "unknown"
+
+        print_heading(f"SETTINGS: TRANSITION ({process.upper()})")
+        print(f"Transition: {cfg.transition_name}")
+        print(f"\n{self.controller.get_transition_desc()}")
+        self._show_params_dict(params)
 
     def _show_params_dict(self, params: dict):
         if not params:
