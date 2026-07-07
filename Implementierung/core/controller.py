@@ -73,6 +73,23 @@ class Controller:
 #-------------------------------------------------------------------------
 # Allgemeine Konfiguration (-> config.py)
 
+    def get_transition_params(self) -> dict:
+        '''Gibt params-Dict des aktuellen Registry-Eintrags zurück.'''
+        registry = self._transition_registry()
+        for process_entries in registry.values():
+            for key, entry in process_entries.items():
+                if entry["fn"] is self.config.transition_fn:
+                    return entry.get("params", {})
+        return {}
+
+    def get_transition_desc(self) -> str:
+        registry = self._transition_registry()
+        for process_entries in registry.values():
+            for key, entry in process_entries.items():
+                if entry["name"] == self.config.transition_name:
+                    return entry.get("desc", "")
+        return ""
+
     def set_start_state(self, key: str) -> None:
         '''Setzt den Startzustand anhand eines Registry-Keys.'''
         try:
@@ -106,15 +123,6 @@ class Controller:
     def set_seed(self, seed: int) -> None:
         self.config.seed = seed
         self.config.rng  = np.random.default_rng(seed)
-
-    def get_transition_params(self) -> dict:
-        '''Gibt params-Dict des aktuellen Registry-Eintrags zurück.'''
-        registry = self._transition_registry()
-        for process_entries in registry.values():
-            for key, entry in process_entries.items():
-                if entry["fn"] is self.config.transition_fn:
-                    return entry.get("params", {})
-        return {}
 
     def set_transition_param(self, key: str, value) -> None:
         self.config.transition_params[key] = value
@@ -220,7 +228,7 @@ class Controller:
         return self.exporter.supported_formats()
 
 #-------------------------------------------------------------------------
-# Hilfsmethoden (privat)
+# Allgemeine Hilfsmethoden (privat)
 
     def _start_state_registry(self) -> dict[str, dict]:
         '''Gibt die passende Startzustands-Registry zurück, abhängig von Dimensionalität.'''
