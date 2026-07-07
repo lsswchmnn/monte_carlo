@@ -116,19 +116,19 @@ class CLI:
 
             try:
                 if choice == "4":
-                    n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", error=False)
+                    n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", raise_error=False)
                     if n_paths is not None:
                         self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
                 elif choice == "5":
-                    n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", error=False)
+                    n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", raise_error=False)
                     if n_steps is not None:
                         self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
                 elif choice == "6":
-                    step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", error=False)
+                    step_size = input_float(0.01, 100.0, self.controller.config.step_size, msg="Step size", raise_error=False)
                     if step_size is not None:
                         self.controller.set_parameters(self.controller.config.n_steps, self.controller.config.n_paths, step_size)
                 elif choice == "7":
-                    seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", error=False)
+                    seed = input_int(1, 99999, self.controller.config.seed, msg="Seed", raise_error=False)
                     if seed is not None:
                         self.controller.set_seed(seed)
 
@@ -442,7 +442,7 @@ class CLI:
 # Einstellungsmenüs
 
     def _settings_dimensions(self):                     # Dimensionalität
-        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions", error=False)
+        n_dim = input_int(1, 100, 1, msg="Input number of Dimensions", raise_error=False)
 
         if n_dim is None:
             return
@@ -583,7 +583,7 @@ class CLI:
                 value = input_float(
                     min_value=p["min"], max_value=p["max"],
                     default=self.controller.config.transition_params.get(key, p["default"]),
-                    msg=f"{key}", error=False
+                    msg=f"{key}", raise_error=False
                 )
                 if value is not None:
                     self.controller.set_transition_param(key, value)
@@ -592,7 +592,7 @@ class CLI:
                 value = input_int(
                     min_value=int(p["min"]), max_value=int(p["max"]),
                     default=self.controller.config.transition_params.get(key, p["default"]),
-                    msg=f"{key}", error=False
+                    msg=f"{key}", raise_error=False
                 )
                 if value is not None:
                     self.controller.set_transition_param(key, value)
