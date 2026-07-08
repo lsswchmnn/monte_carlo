@@ -50,7 +50,7 @@ class CLI:
                 break
 
 #-------------------------------------------------------------------------
-# Menüs 
+# Menüebene 1
 
     def _menu_sim_start(self):
         '''Simulation starten'''
@@ -200,39 +200,8 @@ class CLI:
             elif choice == "c":
                 break
 
-    def _menu_pick_history_entry(self) -> tuple[HistoryEntry, int] | tuple[None, None]:
-        '''
-        Zeigt alle History-Einträge an und lässt den Nutzer einen auswählen.
-        Gibt den Eintrag zurück, oder den Index wenn return_index=True.
-        '''
-        entries = self.controller.get_history_entries()
-
-        # Ein Eintrag: direkte Rückgabe
-        if len(entries) == 1:
-            return entries[0], 0
-
-        print_heading("SELECT RESULT")
-        for i, entry in enumerate(entries, start=1):
-            cfg = entry.config
-            print(f"{i} - {cfg.transition_name} | {cfg.n_paths} paths × {cfg.n_steps} steps | seed {cfg.seed}")
-        print("C - Cancel")
-        print_thin_separation(linebreak=False)
-        choice = input("> ").strip().lower()
-
-        if choice == "c":
-            return None, None
-
-        try:
-            idx = int(choice) - 1
-        except ValueError:
-            show_error("InputError", "Enter a number or C.")
-            return None, None
-
-        if 0 <= idx < len(entries):
-            return entries[idx], idx
-        
-        show_error("InputError", "Invalid choice.")
-        return None, None
+#-------------------------------------------------------------------------
+# Menüebene 2 - Settings
 
     def _menu_transition(self):
         '''Menü für Übergangsfunktion'''
@@ -258,49 +227,41 @@ class CLI:
             elif choice == "c":
                 return
 
-    def _menu_result(self, entry: HistoryEntry, index: int):
-        '''Menü für spezifisches Ergebnis'''
-        is_nd = entry.config.dimensionality == "nd"
-        n_dim = entry.config.n_dimensions
+#-------------------------------------------------------------------------
+# Menüebene 2 - History
 
-        while True:
-            print_heading("RESULT")
+    def _menu_pick_history_entry(self) -> tuple[HistoryEntry, int] | tuple[None, None]:
+        '''
+        Zeigt alle History-Einträge an und lässt den Nutzer einen auswählen.
+        Gibt den Eintrag zurück, oder den Index wenn return_index=True.
+        '''
+        entries = self.controller.get_history_entries()
 
-            if (is_nd and n_dim > 3):
-                print("⚠️ Plotting is not available for >3D.\n")
+        # Ein Eintrag: direkte Rückgabe
+        if len(entries) == 1:
+            return entries[0], 0
 
-            print("1 - Print summary")
-            print("2 - Print full data")
+        print_heading("SELECT RESULT")
+        for i, entry in enumerate(entries, start=1):
+            print(f"{i} - {self._show_result_name(entry.config)}")
+        print("C - Cancel")
+        print_thin_separation(linebreak=False)
+        choice = input("> ").strip().lower()
 
-            if not is_nd:
-                print("3 - Sample paths")
-                print("4 - Mean and volatility")
-                print("5 - Final distribution")
-                print("6 - Analysis")
-            elif n_dim <= 3:
-                print(f"3 - Sample paths ({n_dim}D)")
+        if choice == "c":
+            return None, None
 
-            print("C - Close")
-            print_thin_separation(linebreak=False)
-            choice = input("> ").strip().lower()
+        try:
+            idx = int(choice) - 1
+        except ValueError:
+            show_error("InputError", "Enter a number or C.")
+            return None, None
 
-            if choice == "1":
-                self._show_result_terminal(entry, index)
-            elif choice == "2":
-                self._show_full_result_terminal(entry, index)
-            elif choice == "3" and (not is_nd or n_dim <= 3):
-                if entry.config.datapoint_count() > entry.config.limit_graph_warning:
-                    if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?", warn_symbol=True):
-                        continue
-                show(entry.result, "sample_paths", entry.config)
-            elif choice == "4" and not is_nd:
-                show(entry.result, "mean_volatility", entry.config)
-            elif choice == "5" and not is_nd:
-                show(entry.result, "final_dist", entry.config)
-            elif choice == "6" and not is_nd:
-                self._menu_analysis(entry, index)
-            elif choice == "c":
-                break
+        if 0 <= idx < len(entries):
+            return entries[idx], idx
+        
+        show_error("InputError", "Invalid choice.")
+        return None, None
 
     def _menu_export(self, entry: HistoryEntry, index: int):
         '''Export fertiger Ergebnisse als JSON oder CSV'''
@@ -374,6 +335,53 @@ class CLI:
 
             elif choice == "c":
                 return
+
+#-------------------------------------------------------------------------
+# Menüebene 3/4 - Einzelergebnis
+
+    def _menu_result(self, entry: HistoryEntry, index: int):
+        '''Menü für spezifisches Ergebnis'''
+        is_nd = entry.config.dimensionality == "nd"
+        n_dim = entry.config.n_dimensions
+
+        while True:
+            print_heading("RESULT")
+
+            if (is_nd and n_dim > 3):
+                print("⚠️ Plotting is not available for >3D.\n")
+
+            print("1 - Print summary")
+            print("2 - Print full data")
+
+            if not is_nd:
+                print("3 - Sample paths")
+                print("4 - Mean and volatility")
+                print("5 - Final distribution")
+                print("6 - Analysis")
+            elif n_dim <= 3:
+                print(f"3 - Sample paths ({n_dim}D)")
+
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                self._show_result_terminal(entry, index)
+            elif choice == "2":
+                self._show_full_result_terminal(entry, index)
+            elif choice == "3" and (not is_nd or n_dim <= 3):
+                if entry.config.datapoint_count() > entry.config.limit_graph_warning:
+                    if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?", warn_symbol=True):
+                        continue
+                show(entry.result, "sample_paths", entry.config)
+            elif choice == "4" and not is_nd:
+                show(entry.result, "mean_volatility", entry.config)
+            elif choice == "5" and not is_nd:
+                show(entry.result, "final_dist", entry.config)
+            elif choice == "6" and not is_nd:
+                self._menu_analysis(entry, index)
+            elif choice == "c":
+                break
 
     def _menu_analysis(self, entry: HistoryEntry, index: int):
         '''Menü für statistische Analyse auf ein fertiges Ergebnis.'''
@@ -698,6 +706,7 @@ class CLI:
         print(f"  Datapoints:   {config.datapoint_count():_}")
  
     def _show_result_terminal(self, entry: HistoryEntry, index: int):
+        '''Zeigt eine Zusammenfassung des Ergebnisses an.'''
         result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
         self._show_simulation_settings(config=entry.config)
@@ -705,11 +714,13 @@ class CLI:
         enter_continue()
 
     def _show_full_result_terminal(self, entry: HistoryEntry, index: int):
+        '''Zeigt alle Datenpunkte im Terminal an.'''
         print_heading("RESULT DATA (FULL)")
         print(entry.result)
         enter_continue()
 
     def _show_transition_complete(self):
+        '''Zeigt alle Daten einer Übergangsfunktion.'''
         cfg     = self.controller.config
         params  = self.controller.get_transition_params()
         process = cfg.process_type or "unknown"
@@ -720,6 +731,7 @@ class CLI:
         self._show_params_dict(params)
 
     def _show_params_dict(self, params: dict):
+        '''Zeigt die Parameter einer Übergangsfunktion im Terminal an.'''
         if not params:
             print("No parameters defined.")
             return
@@ -739,6 +751,11 @@ class CLI:
             if min_v is not None and max_v is not None:
                 print(f"  Range   : [{min_v}, {max_v}]")
             print(f"  Desc    : {desc}")
+
+    def _show_result_name(self, config: SimConfig) -> str:
+        '''Erstellt string mit Namen und wichtigsten Daten eines Analyseergebnisses.'''
+        cfg = config
+        return (f"{cfg.transition_name} | {cfg.n_paths} paths × {cfg.n_steps} steps | seed {cfg.seed}")
 
 #-------------------------------------------------------------------------
 # TKinter-Interaktion
