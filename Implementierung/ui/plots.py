@@ -1,5 +1,6 @@
 from   typing            import List
 from   core.config       import SimConfig
+from   datetime          import datetime
 import matplotlib.pyplot as plt
 import numpy             as np
 #=========================================================================
@@ -21,6 +22,11 @@ def _add_label(config: SimConfig) -> None:
         fontsize=10,
         verticalalignment="top",
         bbox=dict(facecolor="white", alpha=ALPHA, edgecolor="none"),
+    )
+
+def _set_plot_title(name: str) -> None:
+    plt.gcf().canvas.manager.set_window_title(
+        f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     )
 
 #-------------------------------------------------------------------------
@@ -67,6 +73,7 @@ def _plot_paths_1d(paths: List[List[float]], config: SimConfig) -> None:
     plt.ylabel("State")
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
+    _set_plot_title("sample_paths_1d")
     plt.show()
 
 def _plot_paths_2d(paths: list, config: SimConfig) -> None:
@@ -87,6 +94,7 @@ def _plot_paths_2d(paths: list, config: SimConfig) -> None:
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     plt.axis("equal")                   # gleiche Skalierung beider Achsen
     _add_label(config)
+    _set_plot_title("sample_paths_2d")
     plt.show()
 
 def _plot_paths_3d(paths: list, config: SimConfig) -> None:
@@ -106,7 +114,9 @@ def _plot_paths_3d(paths: list, config: SimConfig) -> None:
     ax.set_xlabel("Dimension 1")
     ax.set_ylabel("Dimension 2")
     ax.set_zlabel("Dimension 3")
+    _set_plot_title("sample_paths_3d")
     plt.show()
+
 
 def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
     data = np.array(paths)
@@ -123,7 +133,9 @@ def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
     plt.legend()
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
+    _set_plot_title("mean_and_std_1d")
     plt.show()
+
 
 def _plot_final_distribution(paths: List[List[float]], config: SimConfig) -> None:
     final_values = [path[-1] for path in paths]
@@ -134,4 +146,5 @@ def _plot_final_distribution(paths: List[List[float]], config: SimConfig) -> Non
     plt.ylabel("Frequency")
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
+    _set_plot_title("distribution_1d")
     plt.show()
