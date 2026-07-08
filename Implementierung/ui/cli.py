@@ -117,11 +117,11 @@ class CLI:
 
             try:
                 if choice == "4":
-                    n_paths = input_int(1, 10000, self.controller.config.n_paths, msg="Number of paths", raise_error=False)
+                    n_paths = input_int(1, 1_000_000, self.controller.config.n_paths, msg="Number of paths", raise_error=False)
                     if n_paths is not None:
                         self.controller.set_parameters(self.controller.config.n_steps, n_paths, self.controller.config.step_size)
                 elif choice == "5":
-                    n_steps = input_int(10, 100000, self.controller.config.n_steps, msg="Number of steps", raise_error=False)
+                    n_steps = input_int(10, 10_0000, self.controller.config.n_steps, msg="Number of steps", raise_error=False)
                     if n_steps is not None:
                         self.controller.set_parameters(n_steps, self.controller.config.n_paths, self.controller.config.step_size)
                 elif choice == "6":
