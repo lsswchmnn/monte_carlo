@@ -53,6 +53,7 @@ class CLI:
 # Menüs 
 
     def _menu_sim_start(self):
+        '''Simulation starten'''
         print_heading("START SIMULATION")
  
         if not self.controller.config.is_valid():
@@ -79,7 +80,7 @@ class CLI:
             self._run_simulation()
 
     def _menu_sim_settings(self):
-        
+        '''Einstellungsmenü'''
         while True:
             print_heading("SIMULATION SETTINGS")
             
@@ -142,6 +143,7 @@ class CLI:
                 break
 
     def _menu_history(self):
+        '''Gebündelte Aktionen auf fertige Ergebnisse'''
         while True:
             print_heading("HISTORY")
             print(f"Number of results: {len(self.controller.get_history_entries())}\n")
@@ -232,7 +234,32 @@ class CLI:
         show_error("InputError", "Invalid choice.")
         return None, None
 
+    def _menu_transition(self):
+        '''Menü für Übergangsfunktion'''
+        while True:
+            print_heading("SETTINGS: TRANSITION")
+            print("1 - Change Transition")
+            print("2 - View current")
+            print("3 - Edit params")
+            print("H - Help")
+            print("C - Cancel")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+ 
+            if choice == "1":
+                self._settings_change_transition()
+            elif choice == "2":
+                self._show_transition_complete()
+                enter_continue()
+            elif choice == "3":
+                self._settings_transition_params()
+            elif choice == "h":
+                help_transition()
+            elif choice == "c":
+                return
+
     def _menu_result(self, entry: HistoryEntry, index: int):
+        '''Menü für spezifisches Ergebnis'''
         is_nd = entry.config.dimensionality == "nd"
         n_dim = entry.config.n_dimensions
 
@@ -249,7 +276,7 @@ class CLI:
                 print("3 - Sample paths")
                 print("4 - Mean and volatility")
                 print("5 - Final distribution")
-                print("6 - Ergodicity")
+                print("6 - Analysis")
             elif n_dim <= 3:
                 print(f"3 - Sample paths ({n_dim}D)")
 
@@ -271,11 +298,12 @@ class CLI:
             elif choice == "5" and not is_nd:
                 show(entry.result, "final_dist", entry.config)
             elif choice == "6" and not is_nd:
-                self._menu_ergodicity(entry, index)
+                self._menu_analysis(entry, index)
             elif choice == "c":
                 break
 
     def _menu_export(self, entry: HistoryEntry, index: int):
+        '''Export fertiger Ergebnisse als JSON oder CSV'''
         while True:
             print_heading("EXPORT")
             print(f"Transition: {entry.config.transition_name} | "
@@ -322,6 +350,7 @@ class CLI:
                 enter_continue()
 
     def _menu_import(self):
+        '''Menü für den Import von vorher exportierten Ergebnissen (JSON)'''
         while True:
             print_heading("IMPORT")
             print("1 - Import from JSON")
@@ -346,7 +375,35 @@ class CLI:
             elif choice == "c":
                 return
 
+    def _menu_analysis(self, entry: HistoryEntry, index: int):
+        '''Menü für statistische Analyse auf ein fertiges Ergebnis.'''
+        while True:
+            print_heading("ANALYSIS")
+            print("1 - Ergodicity")
+            print("2 - Autocorrelation")
+            print("3 - Hurst exponent")
+            print("4 - Variance growth")
+            print("H - Help")
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                self._menu_ergodicity(entry, index)
+            elif choice == "2":
+                self._menu_autocorrelation(entry, index)
+            elif choice == "3":
+                self._menu_hurst_exponent(entry, index)
+            elif choice == "4":
+                self._menu_variance_growth(entry, index)
+
+            elif choice == "h":
+                pass
+            elif choice == "c":
+                break
+
     def _menu_ergodicity(self, entry: HistoryEntry, index: int):
+        '''Analysemenü: Ergodizität'''
         if entry.erg_result is None:    # Langfristig: sollte CLI über Status entscheiden?
             spinner = Spinner()
             print()
@@ -386,28 +443,17 @@ class CLI:
             elif choice == "c":
                 break
 
-    def _menu_transition(self):
-        while True:
-            print_heading("SETTINGS: TRANSITION")
-            print("1 - Change Transition")
-            print("2 - View current")
-            print("3 - Edit params")
-            print("H - Help")
-            print("C - Cancel")
-            print_thin_separation(linebreak=False)
-            choice = input("> ").strip().lower()
- 
-            if choice == "1":
-                self._settings_change_transition()
-            elif choice == "2":
-                self._show_transition_complete()
-                enter_continue()
-            elif choice == "3":
-                self._settings_transition_params()
-            elif choice == "h":
-                help_transition()
-            elif choice == "c":
-                return
+    def _menu_autocorrelation(self, entry: HistoryEntry, index: int):
+        '''Analysemenü: Autokorrelation'''
+        pass
+
+    def _menu_hurst_exponent(self, entry: HistoryEntry, index: int):
+        '''Analysemenü: Hurst-Exponent'''
+        pass
+
+    def _menu_variance_growth(self, entry: HistoryEntry, index: int):
+        '''Analysemenü: Varianzwachstum'''
+        pass
 
 #-------------------------------------------------------------------------
 # Ausführung
