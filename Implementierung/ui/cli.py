@@ -211,7 +211,7 @@ class CLI:
             print("2 - View current")
             print("3 - Edit params")
             print("H - Help")
-            print("C - Cancel")
+            print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
  

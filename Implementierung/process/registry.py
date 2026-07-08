@@ -29,24 +29,6 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                 }
             }
         },
-        "levy_flight": {
-            "fn":   markov.levy_flight,
-            "name": "Lévy Flight",
-            "desc": (
-                "Steps follow a stable distribution with heavy tails. "
-                "Most steps are small, but rare steps are extremely large — "
-                "orders of magnitude larger than typical. "
-                "Controlled by stability index alpha (default 1.5). "
-                "alpha=2 approximates a Gaussian random walk; alpha→0 yields increasingly extreme jumps."
-            ),
-            "params": {
-                "alpha": {
-                    "default": 1.5, "min": 0.1, "max": 2.0,
-                    "type": "float",
-                    "desc": "Stability index (2=Gaussian, 1=Cauchy, lower=more extreme)",
-                },
-            },
-        },
         "mean_reverting": {
             "fn":   markov.mean_reverting,
             "name": "Mean Reversion",
@@ -81,26 +63,6 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                     "desc": "Volatility growth factor (higher = more extreme outliers)"
                 }
             }
-        },
-        "fat_tail_walk": {
-            "fn":   markov.fat_tail_walk,
-            "name": "Fat-Tail Walk",
-            "desc": (
-                "Most steps are small, but rare steps are extremely large. "
-                "The distribution of changes has heavy tails."
-            ),
-            "params": {
-                "p_tail": {
-                    "default": 0.02, "min": 0.001, "max": 0.5,
-                    "type": "float",
-                    "desc": "Probability of an extreme step",
-                },
-                "tail_factor": {
-                    "default": 20.0, "min": 2.0, "max": 200.0,
-                    "type": "float",
-                    "desc": "Size multiplier for extreme steps",
-                },
-            },
         },
         "absorbing_barrier": {
             "fn":   markov.absorbing_barrier,
@@ -143,6 +105,45 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                 },
             },
         },
+        "levy_flight": {
+            "fn":   markov.levy_flight,
+            "name": "Lévy Flight",
+            "desc": (
+                "Steps follow a stable distribution with heavy tails. "
+                "Most steps are small, but rare steps are extremely large — "
+                "orders of magnitude larger than typical. "
+                "Controlled by stability index alpha (default 1.5). "
+                "alpha=2 approximates a Gaussian random walk; alpha→0 yields increasingly extreme jumps."
+            ),
+            "params": {
+                "alpha": {
+                    "default": 1.5, "min": 0.1, "max": 2.0,
+                    "type": "float",
+                    "desc": "Stability index (2=Gaussian, 1=Cauchy, lower=more extreme)",
+                },
+            },
+        },
+        "fat_tail_walk": {
+            "fn":   markov.fat_tail_walk,
+            "name": "Fat-Tail Walk",
+            "desc": (
+                "Most steps are small, but rare steps are extremely large. "
+                "The distribution of changes has heavy tails."
+            ),
+            "params": {
+                "p_tail": {
+                    "default": 0.02, "min": 0.001, "max": 0.5,
+                    "type": "float",
+                    "desc": "Probability of an extreme step",
+                },
+                "tail_factor": {
+                    "default": 20.0, "min": 2.0, "max": 200.0,
+                    "type": "float",
+                    "desc": "Size multiplier for extreme steps",
+                },
+            },
+        },
+
     },
 
     "variational": {
