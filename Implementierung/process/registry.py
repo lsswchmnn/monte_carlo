@@ -12,7 +12,6 @@ from process                import start_states
 #   "params: → Paramter für Übergänge
 #=========================================================================
 TRANSITION_REGISTRY:     dict[str, dict] = {
-    
     "markov": {
         "random_walk": {
             "fn":   markov.random_walk,
@@ -143,9 +142,7 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
                 },
             },
         },
-
     },
-
     "variational": {
         "variational_baseline": {
             "fn":   variational.variational_baseline,
@@ -189,7 +186,6 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
             },
         },
     },
-
     "adaptive": {
         "adaptive_random_walk": {
             "fn":   adaptive.adaptive_random_walk,
@@ -210,7 +206,6 @@ TRANSITION_REGISTRY:     dict[str, dict] = {
         },
     },
 }
-
 START_STATE_REGISTRY:    dict[str, dict] = {
     "fixed_state": {
         "fn":   start_states.fixed_state,
@@ -224,7 +219,6 @@ START_STATE_REGISTRY:    dict[str, dict] = {
     },
 }
 TRANSITION_REGISTRY_ND:  dict[str, dict] = {
-
     "markov": {
         "random_walk_nd": {
             "fn":   markov_nd.random_walk_nd,
@@ -333,7 +327,6 @@ TRANSITION_REGISTRY_ND:  dict[str, dict] = {
             },
         },
     },
-
     "variational": {
         "variational_baseline_nd": {
             "fn":   variational_nd.variational_baseline_nd,
@@ -351,7 +344,6 @@ TRANSITION_REGISTRY_ND:  dict[str, dict] = {
             },
         },
     },
-
     "adaptive": {
         "adaptive_random_walk_nd": {
             "fn":   adaptive_nd.adaptive_random_walk_nd,
