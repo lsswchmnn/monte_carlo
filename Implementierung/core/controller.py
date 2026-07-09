@@ -2,7 +2,7 @@ from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY, TRANSI
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
-from   analyze.analyzer import Analyzer, ErgodicityResult
+from   analyze.analyzer import Analyzer, ErgodicityResult, AutoCorrelationResult
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
@@ -221,6 +221,15 @@ class Controller:
         entry = self.get_history_entry(index)
         result = self.analyzer.calculate_ergodicity(entry.result)
         entry.erg_result = result   # Ergebnis hinzufügen
+        return result
+
+    def calculate_autocorrelation(self, index: int, max_lag: int | None = None) -> AutoCorrelationResult:
+        '''Untersucht Autokorrelation eines Prozesses.'''
+        if self.config.dimensionality != "1d":
+            raise ValueError("Autocorrelation is not implemented for nd-processes yet.")
+        entry = self.get_history_entry(index)
+        result = self.analyzer.calculate_autocorrelation(entry.result, max_lag=max_lag)
+        entry.acf_result = result
         return result
 
 #-------------------------------------------------------------------------
