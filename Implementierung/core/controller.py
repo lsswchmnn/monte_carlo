@@ -24,17 +24,7 @@ class Controller:
         self._setup()
 
     def _setup(self) -> None:
-
-        # Startzustand-Default setzen
-        default_start                 = START_STATE_REGISTRY["fixed_state"]
-        self.config.start_state_fn    = default_start["fn"]
-        self.config.start_state_name  = default_start["name"]
-
-        # Übergangsfunktion-Default setzen
-        self.config.process_type      = "markov"
-        default_transition            = TRANSITION_REGISTRY["markov"]["random_walk"]
-        self.config.transition_fn     = default_transition["fn"]
-        self.config.transition_name   = default_transition["name"]
+        self._set_defaults()
 
 #-------------------------------------------------------------------------
 # Dimensionalität (1D oder ND)
@@ -127,8 +117,29 @@ class Controller:
     def set_transition_param(self, key: str, value) -> None:
         self.config.transition_params[key] = value
 
+#-------------------------------------------------------------------------
+# Reset von Einstellungen und Konfiguration
+
     def reset_transition_params(self) -> None:
         self.config.transition_params = {}
+
+    def reset_config(self):
+        '''Setzt gesamte Konfiguration zurück.'''
+        self.config = SimConfig()
+        self._set_defaults()
+
+    def _set_defaults(self):
+        '''Setzt Defaults für Startzustand und Übergangsfunktion.'''
+        # Startzustand-Default setzen
+        default_start                 = START_STATE_REGISTRY["fixed_state"]
+        self.config.start_state_fn    = default_start["fn"]
+        self.config.start_state_name  = default_start["name"]
+
+        # Übergangsfunktion-Default setzen
+        self.config.process_type      = "markov"
+        default_transition            = TRANSITION_REGISTRY["markov"]["random_walk"]
+        self.config.transition_fn     = default_transition["fn"]
+        self.config.transition_name   = default_transition["name"]
 
 #-------------------------------------------------------------------------
 # Registry-Zugriff (-> process/registry.py)
