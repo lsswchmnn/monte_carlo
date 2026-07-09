@@ -11,7 +11,11 @@ class ErgodicityResult:
  
 @dataclass
 class AutoCorrelationResult:
-    pass
+    lags                : np.ndarray
+    acf_mean            : np.ndarray
+    acf_std             : np.ndarray
+    significant_lags    : np.ndarray
+    confidence_bound    : float
 
 @dataclass
 class HurstExponentResult:
