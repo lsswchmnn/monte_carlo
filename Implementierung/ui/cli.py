@@ -710,6 +710,9 @@ class CLI:
         result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
         self._show_simulation_settings(config=entry.config)
+        if entry.calc_time:
+            print(f"  Duration:     {entry.calc_time:.4f}s")
+        print()
         print(f"  First path (first 10 values): {result[0][:10] if result else '—'}")
         enter_continue()
 
