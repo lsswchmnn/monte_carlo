@@ -6,7 +6,7 @@ from   analyze.analyzer import Analyzer, ErgodicityResult
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
-import numpy            as     np, math
+import numpy            as     np, math, time
 #=========================================================================
 # Controller
 # Verantwortlichkeit: Koordination aller Kernkomponenten und Zustandsver-
@@ -159,8 +159,15 @@ class Controller:
                 )
         
         self.config.rng = np.random.default_rng(self.config.seed)                   # RNG-Reset (sont unt. Ergebnisse bei gleicher Seed)
-        result = self.simulation.run(config=self.config, on_progress=on_progress)   # Simulation starten
-        self.add_history_entry(result)
+
+        # Simulation starten und Zeit messen
+        start = time.perf_counter()
+        result = self.simulation.run(config=self.config, on_progress=on_progress)
+        end = time.perf_counter()
+        calc_time = end - start
+
+        # Zu Historie hinzufügen und Liste zurückgeben
+        self.add_history_entry(result, calc_time=calc_time)
         return result
 
     def get_safe_datapoints(self) -> tuple[int, int]:
@@ -175,8 +182,8 @@ class Controller:
 #-------------------------------------------------------------------------
 # Ergebniszugriff (-> history.py)
 
-    def add_history_entry(self, result: list) -> None:
-        self.history.add(result, self.config)
+    def add_history_entry(self, result: list, calc_time: float | None = None) -> None:
+        self.history.add(result, self.config, calc_time)
 
     def get_history_entry(self, index: int) -> HistoryEntry:
         return self.history.get(index)
