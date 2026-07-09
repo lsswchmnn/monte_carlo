@@ -1,7 +1,7 @@
-from   dataclasses    import dataclass, replace
-from   core.config    import SimConfig
-from   core.analyzer  import ErgodicityResult
-import numpy          as     np
+from   dataclasses       import dataclass, replace
+from   core.config       import SimConfig
+from   analyze.analyzer  import ErgodicityResult
+import numpy             as     np
 #=========================================================================
 # HistoryManager
 # Verantwortlichkeit: Ergebnisse während runtime halten.

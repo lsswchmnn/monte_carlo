@@ -2,7 +2,7 @@ from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY, TRANSI
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
-from   core.analyzer    import Analyzer, ErgodicityResult
+from   analyze.analyzer import Analyzer, ErgodicityResult
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
