@@ -1,3 +1,4 @@
+from   analyze.results   import AutoCorrelationResult
 from   typing            import List
 from   core.config       import SimConfig
 from   datetime          import datetime
@@ -61,6 +62,10 @@ def show(result: list, plot_type: str, config: SimConfig) -> None:
         raise ValueError(f"Unknown plot type: '{plot_type}'")
     fn(result, config)
  
+def show_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> None:
+    '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
+    _plot_autocorrelation(result, config)
+
 #-------------------------------------------------------------------------
 # Private Plotting-Funktionen
 
@@ -117,7 +122,6 @@ def _plot_paths_3d(paths: list, config: SimConfig) -> None:
     _set_plot_title("sample_paths_3d")
     plt.show()
 
-
 def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
     data = np.array(paths)
     mean = data.mean(axis=0)
@@ -136,7 +140,6 @@ def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
     _set_plot_title("mean_and_std_1d")
     plt.show()
 
-
 def _plot_final_distribution(paths: List[List[float]], config: SimConfig) -> None:
     final_values = [path[-1] for path in paths]
 
@@ -147,4 +150,22 @@ def _plot_final_distribution(paths: List[List[float]], config: SimConfig) -> Non
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
     _set_plot_title("distribution_1d")
+    plt.show()
+
+def _plot_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> None:
+    lags  = result.lags
+    acf   = result.acf_mean
+    bound = result.confidence_bound
+
+    plt.bar(lags, acf, width=0.6, color="steelblue", alpha=0.8)
+    plt.axhline(bound, color="red", linestyle="--", linewidth=1, alpha=ALPHA)
+    plt.axhline(-bound, color="red", linestyle="--", linewidth=1, alpha=ALPHA)
+    plt.axhline(0, color="black", linewidth=0.8)
+
+    plt.title("Autocorrelation Function (Ensemble Mean)")
+    plt.xlabel("Lag")
+    plt.ylabel("ACF")
+    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
+    _add_label(config)
+    _set_plot_title("autocorrelation")
     plt.show()
