@@ -3,7 +3,7 @@ from   ui.utils.errors    import show_error, cli_blocking_message
 from   ui.utils.input     import input_float, input_int, input_confirm
 from   ui.utils.progress  import print_progress_bar, Spinner
 from   ui.help            import *
-from   ui.plots           import show
+from   ui.plots           import show, show_autocorrelation
 from   core.controller    import Controller
 from   core.history       import HistoryEntry
 from   core.config        import SimConfig
@@ -357,9 +357,9 @@ class CLI:
             print("2 - Print full data")
 
             if not is_nd:
-                print("3 - Sample paths")
-                print("4 - Mean and volatility")
-                print("5 - Final distribution")
+                print("3 - Plot trajectories")
+                print("4 - Plot volatility")
+                print("5 - Plot distribution")
                 print("6 - Analysis")
             elif n_dim <= 3:
                 print(f"3 - Sample paths ({n_dim}D)")
@@ -423,7 +423,7 @@ class CLI:
                 entry.erg_result = self.controller.calculate_ergodicity(index)
             except Exception as e:
                 spinner.stop()
-                cli_blocking_message("COULD NOT CALCULATE ERGODICITY", "CalculatingError", str(e))
+                cli_blocking_message("Could not calculate Ergodicity", "CalculatingError", str(e))
                 return
             spinner.stop()
 
@@ -456,7 +456,51 @@ class CLI:
 
     def _menu_autocorrelation(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Autokorrelation'''
-        pass
+        if entry.acf_result is None:
+            spinner = Spinner()
+            print()
+            spinner.start("Calculating autocorrelation")
+            try:
+                entry.acf_result = self.controller.calculate_autocorrelation(index)
+            except Exception as e:
+                spinner.stop()
+                cli_blocking_message("Could not calculate autocorrelation", "CalculatingError", str(e))
+                return
+            spinner.stop()
+
+        acf_data = entry.acf_result
+
+        while True:
+            print_heading("AUTOCORRELATION DATA")
+            print("1 - Show ACF values")
+            print("2 - Plot ACF")
+            print("3 - White noise test")
+            print("H - Help")
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                print_heading("AUTOCORRELATION DATA")
+                for lag, val in zip(acf_data.lags, acf_data.acf_mean):
+                    marker = " *" if lag > 0 and abs(val) > acf_data.confidence_bound else ""
+                    print(f"  Lag {lag:>3}: {val:+.4f}{marker}")
+                print(f"\n  95% Confidence Bound: ±{acf_data.confidence_bound:.4f}")
+                enter_continue()
+            elif choice == "2":
+                show_autocorrelation(acf_data, entry.config)
+            elif choice == "3":
+                n_sig = int(acf_data.significant_lags.sum())
+                if n_sig == 0:
+                    print("\nNo significant autocorrelation detected (consistent with white noise).")
+                else:
+                    sig_lags = acf_data.lags[acf_data.significant_lags]
+                    print(f"\nSignificant autocorrelation at {n_sig} lag(s): {list(sig_lags)}")
+                enter_continue()
+            elif choice == "h":
+                help_autocorrelation()
+            elif choice == "c":
+                break
 
     def _menu_hurst_exponent(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Hurst-Exponent'''
