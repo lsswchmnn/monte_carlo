@@ -101,6 +101,7 @@ class CLI:
             print(f"5 - Steps           (Current: {config.n_steps})")
             print(f"6 - Step size       (Current: {config.step_size})")
             print(f"7 - Seed            (Current: {config.seed})")
+            print("R - Reset")
             print("H - Help")
             print("C - Close")
 
@@ -137,7 +138,9 @@ class CLI:
                 show_error("InputError", str(e))
                 enter_continue()
 
-            if choice == "h":
+            if choice == "r":
+                self.controller.reset_config()
+            elif choice == "h":
                 help_settings()
             elif choice == "c":
                 break
