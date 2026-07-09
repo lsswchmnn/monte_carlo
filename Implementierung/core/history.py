@@ -9,9 +9,10 @@ import numpy             as     np
 #=========================================================================
 @dataclass
 class HistoryEntry:
-    result      : list
-    config      : SimConfig
-    erg_result  : ErgodicityResult | None = None    # Ergodizität optoinal
+    result      : list                              # Trajektorien
+    config      : SimConfig                         # Einstellungen
+    erg_result  : ErgodicityResult | None = None    # Ergodizität (optoinal)
+    calc_time   : float            | None = None    # Berechnungszeit (optional)
 
 #=========================================================================
 class HistoryManager:
@@ -19,10 +20,10 @@ class HistoryManager:
     def __init__(self):
         self._entries: list[HistoryEntry] = []
 
-    def add(self, result: list, config: SimConfig) -> None:
+    def add(self, result: list, config: SimConfig, calc_time: float | None = None) -> None:
         snapshot = replace(config)
-        snapshot.rng = np.random.default_rng(config.seed)  # saubere Kopie, keine Referenz
-        self._entries.append(HistoryEntry(result=result, config=snapshot))
+        snapshot.rng = np.random.default_rng(config.seed)                                         # saubere Kopie der Konfiguration
+        self._entries.append(HistoryEntry(result=result, config=snapshot, calc_time=calc_time))   # dataclass zu Historie hinzufügen
  
     def get(self, index: int) -> HistoryEntry:
         return self._entries[index]
