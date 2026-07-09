@@ -1,7 +1,9 @@
 D:\Lasse\Documents\1projekte\informatik\monte_carlo
 ├── Implementierung
+│   ├── analyze
+│   │   ├── analyze_results.py
+│   │   └── analyzer.py
 │   ├── core
-│   │   ├── analyzer.py
 │   │   ├── config.py
 │   │   ├── controller.py
 │   │   ├── history.py
@@ -28,5 +30,7 @@ D:\Lasse\Documents\1projekte\informatik\monte_carlo
 │   │   └── plots.py
 │   ├── exporter.py
 │   └── main.py
+├── .gitignore
 ├── datatree.txt
-└── README.md
+├── README.md
+└── requirements.txt
