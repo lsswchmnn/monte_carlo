@@ -123,3 +123,17 @@ def help_ergodicity():
         "depend on path history rather than only on expected values."
     )
     enter_continue()
+
+def help_autocorrelation():
+    print_heading("HELP MENU")
+    print(
+        "The autocorrelation function (ACF) measures how correlated a process is "
+        "with a delayed version of itself, for a range of time lags.\n\n"
+        "For each lag, the ACF is computed per path and then averaged across the "
+        "ensemble. Values near zero indicate no linear dependence between distant "
+        "points, while large positive or negative values indicate persistence or "
+        "mean-reverting behavior respectively.\n\n"
+        "The ±1.96/√T confidence bound marks the range expected under the null "
+        "hypothesis of white noise (independent increments) at the 95% level."
+    )
+    enter_continue()
