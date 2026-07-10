@@ -19,7 +19,13 @@ class AutoCorrelationResult:
 
 @dataclass
 class HurstExponentResult:
-    pass
+    scales            : np.ndarray
+    fluctuation_mean  : np.ndarray
+    hurst_per_path    : np.ndarray
+    hurst_mean        : float
+    hurst_std         : float
+    r_squared_mean    : float
+    on_increments     : bool
 
 @dataclass
 class VarianceGrowthResult:
