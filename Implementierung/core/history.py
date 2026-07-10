@@ -1,6 +1,6 @@
 from   dataclasses       import dataclass, replace
 from   core.config       import SimConfig
-from   analyze.analyzer  import ErgodicityResult, AutoCorrelationResult
+from   analyze.results   import ErgodicityResult, AutoCorrelationResult, HurstExponentResult
 import numpy             as     np
 #=========================================================================
 # HistoryManager
@@ -9,11 +9,12 @@ import numpy             as     np
 #=========================================================================
 @dataclass
 class HistoryEntry:
-    result      : list                                 # Trajektorien
-    config      : SimConfig                            # Einstellungen
-    erg_result  : ErgodicityResult      | None = None  # Ergodizität     (optoinal)
-    acf_result  : AutoCorrelationResult | None = None  # Autokorrelation (optional)
-    calc_time   : float                 | None = None  # Berechnungszeit (optional)
+    result       : list                                    # Trajektorien
+    config       : SimConfig                               # Einstellungen
+    erg_result   : ErgodicityResult         | None = None  # Ergodizität     (optoinal)
+    acf_result   : AutoCorrelationResult    | None = None  # Autokorrelation (optional)
+    hurst_result : HurstExponentResult      | None = None  # Hurst-Exponent  (optional)
+    calc_time    : float                    | None = None  # Berechnungszeit (optional)
 
 #=========================================================================
 class HistoryManager:
