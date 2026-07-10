@@ -9,10 +9,13 @@ def help_full():
     )
     enter_continue()
 
+#-------------------------------------------------------------------------
+# Einstellungen und Konfiguration
+
 def help_settings():
     print_heading("HELP MENU")
     print(
-        "The settings menu allows you to configure all core simulation parameters:"
+        "The settings menu allows you to configure all core simulation parameters:\n\n"
     )
     print(
         " - Dimensionality: Defines the space in which trajectories evolve. "
@@ -112,6 +115,48 @@ def help_three_types():
     )
     enter_continue()
 
+#-------------------------------------------------------------------------
+# Analyse
+
+def help_analyze():
+    print_heading("HELP MENU")
+
+    print(
+        "The analysis menu provides several methods to investigate the properties "
+        "of a completed stochastic simulation.\n\n"
+        "Available analyses:\n"
+    )
+
+    print(
+        " - Ergodicity:\n"
+        "   Compares time averages and ensemble averages to determine whether "
+        "a single trajectory represents the overall system behavior.\n"
+    )
+
+    print(
+        " - Autocorrelation Function (ACF):\n"
+        "   Measures temporal dependencies and reveals persistence, memory effects, "
+        "or mean-reverting behavior within trajectories.\n"
+    )
+
+    print(
+        " - Hurst Exponent:\n"
+        "   Estimates long-range dependence and classifies processes as persistent, "
+        "anti-persistent, or approximately random.\n"
+    )
+
+    print(
+        " - Variance Growth:\n"
+        "   Examines how the spread of trajectories changes over time and helps "
+        "identify diffusive, sub-diffusive, or super-diffusive behavior."
+    )
+
+    print(
+        "\nTogether, these methods provide a statistical overview of the dynamics "
+        "and scaling properties of the simulated process."
+    )
+    enter_continue()
+
 def help_ergodicity():
     print_heading("HELP MENU")
     print(
@@ -135,5 +180,25 @@ def help_autocorrelation():
         "mean-reverting behavior respectively.\n\n"
         "The ±1.96/√T confidence bound marks the range expected under the null "
         "hypothesis of white noise (independent increments) at the 95% level."
+    )
+    enter_continue()
+
+def help_hurst_exponent():
+    print_heading("HELP MENU")
+    print(
+        "The Hurst exponent (H) quantifies long-range dependence and self-similarity "
+        "in a time series, estimated here via Detrended Fluctuation Analysis (DFA).\n\n"
+        "DFA integrates the (demeaned) series, splits it into windows of increasing size, "
+        "removes a local linear trend per window, and measures how the residual "
+        "fluctuation F(s) scales with window size s. The slope of log F(s) vs log s "
+        "on a log-log plot is the Hurst exponent.\n\n"
+        "By default this is computed on the increments of each path (not the raw "
+        "levels), following standard convention for position/price-like series:\n"
+        "  H ≈ 0.5  -> uncorrelated increments (consistent with a random walk)\n"
+        "  H > 0.5  -> persistent / trending (increments tend to continue)\n"
+        "  H < 0.5  -> anti-persistent (increments tend to reverse, mean-reverting)\n\n"
+        "R² of the log-log fit indicates how well the scaling law holds; low R² "
+        "suggests the process isn't well described by a single scaling exponent "
+        "(e.g. crossover behavior, or too short a series)."
     )
     enter_continue()
