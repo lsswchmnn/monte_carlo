@@ -2,7 +2,8 @@ from   process.registry import TRANSITION_REGISTRY, START_STATE_REGISTRY, TRANSI
 from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
-from   analyze.analyzer import Analyzer, ErgodicityResult, AutoCorrelationResult
+from   analyze.analyzer import Analyzer
+from   analyze.results  import ErgodicityResult, AutoCorrelationResult, HurstExponentResult
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
@@ -230,6 +231,15 @@ class Controller:
         entry = self.get_history_entry(index)
         result = self.analyzer.calculate_autocorrelation(entry.result, max_lag=max_lag)
         entry.acf_result = result
+        return result
+
+    def calculate_hurst_exponent(self, index: int, on_increments: bool = True) -> HurstExponentResult:
+        '''Untersucht Langzeitgedächtnis / Selbstähnlichkeit via DFA.'''
+        if self.config.dimensionality != "1d":
+            raise ValueError("Hurst exponent is not implemented for nd-processes yet.")
+        entry = self.get_history_entry(index)
+        result = self.analyzer.calculate_hurst_exponent(entry.result, on_increments=on_increments)
+        entry.hurst_result = result
         return result
 
 #-------------------------------------------------------------------------
