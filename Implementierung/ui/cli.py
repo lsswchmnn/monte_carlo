@@ -412,6 +412,8 @@ class CLI:
                 pass
             elif choice == "c":
                 break
+            elif choice == "cc":
+                self.run()
 
     def _menu_ergodicity(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Ergodizität'''
@@ -453,6 +455,8 @@ class CLI:
                 help_ergodicity()
             elif choice == "c":
                 break
+            elif choice == "cc":
+                self.run()
 
     def _menu_autocorrelation(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Autokorrelation'''
@@ -501,6 +505,8 @@ class CLI:
                 help_autocorrelation()
             elif choice == "c":
                 break
+            elif choice == "cc":
+                self.run()
 
     def _menu_hurst_exponent(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Hurst-Exponent'''
@@ -570,6 +576,8 @@ class CLI:
  
             if choice == "c":
                 return
+            elif choice == "cc":
+                self.run()
             elif choice == "h":
                 help_start_states()
 
@@ -612,7 +620,8 @@ class CLI:
 
             if choice == "c":
                 return
-
+            elif choice == "cc":
+                self.run()
             try:
                 idx = int(choice)
             except ValueError:
@@ -659,7 +668,8 @@ class CLI:
 
             if choice == "c":
                 return
-
+            elif choice == "cc":
+                self.run()
             if choice == "r":
                 self.controller.reset_transition_params() # Reset
                 print("\nParameters reset to defaults.")
@@ -735,6 +745,9 @@ class CLI:
             elif choice == "h":
                 help_three_types()
             elif choice == "c":
+                return None
+            elif choice == "cc":
+                self.run()
                 return None
 
 #-------------------------------------------------------------------------
