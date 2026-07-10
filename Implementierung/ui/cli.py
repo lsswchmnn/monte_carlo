@@ -2,8 +2,8 @@ from   ui.utils.display   import clear_cli, print_heading, print_thin_separation
 from   ui.utils.errors    import show_error, cli_blocking_message
 from   ui.utils.input     import input_float, input_int, input_confirm
 from   ui.utils.progress  import print_progress_bar, Spinner
+from   ui.plots           import show, show_autocorrelation, show_hurst
 from   ui.help            import *
-from   ui.plots           import show, show_autocorrelation
 from   core.controller    import Controller
 from   core.history       import HistoryEntry
 from   core.config        import SimConfig
@@ -409,7 +409,7 @@ class CLI:
                 self._menu_variance_growth(entry, index)
 
             elif choice == "h":
-                pass
+                help_analyze()
             elif choice == "c":
                 break
             elif choice == "cc":
@@ -509,8 +509,59 @@ class CLI:
                 self.run()
 
     def _menu_hurst_exponent(self, entry: HistoryEntry, index: int):
-        '''Analysemenü: Hurst-Exponent'''
-        pass
+        '''Analysemenü: Hurst-Exponent (DFA)'''
+        if entry.hurst_result is None:
+            spinner = Spinner()
+            print()
+            spinner.start("Calculating Hurst exponent (DFA)")
+            try:
+                entry.hurst_result = self.controller.calculate_hurst_exponent(index)
+            except Exception as e:
+                spinner.stop()
+                cli_blocking_message("COULD NOT CALCULATE HURST EXPONENT", "CalculatingError", str(e))
+                return
+            spinner.stop()
+
+        hurst_data = entry.hurst_result
+
+        while True:
+            print_heading("HURST EXPONENT DATA (DFA)")
+            print("1 - Show fluctuation data")
+            print("2 - Plot DFA (log-log)")
+            print("3 - Interpretation")
+            print("H - Help")
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                print_heading("HURST EXPONENT DATA (DFA)")
+                for s, f in zip(hurst_data.scales, hurst_data.fluctuation_mean):
+                    print(f"  Window {s:>5}: F(s) = {f:.4f}")
+                print(f"\n  Hurst Exponent (path-mean): {hurst_data.hurst_mean:.4f}")
+                print(f"  Std across paths:           {hurst_data.hurst_std:.4f}")
+                print(f"  Fit quality (mean R²):      {hurst_data.r_squared_mean:.4f}")
+                print(f"  Computed on:                {'increments' if hurst_data.on_increments else 'raw levels'}")
+                enter_continue()
+            elif choice == "2":
+                show_hurst(hurst_data, entry.config)
+            elif choice == "3":
+                H = hurst_data.hurst_mean
+                if H < 0.45:
+                    interpretation = "Anti-persistent (mean-reverting): increments tend to reverse direction."
+                elif H > 0.55:
+                    interpretation = "Persistent (trending): increments tend to continue in the same direction."
+                else:
+                    interpretation = "Close to 0.5: consistent with uncorrelated increments (random walk)."
+                print(f"\n  H ≈ {H:.4f}  ->  {interpretation}")
+                if hurst_data.r_squared_mean < 0.95:
+                    print(f"  Note: R² = {hurst_data.r_squared_mean:.4f} is relatively low — "
+                          f"the scaling may not be well-described by a single exponent.")
+                enter_continue()
+            elif choice == "h":
+                help_hurst_exponent()
+            elif choice == "c":
+                break
 
     def _menu_variance_growth(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Varianzwachstum'''
