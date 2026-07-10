@@ -1,4 +1,4 @@
-from   analyze.results   import AutoCorrelationResult
+from   analyze.results   import AutoCorrelationResult, HurstExponentResult
 from   typing            import List
 from   core.config       import SimConfig
 from   datetime          import datetime
@@ -65,6 +65,10 @@ def show(result: list, plot_type: str, config: SimConfig) -> None:
 def show_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> None:
     '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
     _plot_autocorrelation(result, config)
+
+def show_hurst(result: HurstExponentResult, config: SimConfig) -> None:
+    '''Zeigt das DFA Log-Log-Diagramm (Fenstergröße vs. Fluktuation).'''
+    _plot_hurst(result, config)
 
 #-------------------------------------------------------------------------
 # Private Plotting-Funktionen
@@ -168,4 +172,33 @@ def _plot_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> N
     plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
     _add_label(config)
     _set_plot_title("autocorrelation")
+    plt.show()
+
+def _plot_hurst(result: HurstExponentResult, config: SimConfig) -> None:
+    log_s = np.log10(result.scales)
+    log_f = np.log10(result.fluctuation_mean)
+
+    plt.scatter(log_s, log_f, color="steelblue", label="F(s), Ensemble-Mittel", zorder=3)
+
+    # Fit-Linie auf Basis der ensemble-gemittelten Kurve (zur Visualisierung)
+    coeffs = np.polyfit(log_s, log_f, deg=1)
+    plt.plot(log_s, np.polyval(coeffs, log_s), color="red", linestyle="--",
+              label=f"Fit (Steigung ≈ {coeffs[0]:.3f})", zorder=2)
+
+    plt.text(
+        0.02, 0.85,
+        f"H (Pfad-Mittel): {result.hurst_mean:.4f} ± {result.hurst_std:.4f}\n"
+        f"R² (mittel): {result.r_squared_mean:.4f}\n"
+        f"Basis: {'Increments' if result.on_increments else 'Levels'}",
+        transform=plt.gca().transAxes, fontsize=9, verticalalignment="top",
+        bbox=dict(facecolor="white", alpha=ALPHA, edgecolor="none"),
+    )
+
+    plt.title("Detrended Fluctuation Analysis (DFA)")
+    plt.xlabel("log₁₀(Fenstergröße s)")
+    plt.ylabel("log₁₀(F(s))")
+    plt.legend(loc="lower right")
+    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
+    _add_label(config)
+    _set_plot_title("dfa_hurst")
     plt.show()
