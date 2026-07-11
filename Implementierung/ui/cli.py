@@ -702,7 +702,7 @@ class CLI:
             return
 
         while True:
-            print_heading("TRANSITION PARAMETERS")
+            print_heading("SETTINGS: TRANSITION PARAMETERS")
             print(f"Transition: {self.controller.config.transition_name}\n")
 
             # Parameter auflisten
@@ -778,7 +778,7 @@ class CLI:
 
     def _choose_process_type(self) -> str | None:       # Übergangstyp
         while True:
-            print_heading("SETTINGS: CHOOSE PROCESS TYPE")
+            print_heading("SETTINGS: PROCESS TYPE")
             print("1 - Markov Process")
             print("2 - Variational Process")
             print("3 - Adaptive Process")
@@ -839,7 +839,7 @@ class CLI:
         params  = self.controller.get_transition_params()
         process = cfg.process_type or "unknown"
 
-        print_heading(f"SETTINGS: TRANSITION ({process.upper()})")
+        print_heading(f"SETTINGS: TRANSITION")
         print(f"Transition: {cfg.transition_name}")
         print(f"\n{self.controller.get_transition_desc()}")
         self._show_params_dict(params)
