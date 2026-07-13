@@ -3,7 +3,7 @@ from   ui.cli.utils.errors    import show_error, cli_blocking_message
 from   ui.cli.utils.input     import input_float, input_int, input_confirm
 from   ui.cli.utils.progress  import print_progress_bar, Spinner
 from   ui.cli.help            import *
-from   ui.plots               import show, show_autocorrelation, show_hurst
+from   ui.plots               import Plotter
 from   core.controller        import Controller
 from   core.history           import HistoryEntry
 from   core.config            import SimConfig
@@ -14,8 +14,8 @@ import tkinter                as     tk
 class CLI:
 
     def __init__(self, controller: Controller):
-
         self.controller = controller
+        self.plotter    = Plotter()
 
 #-------------------------------------------------------------------------
 # Hauptmenü
@@ -25,8 +25,9 @@ class CLI:
         while True:
             print_heading("MONTE CARLO SIMULATION")
             print("1 - Start Simulation")
-            print("2 - Settings")
+            print("2 - Configuration")
             print("3 - History")
+            print("4 - System")
             print("H - Help")
             print("C - Close")
             print_thin_separation(linebreak=False)
@@ -38,6 +39,8 @@ class CLI:
                 self._menu_sim_settings()
             elif choice == "3":
                 self._menu_history()
+            elif choice == "4":
+                self._menu_system_settings()
 
             elif choice == "h":
                 help_full()
@@ -202,6 +205,39 @@ class CLI:
 
             elif choice == "c":
                 break
+
+    def _menu_system_settings(self):
+            '''Programmweite Anzeige-Einstellungen (kein Bezug zur Simulation).'''
+            while True:
+                print_heading("SYSTEM SETTINGS")
+
+                settings = self.plotter.settings
+                symbol_path = "🟢" if settings.smooth else "🔴"
+                symbol_grid = "🟢" if settings.grid else "🔴"
+                print(f"1 - Path smoothing       (Current: {symbol_path} {settings.smooth})")
+                print(f"2 - Grid                 (Current: {symbol_grid} {settings.grid})")
+                print(f"3 - Smoothing window     (Current: {settings.smooth_window})")
+                print(f"4 - Plot alpha           (Current: {settings.alpha})")
+                print("C - Close")
+                print_thin_separation(linebreak=False)
+                choice = input("> ").strip().lower()
+
+                if choice == "1":
+                    self.plotter.toggle_smooth()
+                elif choice == "2":
+                    self.plotter.toggle_grid()
+                elif choice == "3":
+                    print()
+                    window = input_int(2, 100, settings.smooth_window, msg="Smoothing window", raise_error=False)
+                    if window is not None:
+                        self.plotter.set_smooth_window(window)
+                elif choice == "4":
+                    print()
+                    alpha = input_float(0.0, 1.0, settings.alpha, msg="Plot alpha", raise_error=False)
+                    if alpha is not None:
+                        self.plotter.set_alpha(alpha)
+                elif choice == "c":
+                    break
 
 #-------------------------------------------------------------------------
 # Menüebene 2 - Settings
@@ -376,11 +412,11 @@ class CLI:
                 if entry.config.datapoint_count() > entry.config.limit_graph_warning:
                     if not input_confirm("The number of datapoints is large and plotting may be slow. Continue?", warn_symbol=True):
                         continue
-                show(entry.result, "sample_paths", entry.config)
+                self.plotter.show(entry.result, "sample_paths", entry.config)
             elif choice == "4" and not is_nd:
-                show(entry.result, "mean_volatility", entry.config)
+                self.plotter.show(entry.result, "mean_volatility", entry.config)
             elif choice == "5" and not is_nd:
-                show(entry.result, "final_dist", entry.config)
+                self.plotter.show(entry.result, "final_dist", entry.config)
             elif choice == "6" and not is_nd:
                 self._menu_analysis(entry, index)
             elif choice == "c":
@@ -492,7 +528,7 @@ class CLI:
                 print(f"\n  95% Confidence Bound: ±{acf_data.confidence_bound:.4f}")
                 enter_continue()
             elif choice == "2":
-                show_autocorrelation(acf_data, entry.config)
+                self.plotter.show_autocorrelation(acf_data, entry.config)
             elif choice == "3":
                 n_sig = int(acf_data.significant_lags.sum())
                 if n_sig == 0:
@@ -544,7 +580,7 @@ class CLI:
                 print(f"  Computed on:                {'increments' if hurst_data.on_increments else 'raw levels'}")
                 enter_continue()
             elif choice == "2":
-                show_hurst(hurst_data, entry.config)
+                self.plotter.show_hurst(hurst_data, entry.config)
             elif choice == "3":
                 H = hurst_data.hurst_mean
                 if H < 0.45:
