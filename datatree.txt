@@ -1,8 +1,8 @@
 D:\Lasse\Documents\1projekte\informatik\monte_carlo
 ├── Implementierung
 │   ├── analyze
-│   │   ├── analyze_results.py
-│   │   └── analyzer.py
+│   │   ├── analyzer.py
+│   │   └── results.py
 │   ├── core
 │   │   ├── config.py
 │   │   ├── controller.py
@@ -20,13 +20,14 @@ D:\Lasse\Documents\1projekte\informatik\monte_carlo
 │   │   ├── registry.py
 │   │   └── start_states.py
 │   ├── ui
-│   │   ├── utils
-│   │   │   ├── display.py
-│   │   │   ├── errors.py
-│   │   │   ├── input.py
-│   │   │   └── progress.py
-│   │   ├── cli.py
-│   │   ├── help.py
+│   │   ├── cli
+│   │   │   ├── utils
+│   │   │   │   ├── display.py
+│   │   │   │   ├── errors.py
+│   │   │   │   ├── input.py
+│   │   │   │   └── progress.py
+│   │   │   ├── cli.py
+│   │   │   └── help.py
 │   │   └── plots.py
 │   ├── exporter.py
 │   └── main.py
