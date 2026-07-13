@@ -1,5 +1,5 @@
 from core.controller import Controller
-from ui.cli          import CLI
+from ui.cli.cli      import CLI
 #=========================================================================
 if __name__ == "__main__":
     

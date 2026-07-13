@@ -1,15 +1,15 @@
-from   ui.utils.display   import clear_cli, print_heading, print_thin_separation, enter_continue
-from   ui.utils.errors    import show_error, cli_blocking_message
-from   ui.utils.input     import input_float, input_int, input_confirm
-from   ui.utils.progress  import print_progress_bar, Spinner
-from   ui.plots           import show, show_autocorrelation, show_hurst
-from   ui.help            import *
-from   core.controller    import Controller
-from   core.history       import HistoryEntry
-from   core.config        import SimConfig
-from   pathlib            import Path
-from   tkinter            import filedialog
-import tkinter            as     tk
+from   ui.cli.utils.display   import clear_cli, print_heading, print_thin_separation, enter_continue
+from   ui.cli.utils.errors    import show_error, cli_blocking_message
+from   ui.cli.utils.input     import input_float, input_int, input_confirm
+from   ui.cli.utils.progress  import print_progress_bar, Spinner
+from   ui.cli.help            import *
+from   ui.plots               import show, show_autocorrelation, show_hurst
+from   core.controller        import Controller
+from   core.history           import HistoryEntry
+from   core.config            import SimConfig
+from   pathlib                import Path
+from   tkinter                import filedialog
+import tkinter                as     tk
 #=========================================================================
 class CLI:
 
@@ -343,7 +343,7 @@ class CLI:
 # Menüebene 3/4 - Einzelergebnis
 
     def _menu_result(self, entry: HistoryEntry, index: int):
-        '''Menü für spezifisches Ergebnis'''
+        '''Hauptmenü für spezifisches Ergebnis.'''
         is_nd = entry.config.dimensionality == "nd"
         n_dim = entry.config.n_dimensions
 

@@ -1,5 +1,5 @@
-from ui.utils.errors import show_error
-from ui.utils.display import print_thin_separation
+from ui.cli.utils.errors import show_error
+from ui.cli.utils.display import print_thin_separation
 #=========================================================================
 
 def input_int(

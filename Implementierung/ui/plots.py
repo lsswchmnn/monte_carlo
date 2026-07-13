@@ -33,7 +33,7 @@ def _set_plot_title(name: str) -> None:
 #-------------------------------------------------------------------------
 # Entry-Point
  
-def show(result: list, plot_type: str, config: SimConfig) -> None:
+def show(result: list, plot_type: str, config: SimConfig, smooth: bool=True) -> None:
     '''
     Verteilt auf die passende Plot-Funktion abhängig von Dimensionalität
     und Plot-Typ.
@@ -57,6 +57,12 @@ def show(result: list, plot_type: str, config: SimConfig) -> None:
         "mean_volatility": _plot_mean_and_std,
         "final_dist":      _plot_final_distribution,
     }
+
+    # Sonderbehandlung wegen smooth-Parameter
+    if plot_type == "sample_paths":
+        _plot_paths_1d(result, config, smooth=smooth)
+
+    # Allgemeine Behandlung für andere 1D-Plotting-Funktion
     fn = plots.get(plot_type)
     if fn is None:
         raise ValueError(f"Unknown plot type: '{plot_type}'")
@@ -73,9 +79,13 @@ def show_hurst(result: HurstExponentResult, config: SimConfig) -> None:
 #-------------------------------------------------------------------------
 # Private Plotting-Funktionen
 
-def _plot_paths_1d(paths: List[List[float]], config: SimConfig) -> None:
+def _plot_paths_1d(paths: List[List[float]], config: SimConfig, smooth: bool=True) -> None:
+    
     for path in paths:
-        plt.plot(_smooth_path(path), alpha=ALPHA)
+        if smooth:
+            plt.plot(_smooth_path(path), alpha=ALPHA)
+        else:
+            plt.plot(path, alpha=ALPHA)
 
     plt.title("All Sample Paths")
     plt.xlabel("Step")

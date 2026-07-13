@@ -1,4 +1,4 @@
-from ui.utils.display import print_heading, enter_continue
+from ui.cli.utils.display import print_heading, enter_continue
 #=========================================================================
 
 def show_error(title: str="Error", text: str="An unknown error occurred."):

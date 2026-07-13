@@ -12,7 +12,7 @@ import numpy            as     np, math, time
 # Controller
 # Verantwortlichkeit: Koordination aller Kernkomponenten und Zustandsver-
 # waltung. Einzige Vermittlung zwischen UI und Backend.
-#=========================================================================
+#=========================================================================  
 class Controller:
 
     def __init__(self):
