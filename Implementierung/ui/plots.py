@@ -1,214 +1,245 @@
 from   analyze.results   import AutoCorrelationResult, HurstExponentResult
-from   typing            import List
 from   core.config       import SimConfig
+from   dataclasses       import dataclass
+from   typing            import List
 from   datetime          import datetime
 import matplotlib.pyplot as plt
 import numpy             as np
 #=========================================================================
-# Verschiedenes und Hilfsfunktionen
+@dataclass
+class PlotSettings:
+    smooth        : bool  = True
+    grid          : bool  = True
+    smooth_window : int   = 10
+    alpha         : float = 0.5
 
-ALPHA: float = 0.5
+#=========================================================================
+class Plotter:
 
-def _smooth_path(path: list, window: int = 10) -> np.ndarray:
-    if len(path) < window:
-        return np.array(path)
-    return np.convolve(path, np.ones(window) / window, mode="same")
-
-def _add_label(config: SimConfig) -> None:
-    '''Fügt Transition-Name und Seed als Textbox in den Plot ein.'''
-    plt.text(
-        0.02, 0.95,
-        f"Transition: {config.transition_name}\nSeed: {config.seed} | Paths: {config.n_paths}",
-        transform=plt.gca().transAxes,
-        fontsize=10,
-        verticalalignment="top",
-        bbox=dict(facecolor="white", alpha=ALPHA, edgecolor="none"),
-    )
-
-def _set_plot_title(name: str) -> None:
-    plt.gcf().canvas.manager.set_window_title(
-        f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-    )
+    def __init__(self, settings: PlotSettings | None = None):
+        self.settings: PlotSettings = settings or PlotSettings()
 
 #-------------------------------------------------------------------------
-# Entry-Point
- 
-def show(result: list, plot_type: str, config: SimConfig, smooth: bool=True) -> None:
-    '''
-    Verteilt auf die passende Plot-Funktion abhängig von Dimensionalität
-    und Plot-Typ.
-    '''
-    # ND Plotting
-    if config.dimensionality == "nd":
-        if plot_type == "sample_paths":
-            if config.n_dimensions == 2:
-                _plot_paths_2d(result, config)
-            elif config.n_dimensions == 3:
-                _plot_paths_3d(result, config)
+# Einstellungen (öffentlich)
+
+    def toggle_smooth(self) -> None:
+        self.settings.smooth = not self.settings.smooth
+
+    def toggle_grid(self) -> None:
+        self.settings.grid = not self.settings.grid
+
+    def set_smooth_window(self, window: int) -> None:
+        self.settings.smooth_window = window
+
+    def set_alpha(self, alpha: float) -> None:
+        self.settings.alpha = alpha
+
+#-------------------------------------------------------------------------
+# Entry-Point (öffentlich)
+
+    def show(self, result: list, plot_type: str, config: SimConfig) -> None:
+        '''
+        Verteilt auf die passende Plot-Funktion abhängig von Dimensionalität
+        und Plot-Typ.
+        '''
+        # ND Plotting
+        if config.dimensionality == "nd":
+            if plot_type == "sample_paths":
+                if config.n_dimensions == 2:
+                    self._plot_paths_2d(result, config)
+                elif config.n_dimensions == 3:
+                    self._plot_paths_3d(result, config)
+                else:
+                    raise ValueError(f"Plotting not supported for {config.n_dimensions}D.")
             else:
-                raise ValueError(f"Plotting not supported for {config.n_dimensions}D.")
-        else:
-            raise ValueError(f"Plot type '{plot_type}' is not available for ND results.")
-        return
+                raise ValueError(f"Plot type '{plot_type}' is not available for ND results.")
+            return
 
-    # 1D Plotting
-    plots = {
-        "sample_paths":    _plot_paths_1d,
-        "mean_volatility": _plot_mean_and_std,
-        "final_dist":      _plot_final_distribution,
-    }
+        # 1D Plotting: sample_paths gesondert behandeln
+        if plot_type == "sample_paths":
+            self._plot_paths_1d(result, config)
+            return
 
-    # Sonderbehandlung wegen smooth-Parameter
-    if plot_type == "sample_paths":
-        _plot_paths_1d(result, config, smooth=smooth)
+        # 1D Plotting: allgemeine Behandlung
+        plots = {"mean_volatility": self._plot_mean_and_std, "final_dist": self._plot_final_distribution}
+        fn = plots.get(plot_type)
+        if fn is None:
+            raise ValueError(f"Unknown plot type: '{plot_type}'")
+        fn(result, config)
+    
+    def show_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
+        '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
+        self._plot_autocorrelation(result, config)
 
-    # Allgemeine Behandlung für andere 1D-Plotting-Funktion
-    fn = plots.get(plot_type)
-    if fn is None:
-        raise ValueError(f"Unknown plot type: '{plot_type}'")
-    fn(result, config)
- 
-def show_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> None:
-    '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
-    _plot_autocorrelation(result, config)
-
-def show_hurst(result: HurstExponentResult, config: SimConfig) -> None:
-    '''Zeigt das DFA Log-Log-Diagramm (Fenstergröße vs. Fluktuation).'''
-    _plot_hurst(result, config)
+    def show_hurst(self, result: HurstExponentResult, config: SimConfig) -> None:
+        '''Zeigt das DFA Log-Log-Diagramm (Fenstergröße vs. Fluktuation).'''
+        self._plot_hurst(result, config)
 
 #-------------------------------------------------------------------------
-# Private Plotting-Funktionen
+# Hilfsfunktionen (privat)
 
-def _plot_paths_1d(paths: List[List[float]], config: SimConfig, smooth: bool=True) -> None:
-    
-    for path in paths:
-        if smooth:
-            plt.plot(_smooth_path(path), alpha=ALPHA)
+    @staticmethod
+    def _smooth_path(path: list, window: int = 10) -> np.ndarray:
+        '''Glättet Darstellung eines Pfades.'''
+        if len(path) < window:
+            return np.array(path)
+        return np.convolve(path, np.ones(window) / window, mode="same")
+
+    @staticmethod
+    def _set_plot_title(name: str) -> None:
+        '''Erstellt Titel für Graph mit Timestamp.'''
+        plt.gcf().canvas.manager.set_window_title(
+            f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+        )
+
+    def _add_label(self, config: SimConfig) -> None:
+        '''Fügt Transition-Name und Seed als Textbox in den Plot ein.'''
+        plt.text(
+            0.02, 0.95,
+            f"Transition: {config.transition_name}\nSeed: {config.seed} | Paths: {config.n_paths}",
+            transform=plt.gca().transAxes,
+            fontsize=10,
+            verticalalignment="top",
+            bbox=dict(facecolor="white", alpha=self.settings.alpha, edgecolor="none"),
+        )
+
+    def _apply_grid(self):
+        if self.settings.grid:
+            plt.grid(True, which="both", linestyle="--", alpha=0.5)
         else:
-            plt.plot(path, alpha=ALPHA)
+            plt.grid(False)
 
-    plt.title("All Sample Paths")
-    plt.xlabel("Step")
-    plt.ylabel("State")
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    _add_label(config)
-    _set_plot_title("sample_paths_1d")
-    plt.show()
+#-------------------------------------------------------------------------
+# Plotting-Funktionen (privat)
 
-def _plot_paths_2d(paths: list, config: SimConfig) -> None:
-    '''
-    Zeichnet alle Sample Paths im 2D-Raum.
-    x- und y-Achse sind die beiden Dimensionen, Zeit ist implizit der Verlauf.
-    Startpunkt als Marker hervorgehoben.
-    '''
-    for path in paths:
-        coords = np.array(path)         # shape: (n_steps, 2)
-        plt.plot(coords[:, 0], coords[:, 1], alpha=ALPHA, linewidth=0.8)
-        plt.plot(coords[0, 0], coords[0, 1],                   # Startpunkt
-                 marker="o", markersize=3, color="black", alpha=ALPHA)
- 
-    plt.title("All Sample Paths (2D)")
-    plt.xlabel("Dimension 1")
-    plt.ylabel("Dimension 2")
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    plt.axis("equal")                   # gleiche Skalierung beider Achsen
-    _add_label(config)
-    _set_plot_title("sample_paths_2d")
-    plt.show()
+    def _plot_paths_1d(self, paths: List[List[float]], config: SimConfig) -> None:
+        for path in paths:
+            if self.settings.smooth:
+                plt.plot(self._smooth_path(path, window=self.settings.smooth_window), alpha=self.settings.alpha)
+            else:
+                plt.plot(path, alpha=self.settings.alpha)
 
-def _plot_paths_3d(paths: list, config: SimConfig) -> None:
-    '''
-    Zeichnet alle Sample Paths im 3D-Raum.
-    Drei Dimensionen auf x/y/z-Achsen, Zeit implizit als Verlauf der Linie.
-    '''
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
- 
-    for path in paths:
-        coords = np.array(path)         # shape: (n_steps, 3)
-        ax.plot(coords[:, 0], coords[:, 1], coords[:, 2],
-                alpha=ALPHA, linewidth=0.8)
- 
-    ax.set_title("All Sample Paths (3D)")
-    ax.set_xlabel("Dimension 1")
-    ax.set_ylabel("Dimension 2")
-    ax.set_zlabel("Dimension 3")
-    _set_plot_title("sample_paths_3d")
-    plt.show()
+        plt.title("All Sample Paths")
+        plt.xlabel("Step")
+        plt.ylabel("State")
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("sample_paths_1d")
+        plt.show()
 
-def _plot_mean_and_std(paths: List[List[float]], config: SimConfig) -> None:
-    data = np.array(paths)
-    mean = data.mean(axis=0)
-    std  = data.std(axis=0)
-    x    = range(len(mean))
+    def _plot_paths_2d(self, paths: list, config: SimConfig) -> None:
+        '''
+        Zeichnet alle Sample Paths im 2D-Raum.
+        x- und y-Achse sind die beiden Dimensionen, Zeit ist implizit der Verlauf.
+        Startpunkt als Marker hervorgehoben.
+        '''
+        for path in paths:
+            coords = np.array(path)         # shape: (n_steps, 2)
+            plt.plot(coords[:, 0], coords[:, 1], alpha=self.settings.alpha, linewidth=0.8)
+            plt.plot(coords[0, 0], coords[0, 1],                   # Startpunkt
+                     marker="o", markersize=3, color="black", alpha=self.settings.alpha)
 
-    plt.plot(x, mean, label="Mean", color="black")
-    plt.fill_between(x, mean - std, mean + std, alpha=0.3, label="±1 Std Dev")
+        plt.title("All Sample Paths (2D)")
+        plt.xlabel("Dimension 1")
+        plt.ylabel("Dimension 2")
+        plt.axis("equal")                   # gleiche Skalierung beider Achsen
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("sample_paths_2d")
+        plt.show()
 
-    plt.title("Mean Path with Volatility")
-    plt.xlabel("Step")
-    plt.ylabel("State")
-    plt.legend()
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    _add_label(config)
-    _set_plot_title("mean_and_std_1d")
-    plt.show()
+    def _plot_paths_3d(self, paths: list, config: SimConfig) -> None:
+        '''
+        Zeichnet alle Sample Paths im 3D-Raum.
+        Drei Dimensionen auf x/y/z-Achsen, Zeit implizit als Verlauf der Linie.
+        '''
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
 
-def _plot_final_distribution(paths: List[List[float]], config: SimConfig) -> None:
-    final_values = [path[-1] for path in paths]
+        for path in paths:
+            coords = np.array(path)         # shape: (n_steps, 3)
+            ax.plot(coords[:, 0], coords[:, 1], coords[:, 2],
+                    alpha=self.settings.alpha, linewidth=0.8)
 
-    plt.hist(final_values, bins=30, alpha=0.7)
-    plt.title("Distribution of Final States")
-    plt.xlabel("Final State")
-    plt.ylabel("Frequency")
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    _add_label(config)
-    _set_plot_title("distribution_1d")
-    plt.show()
+        ax.set_title("All Sample Paths (3D)")
+        ax.set_xlabel("Dimension 1")
+        ax.set_ylabel("Dimension 2")
+        ax.set_zlabel("Dimension 3")
+        self._set_plot_title("sample_paths_3d")
+        plt.show()
 
-def _plot_autocorrelation(result: AutoCorrelationResult, config: SimConfig) -> None:
-    lags  = result.lags
-    acf   = result.acf_mean
-    bound = result.confidence_bound
+    def _plot_mean_and_std(self, paths: List[List[float]], config: SimConfig) -> None:
+        data = np.array(paths)
+        mean = data.mean(axis=0)
+        std  = data.std(axis=0)
+        x    = range(len(mean))
 
-    plt.bar(lags, acf, width=0.6, color="steelblue", alpha=0.8)
-    plt.axhline(bound, color="red", linestyle="--", linewidth=1, alpha=ALPHA)
-    plt.axhline(-bound, color="red", linestyle="--", linewidth=1, alpha=ALPHA)
-    plt.axhline(0, color="black", linewidth=0.8)
+        plt.plot(x, mean, label="Mean", color="black")
+        plt.fill_between(x, mean - std, mean + std, alpha=0.3, label="±1 Std Dev")
 
-    plt.title("Autocorrelation Function (Ensemble Mean)")
-    plt.xlabel("Lag")
-    plt.ylabel("ACF")
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    _add_label(config)
-    _set_plot_title("autocorrelation")
-    plt.show()
+        plt.title("Mean Path with Volatility")
+        plt.xlabel("Step")
+        plt.ylabel("State")
+        plt.legend()
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("mean_and_std_1d")
+        plt.show()
 
-def _plot_hurst(result: HurstExponentResult, config: SimConfig) -> None:
-    log_s = np.log10(result.scales)
-    log_f = np.log10(result.fluctuation_mean)
+    def _plot_final_distribution(self, paths: List[List[float]], config: SimConfig) -> None:
+        final_values = [path[-1] for path in paths]
 
-    plt.scatter(log_s, log_f, color="steelblue", label="F(s), Ensemble-Mittel", zorder=3)
+        plt.hist(final_values, bins=30, alpha=self.settings.alpha)
+        plt.title("Distribution of Final States")
+        plt.xlabel("Final State")
+        plt.ylabel("Frequency")
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("distribution_1d")
+        plt.show()
 
-    # Fit-Linie auf Basis der ensemble-gemittelten Kurve (zur Visualisierung)
-    coeffs = np.polyfit(log_s, log_f, deg=1)
-    plt.plot(log_s, np.polyval(coeffs, log_s), color="red", linestyle="--",
-              label=f"Fit (Steigung ≈ {coeffs[0]:.3f})", zorder=2)
+    def _plot_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
+        lags  = result.lags
+        acf   = result.acf_mean
+        bound = result.confidence_bound
 
-    plt.text(
-        0.02, 0.85,
-        f"H (Pfad-Mittel): {result.hurst_mean:.4f} ± {result.hurst_std:.4f}\n"
-        f"R² (mittel): {result.r_squared_mean:.4f}\n"
-        f"Basis: {'Increments' if result.on_increments else 'Levels'}",
-        transform=plt.gca().transAxes, fontsize=9, verticalalignment="top",
-        bbox=dict(facecolor="white", alpha=ALPHA, edgecolor="none"),
-    )
+        plt.bar(lags, acf, width=0.6, color="steelblue", alpha=0.8)
+        plt.axhline(bound, color="red", linestyle="--", linewidth=1, alpha=self.settings.alpha)
+        plt.axhline(-bound, color="red", linestyle="--", linewidth=1, alpha=self.settings.alpha)
+        plt.axhline(0, color="black", linewidth=0.8)
 
-    plt.title("Detrended Fluctuation Analysis (DFA)")
-    plt.xlabel("log₁₀(Fenstergröße s)")
-    plt.ylabel("log₁₀(F(s))")
-    plt.legend(loc="lower right")
-    plt.grid(True, which="both", linestyle="--", alpha=ALPHA)
-    _add_label(config)
-    _set_plot_title("dfa_hurst")
-    plt.show()
+        plt.title("Autocorrelation Function (Ensemble Mean)")
+        plt.xlabel("Lag")
+        plt.ylabel("ACF")
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("autocorrelation")
+        plt.show()
+
+    def _plot_hurst(self, result: HurstExponentResult, config: SimConfig) -> None:
+        log_s = np.log10(result.scales)
+        log_f = np.log10(result.fluctuation_mean)
+
+        plt.scatter(log_s, log_f, color="steelblue", label="F(s), Ensemble-Mittel", zorder=3)
+
+        coeffs = np.polyfit(log_s, log_f, deg=1)
+        plt.plot(log_s, np.polyval(coeffs, log_s), color="red", linestyle="--",
+                  label=f"Fit (Steigung ≈ {coeffs[0]:.3f})", zorder=2)
+
+        plt.text(
+            0.02, 0.85,
+            f"H (Pfad-Mittel): {result.hurst_mean:.4f} ± {result.hurst_std:.4f}\n"
+            f"R² (mittel): {result.r_squared_mean:.4f}\n"
+            f"Basis: {'Increments' if result.on_increments else 'Levels'}",
+            transform=plt.gca().transAxes, fontsize=9, verticalalignment="top",
+            bbox=dict(facecolor="white", alpha=self.settings.alpha, edgecolor="none"),
+        )
+
+        plt.title("Detrended Fluctuation Analysis (DFA)")
+        plt.xlabel("log₁₀(Fenstergröße s)")
+        plt.ylabel("log₁₀(F(s))")
+        plt.legend(loc="lower right")
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("dfa_hurst")
+        plt.show()
