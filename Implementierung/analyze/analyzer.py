@@ -3,20 +3,9 @@ from   typing          import List
 import numpy           as     np
 #=========================================================================
 # Klasse für Operationen auf fertige Analyseergebnisse.
-# Aktuell: Ergodizität.
+# Aktuell: Ergodizität, Autokorrelation, Hurs-Exponent.
 #=========================================================================
 class Analyzer:
-
-#-------------------------------------------------------------------------
-# Allgemein
-
-    @staticmethod
-    def time_average(path) -> float:
-        return path.mean()
-
-    @staticmethod
-    def ensemble_average(data: np.ndarray) -> float:
-        return data.mean()
 
 #-------------------------------------------------------------------------
 # Ergodizität
@@ -48,6 +37,14 @@ class Analyzer:
             time_means=time_means,
             ergodic_heuristic=ergodic
         )
+
+    @staticmethod
+    def time_average(path) -> float:
+        return path.mean()
+
+    @staticmethod
+    def ensemble_average(data: np.ndarray) -> float:
+        return data.mean()
 
 #-------------------------------------------------------------------------
 # Autokorrelation (ACF)
