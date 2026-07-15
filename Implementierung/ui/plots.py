@@ -34,6 +34,9 @@ class Plotter:
     def set_alpha(self, alpha: float) -> None:
         self.settings.alpha = alpha
 
+    def reset_settings(self) -> None:
+        self.settings = PlotSettings()
+
 #-------------------------------------------------------------------------
 # Entry-Point (öffentlich)
 
