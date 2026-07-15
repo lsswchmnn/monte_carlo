@@ -191,3 +191,64 @@ class Analyzer:
         r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
 
         return scales, fluctuations, H, r_squared
+
+#-------------------------------------------------------------------------
+# Varianzwachstum
+
+    def calculate_variance_growth(self, paths: List[List[float]],
+                                   min_t: int = 2,
+                                   max_t: int | None = None,
+                                   n_points: int = 30) -> VarianceGrowthResult:
+        '''
+        Untersucht, wie die Ensemble-Varianz der Verschiebung (x_t - x_0) mit
+        der Zeit wächst. Fit von log(Var(t)) gegen log(t) liefert den
+        Wachstumsexponenten gamma:
+          gamma ≈ 1  -> normale (Fick'sche) Diffusion, z.B. Random Walk
+          gamma < 1  -> subdiffusiv (Sättigung), z.B. Mean Reversion
+          gamma > 1  -> superdiffusiv, z.B. Lévy Flight (seltene große Sprünge)
+        Verwandt zum Hurst-Exponenten über gamma ≈ 2H bei selbstähnlichen Prozessen.
+        '''
+        data = np.array(paths)
+        n_paths, T = data.shape
+
+        displacement  = data - data[:, [0]]             # x_t - x_0 pro Pfad
+        variance_full = displacement.var(axis=0)         # Ensemble-Varianz pro Zeitschritt
+
+        if max_t is None:
+            max_t = T - 1
+        max_t = min(max_t, T - 1)
+
+        # Log-verteilte Zeitpunkte (t=0 ausgeschlossen wegen log(0))
+        raw_times = np.logspace(np.log10(min_t), np.log10(max_t), n_points)
+        times = np.unique(raw_times.astype(int))
+        times = times[times >= min_t]
+        variance = variance_full[times]
+
+        # Schutz gegen log(0), falls Varianz an einem Punkt exakt 0 ist
+        valid        = variance > 0
+        times_fit    = times[valid]
+        variance_fit = variance[valid]
+
+        log_t = np.log(times_fit)
+        log_v = np.log(variance_fit)
+        gamma, c = np.polyfit(log_t, log_v, deg=1)
+
+        predicted = gamma * log_t + c
+        ss_res = np.sum((log_v - predicted) ** 2)
+        ss_tot = np.sum((log_v - log_v.mean()) ** 2)
+        r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
+
+        if gamma < 0.9:
+            diffusive_type = "subdiffusive"
+        elif gamma > 1.1:
+            diffusive_type = "superdiffusive"
+        else:
+            diffusive_type = "diffusive"
+
+        return VarianceGrowthResult(
+            times=times_fit,
+            variance=variance_fit,
+            growth_exponent=gamma,
+            r_squared=r_squared,
+            diffusive_type=diffusive_type,
+        )
