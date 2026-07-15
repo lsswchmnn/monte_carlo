@@ -29,4 +29,8 @@ class HurstExponentResult:
 
 @dataclass
 class VarianceGrowthResult:
-    pass
+    times            : np.ndarray
+    variance         : np.ndarray
+    growth_exponent  : float
+    r_squared        : float
+    diffusive_type   : str
