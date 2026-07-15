@@ -607,7 +607,62 @@ class CLI:
 
     def _menu_variance_growth(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Varianzwachstum'''
-        pass
+        if entry.variance_result is None:
+            spinner = Spinner()
+            print()
+            spinner.start("Calculating variance growth")
+            try:
+                entry.variance_result = self.controller.calculate_variance_growth(index)
+            except Exception as e:
+                spinner.stop()
+                cli_blocking_message("COULD NOT CALCULATE VARIANCE GROWTH", "CalculatingError", str(e))
+                return
+            spinner.stop()
+
+        var_data = entry.variance_result
+
+        while True:
+            print_heading("VARIANCE GROWTH DATA")
+            print("1 - Show variance data")
+            print("2 - Plot variance growth (log-log)")
+            print("3 - Interpretation")
+            print("H - Help")
+            print("C - Close")
+            print_thin_separation(linebreak=False)
+            choice = input("> ").strip().lower()
+
+            if choice == "1":
+                print_heading("VARIANCE GROWTH DATA")
+                for t, v in zip(var_data.times, var_data.variance):
+                    print(f"  t = {t:>5}: Var(t) = {v:.4f}")
+                print(f"\n  Growth Exponent (γ): {var_data.growth_exponent:.4f}")
+                print(f"  Fit quality (R²):     {var_data.r_squared:.4f}")
+                print(f"  Classification:        {var_data.diffusive_type}")
+                enter_continue()
+            elif choice == "2":
+                self.plotter.show_variance_growth(var_data, entry.config)
+            elif choice == "3":
+                gamma = var_data.growth_exponent
+                print(f"\n  γ ≈ {gamma:.4f}  ->  {var_data.diffusive_type.capitalize()}")
+                if var_data.diffusive_type == "diffusive":
+                    print("  Variance grows approximately linearly — consistent with "
+                          "normal (Fickian) diffusion, e.g. an uncorrelated random walk.")
+                elif var_data.diffusive_type == "subdiffusive":
+                    print("  Variance grows slower than linear — consistent with a "
+                          "restoring force (e.g. mean reversion) limiting long-term spread.")
+                else:
+                    print("  Variance grows faster than linear — consistent with rare, "
+                          "large jumps (e.g. heavy-tailed transitions) or persistent trending.")
+                if var_data.r_squared < 0.8:
+                    print(f"  Note: R² = {var_data.r_squared:.4f} is low — the growth "
+                          f"likely doesn't follow a single power law over this range.")
+                enter_continue()
+            elif choice == "h":
+                help_variance_growth()
+            elif choice == "c":
+                break
+            elif choice == "cc":
+                self.run()
 
 #-------------------------------------------------------------------------
 # Ausführung

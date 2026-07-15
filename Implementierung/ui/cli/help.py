@@ -218,3 +218,22 @@ def help_hurst_exponent():
         "(e.g. crossover behavior, or too short a series)."
     )
     enter_continue()
+
+def help_variance_growth():
+    print_heading("HELP MENU")
+    print(
+        "Variance growth tracks how the ensemble variance of the displacement "
+        "(x_t - x_0) grows over time. A power law Var(t) ~ t^gamma is fitted "
+        "on a log-log scale.\n\n"
+        "  gamma ≈ 1  -> normal (Fickian) diffusion — e.g. an uncorrelated random walk\n"
+        "  gamma < 1  -> subdiffusive — a restoring force limits long-term spread\n"
+        "  gamma > 1  -> superdiffusive — rare large jumps or persistent trending\n\n"
+        "This is closely related to the Hurst exponent (gamma ≈ 2H for "
+        "self-similar processes), but measured directly on the ensemble spread "
+        "rather than via detrended fluctuation of individual paths.\n\n"
+        "A low R² usually means the process doesn't follow a single power law "
+        "over the whole time range — e.g. mean-reverting processes saturate "
+        "toward a plateau rather than growing indefinitely, which a single "
+        "exponent fit describes only roughly."
+    )
+    enter_continue()
