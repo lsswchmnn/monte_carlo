@@ -212,30 +212,36 @@ class CLI:
                 print_heading("SYSTEM SETTINGS")
 
                 settings = self.plotter.settings
-                symbol_path = "🟢" if settings.smooth else "🔴"
-                symbol_grid = "🟢" if settings.grid else "🔴"
-                print(f"1 - Path smoothing       (Current: {symbol_path} {settings.smooth})")
-                print(f"2 - Grid                 (Current: {symbol_grid} {settings.grid})")
+                symbol_path = "🟢 Active" if settings.smooth else "🔴 Inactive"
+                symbol_grid = "🟢 Active" if settings.grid   else "🔴 Inactive"
+
+                print(f"1 - Grid                 (Current: {symbol_grid})")
+                print(f"2 - Path smoothing       (Current: {symbol_path})")
                 print(f"3 - Smoothing window     (Current: {settings.smooth_window})")
                 print(f"4 - Plot alpha           (Current: {settings.alpha})")
+                print("R - Reset")
+                print("H - Help")
                 print("C - Close")
                 print_thin_separation(linebreak=False)
                 choice = input("> ").strip().lower()
-
+                
                 if choice == "1":
-                    self.plotter.toggle_smooth()
-                elif choice == "2":
                     self.plotter.toggle_grid()
-                elif choice == "3":
-                    print()
+                elif choice == "2":
+                    self.plotter.toggle_smooth()
+                print()
+                if choice == "3":
                     window = input_int(2, 100, settings.smooth_window, msg="Smoothing window", raise_error=False)
                     if window is not None:
                         self.plotter.set_smooth_window(window)
                 elif choice == "4":
-                    print()
                     alpha = input_float(0.0, 1.0, settings.alpha, msg="Plot alpha", raise_error=False)
                     if alpha is not None:
                         self.plotter.set_alpha(alpha)
+                elif choice == "r":
+                    self.plotter.reset_settings()
+                elif choice == "h":
+                    help_system_settings()
                 elif choice == "c":
                     break
 
