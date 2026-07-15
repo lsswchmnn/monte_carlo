@@ -3,7 +3,7 @@ from   core.config      import SimConfig
 from   core.simulation  import MonteCarloSim
 from   core.history     import HistoryManager, HistoryEntry
 from   analyze.analyzer import Analyzer
-from   analyze.results  import ErgodicityResult, AutoCorrelationResult, HurstExponentResult
+from   analyze.results  import *
 from   exporter         import Exporter          
 from   typing           import Callable
 from   pathlib          import Path
@@ -221,7 +221,7 @@ class Controller:
             raise ValueError("Ergodicity is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
         result = self.analyzer.calculate_ergodicity(entry.result)
-        entry.erg_result = result   # Ergebnis hinzufügen
+        entry.erg_result = result
         return result
 
     def calculate_autocorrelation(self, index: int, max_lag: int | None = None) -> AutoCorrelationResult:
@@ -240,6 +240,15 @@ class Controller:
         entry = self.get_history_entry(index)
         result = self.analyzer.calculate_hurst_exponent(entry.result, on_increments=on_increments)
         entry.hurst_result = result
+        return result
+
+    def calculate_variance_growth(self, index: int) -> VarianceGrowthResult:
+        '''Untersucht das Wachstum der Ensemble-Varianz über die Zeit.'''
+        if self.config.dimensionality != "1d":
+            raise ValueError("Variance growth is not implemented for nd-processes yet.")
+        entry = self.get_history_entry(index)
+        result = self.analyzer.calculate_variance_growth(entry.result)
+        entry.variance_result = result
         return result
 
 #-------------------------------------------------------------------------
