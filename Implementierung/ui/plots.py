@@ -1,10 +1,10 @@
-from   analyze.results   import AutoCorrelationResult, HurstExponentResult
+from   analyze.results   import AutoCorrelationResult, HurstExponentResult, VarianceGrowthResult
 from   core.config       import SimConfig
 from   dataclasses       import dataclass
 from   typing            import List
 from   datetime          import datetime
-import matplotlib.pyplot as plt
-import numpy             as np
+import matplotlib.pyplot as     plt
+import numpy             as     np
 #=========================================================================
 @dataclass
 class PlotSettings:
@@ -77,6 +77,10 @@ class Plotter:
     def show_hurst(self, result: HurstExponentResult, config: SimConfig) -> None:
         '''Zeigt das DFA Log-Log-Diagramm (Fenstergröße vs. Fluktuation).'''
         self._plot_hurst(result, config)
+
+    def show_variance_growth(self, result: VarianceGrowthResult, config: SimConfig) -> None:
+            '''Zeigt das Log-Log-Diagramm des Varianzwachstums (Zeit vs. Varianz).'''
+            self._plot_variance_growth(result, config)
 
 #-------------------------------------------------------------------------
 # Hilfsfunktionen (privat)
@@ -245,4 +249,37 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("dfa_hurst")
+        plt.show()
+
+    def _plot_variance_growth(self, result: VarianceGrowthResult, config: SimConfig) -> None:
+        log_t = np.log10(result.times)
+        log_v = np.log10(result.variance)
+
+        plt.scatter(log_t, log_v, color="steelblue", label="Var(t), Ensemble", zorder=3)
+
+        coeffs = np.polyfit(log_t, log_v, deg=1)
+        plt.plot(log_t, np.polyval(coeffs, log_t), color="red", linestyle="--",
+                  label=f"Fit (γ ≈ {coeffs[0]:.3f})", zorder=2)
+
+        # Referenzlinie: normale Diffusion (gamma=1), durch denselben Startpunkt gelegt
+        ref = log_v[0] + 1.0 * (log_t - log_t[0])
+        plt.plot(log_t, ref, color="gray", linestyle=":", alpha=self.settings.alpha,
+                  label="Referenz: γ=1 (diffusiv)", zorder=1)
+
+        plt.text(
+            0.02, 0.85,
+            f"γ (Wachstumsexponent): {result.growth_exponent:.4f}\n"
+            f"R²: {result.r_squared:.4f}\n"
+            f"Klassifikation: {result.diffusive_type}",
+            transform=plt.gca().transAxes, fontsize=9, verticalalignment="top",
+            bbox=dict(facecolor="white", alpha=self.settings.alpha, edgecolor="none"),
+        )
+
+        plt.title("Variance Growth")
+        plt.xlabel("log₁₀(t)")
+        plt.ylabel("log₁₀(Var(t))")
+        plt.legend(loc="lower right")
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("variance_growth")
         plt.show()
