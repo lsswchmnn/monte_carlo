@@ -115,6 +115,22 @@ def help_three_types():
     )
     enter_continue()
 
+def help_system_settings():
+    print_heading("HELP MENU")
+    print(
+        "System settings control how results are displayed — they have no "
+        "effect on the simulation itself and are not saved with exported results.\n"
+    )
+    print(
+        " - Grid: Toggles the background grid on plots.\n"
+        " - Path smoothing: Applies a moving average to sample paths before "
+        "plotting, for a cleaner visual impression of the trend.\n"
+        " - Smoothing window: Size of that moving average (larger = smoother, "
+        "but more distortion of short-term detail).\n"
+        " - Plot alpha: Transparency of plotted lines/markers."
+    )
+    enter_continue()
+
 #-------------------------------------------------------------------------
 # Analyse
 
