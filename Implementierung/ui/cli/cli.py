@@ -158,7 +158,7 @@ class CLI:
             print("3 - Import result")
             print("4 - Delete entry")
             print("5 - Clear all")
-            print("C - Cancel")
+            print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
 
@@ -668,27 +668,13 @@ class CLI:
 # Ausführung
 
     def _run_simulation(self):
-        clear_cli()        
-        spinner = Spinner()
-
-        # Wenn Markov: Spinner, da Fortschrittsbalken bei Numpy schwierig ist.
-
-        if self.controller.config.process_type == "markov":
-            spinner.start("Calculating Trajectories")
-            try:
-                self.controller.run_simulation(on_progress=None)
-            except ValueError as e:
-                spinner.stop()
-                show_error("SimulationError", str(e))
-                enter_continue()
-                return
-            spinner.stop()
-        else:
-            try:
-                self.controller.run_simulation(on_progress=print_progress_bar)
-            except ValueError as e:
-                show_error("SimulationError", str(e))
-                return
+        clear_cli()
+        try:
+            self.controller.run_simulation(on_progress=print_progress_bar)
+        except ValueError as e:
+            show_error("SimulationError", str(e))
+            enter_continue()
+            return
 
         last_index = len(self.controller.get_history_entries()) - 1
         entry = self.controller.get_history_entries()[last_index]
