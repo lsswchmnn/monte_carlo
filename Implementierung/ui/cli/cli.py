@@ -2,7 +2,7 @@ from   ui.cli.utils.display   import clear_cli, print_heading, print_thin_separa
 from   ui.cli.utils.errors    import show_error, cli_blocking_message
 from   ui.cli.utils.input     import input_float, input_int, input_confirm
 from   ui.cli.utils.progress  import print_progress_bar, Spinner
-from   ui.cli.help            import *
+from   ui.cli.help            import print_help
 from   ui.plots               import Plotter
 from   core.controller        import Controller
 from   core.history           import HistoryEntry
@@ -43,7 +43,7 @@ class CLI:
                 self._menu_system_settings()
 
             elif choice == "h":
-                help_full()
+                print_help("full")
             elif choice == "c":
                 if not self.controller.history_is_empty():
                     if not input_confirm("Are you sure? Results that are not exported will be lost upon exiting the CLI."):
@@ -144,7 +144,7 @@ class CLI:
             if choice == "r":
                 self.controller.reset_config()
             elif choice == "h":
-                help_settings()
+                print_help("settings")
             elif choice == "c":
                 break
 
@@ -241,7 +241,7 @@ class CLI:
                 elif choice == "r":
                     self.plotter.reset_settings()
                 elif choice == "h":
-                    help_system_settings()
+                    print_help("system_settings")
                 elif choice == "c":
                     break
 
@@ -268,7 +268,7 @@ class CLI:
             elif choice == "3":
                 self._settings_transition_params()
             elif choice == "h":
-                help_transition()
+                print_help("transition")
             elif choice == "c":
                 return
 
@@ -451,7 +451,7 @@ class CLI:
                 self._menu_variance_growth(entry, index)
 
             elif choice == "h":
-                help_analyze()
+                print_help("analyze")
             elif choice == "c":
                 break
             elif choice == "cc":
@@ -494,7 +494,7 @@ class CLI:
                 print(f"\nProcess is {result_str} (heuristic).")
                 enter_continue()
             elif choice == "h":
-                help_ergodicity()
+                print_help("ergodicity")
             elif choice == "c":
                 break
             elif choice == "cc":
@@ -544,7 +544,7 @@ class CLI:
                     print(f"\nSignificant autocorrelation at {n_sig} lag(s): {list(sig_lags)}")
                 enter_continue()
             elif choice == "h":
-                help_autocorrelation()
+                print_help("autocorrelation")
             elif choice == "c":
                 break
             elif choice == "cc":
@@ -601,7 +601,7 @@ class CLI:
                           f"the scaling may not be well-described by a single exponent.")
                 enter_continue()
             elif choice == "h":
-                help_hurst_exponent()
+                print_help("hurst_exponent")
             elif choice == "c":
                 break
 
@@ -658,7 +658,7 @@ class CLI:
                           f"likely doesn't follow a single power law over this range.")
                 enter_continue()
             elif choice == "h":
-                help_variance_growth()
+                print_help("variance_growth")
             elif choice == "c":
                 break
             elif choice == "cc":
@@ -727,7 +727,7 @@ class CLI:
             elif choice == "cc":
                 self.run()
             elif choice == "h":
-                help_start_states()
+                print_help("start_states")
 
             try:
                 idx = int(choice)
@@ -891,7 +891,7 @@ class CLI:
             elif choice == "3":
                 return "adaptive"
             elif choice == "h":
-                help_three_types()
+                print_help("three_types")
             elif choice == "c":
                 return None
             elif choice == "cc":
