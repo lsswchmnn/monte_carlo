@@ -8,22 +8,23 @@ import numpy as np
 def variational_baseline_nd(
     x_t: np.ndarray,
     t: int,
-    path: list,
+    path: np.ndarray,
     rng,
     step_size: float,
     memory_strength: float = 0.01,
     ) -> np.ndarray:
     '''
-    ND-Analogon zu variational_baseline: schwache Rückkopplung an den
-    bisherigen Pfadmittelwert, additive stochastische Komponente pro Achse.
+    ND-Analogon zu variational_baseline, vektorisiert über alle Pfade:
+    schwache Rückkopplung an den bisherigen Pfadmittelwert pro Achse,
+    additive stochastische Komponente.
     '''
-    n_dimensions = len(x_t)
+    n = path.shape[0]
 
-    if len(path) > 1:
-        path_mean = np.mean(path, axis=0)
+    if n > 1:
+        path_mean = path.mean(axis=0)
         feedback = -memory_strength * (x_t - path_mean)
     else:
-        feedback = np.zeros(n_dimensions)
+        feedback = np.zeros_like(x_t)
 
-    noise = np.array([rng.normal(0, step_size) for _ in range(n_dimensions)])
+    noise = rng.normal(0, step_size, size=x_t.shape)
     return x_t + feedback + noise
