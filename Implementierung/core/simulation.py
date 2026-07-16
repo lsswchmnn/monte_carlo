@@ -8,8 +8,10 @@ import numpy        as     np
 #=========================================================================
 class MonteCarloSim:
 
+    MAX_PROGRESS_UPDATES: int = 200
+
 #-------------------------------------------------------------------------
-# Entrypoint (Öffentlich)
+# Entrypoint (öffentlich)
 
     def run(self, config: SimConfig, on_progress: Callable | None):
         '''
@@ -28,7 +30,7 @@ class MonteCarloSim:
         return runner(config, on_progress)
 
 #-------------------------------------------------------------------------
-# Hilfsmethode: Startzustand erzeugen (Privat)
+# Hilfsmethoden (privat)
 
     @staticmethod
     def _init_state(config: SimConfig):
@@ -38,75 +40,84 @@ class MonteCarloSim:
         else:
             return config.start_state_fn(config.rng)
 
+    @classmethod
+    def _progress_interval(cls, n_steps: int) -> int:
+        '''
+        Bestimmt ein Update-Intervall für on_progress, sodass über die
+        gesamte Simulation höchstens MAX_PROGRESS_UPDATES Aufrufe erfolgen.
+        Verhindert, dass die Ladeleiste bei sehr vielen Schritten selbst
+        spürbaren Overhead erzeugt.
+        '''
+        return max(1, n_steps // cls.MAX_PROGRESS_UPDATES)
+
 #-------------------------------------------------------------------------
-# Run-Methoden (Privat)
+# Run-Methoden (privat)
 
     def _run_markov(self, config: SimConfig, on_progress: Callable | None) -> list:
         x = np.array([self._init_state(config) for _ in range(config.n_paths)])
         # 1D: shape (n_paths,)
         # ND: shape (n_paths, n_dimensions)
 
-        # Unterscheidung nach Dimensionsytp
         if config.dimensionality == "nd":
             all_steps = np.empty((config.n_steps, config.n_paths, config.n_dimensions))
         else:
             all_steps = np.empty((config.n_steps, config.n_paths))
 
-        # Übergangsfunktion für jeden Schritt aufrufen
+        interval = self._progress_interval(config.n_steps)
+
         for t in range(config.n_steps):
             all_steps[t] = x
             x = config.transition_fn(
-                x, config.rng, config.step_size, 
+                x, config.rng, config.step_size,
                 **config.transition_params)   # Params optional
+
+            if on_progress and ((t + 1) % interval == 0 or (t + 1) == config.n_steps):
+                on_progress(t + 1, config.n_steps)
 
         return all_steps.transpose(1, 0, *range(2, all_steps.ndim)).tolist()
 
-    def _run_variational(self, config: SimConfig, on_progress: Callable | None)-> list:
-        all_paths = []
+    def _run_variational(self, config: SimConfig, on_progress: Callable | None) -> list:
+        x = np.array([self._init_state(config) for _ in range(config.n_paths)])
 
-        for i in range(config.n_paths):
-            path = []
-            x = self._init_state(config)
+        if config.dimensionality == "nd":
+            all_steps = np.empty((config.n_steps, config.n_paths, config.n_dimensions))
+        else:
+            all_steps = np.empty((config.n_steps, config.n_paths))
 
-            # Übergangsfunktion für jeden Schritt aufrufen
-            for t in range(config.n_steps):
-                path.append(x)
-                x = config.transition_fn(
-                x_t=x, t=t, path=path,
+        interval = self._progress_interval(config.n_steps)
+
+        for t in range(config.n_steps):
+            all_steps[t] = x
+            x = config.transition_fn(
+                x_t=x, t=t, path=all_steps[:t + 1],
                 rng=config.rng, step_size=config.step_size,
-                **config.transition_params  # Params optional
-                )
+                **config.transition_params)   # Params optional
 
-            all_paths.append(path)
+            if on_progress and ((t + 1) % interval == 0 or (t + 1) == config.n_steps):
+                on_progress(t + 1, config.n_steps)
 
-            if on_progress:
-                on_progress(i + 1, config.n_paths)
+        return all_steps.transpose(1, 0, *range(2, all_steps.ndim)).tolist()
 
-        return all_paths
+    def _run_adaptive(self, config: SimConfig, on_progress: Callable | None) -> list:
+        x = np.array([self._init_state(config) for _ in range(config.n_paths)])
 
-    def _run_adaptive(self, config: SimConfig, on_progress: Callable | None)-> list:
-        all_paths = []
-        all_adaptive_states = []
+        if config.dimensionality == "nd":
+            all_steps = np.empty((config.n_steps, config.n_paths, config.n_dimensions))
+        else:
+            all_steps = np.empty((config.n_steps, config.n_paths))
 
-        for i in range(config.n_paths):
-            path = []
-            x = self._init_state(config)
-            adaptive_state = {}
+        interval = self._progress_interval(config.n_steps)
+        adaptive_state = {}
 
-            # Übergangsfunktion für jeden Schritt aufrufen 
-            for t in range(config.n_steps):
-                path.append(x)
-                x, adaptive_state = config.transition_fn(
-                    x_t=x, t=t, path=path,
-                    adaptive_state=adaptive_state,
-                    rng=config.rng, step_size=config.step_size,
-                    **config.transition_params  # Params optional
-                )
-            
-            all_paths.append(path)
-            all_adaptive_states.append(adaptive_state)
+        for t in range(config.n_steps):
+            all_steps[t] = x
+            x, adaptive_state = config.transition_fn(
+                x_t=x, t=t, path=all_steps[:t + 1],
+                adaptive_state=adaptive_state,
+                rng=config.rng, step_size=config.step_size,
+                **config.transition_params)   # Params optional
 
-            if on_progress:
-                on_progress(i + 1, config.n_paths)
+            if on_progress and ((t + 1) % interval == 0 or (t + 1) == config.n_steps):
+                on_progress(t + 1, config.n_steps)
 
-        return all_paths
+        return all_steps.transpose(1, 0, *range(2, all_steps.ndim)).tolist()
