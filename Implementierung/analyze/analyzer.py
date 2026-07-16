@@ -151,6 +151,13 @@ class Analyzer:
         '''
         DFA (Ordnung 1, linearer lokaler Trend) für eine einzelne Reihe.
         Gibt (scales, F(s), H, R²) zurück.
+
+        Detrending pro Fenster nutzt die geschlossene Form der linearen
+        Regression statt np.polyfit pro Fenster in einer Python-Schleife:
+        x_local ist für alle Fenster einer Skala s identisch, daher lässt
+        sich Steigung/Achsenabschnitt für ALLE Fenster einer Skala in einem
+        vektorisierten Schritt berechnen (Standard-OLS-Formel für Grad 1:
+        slope = Kovarianz(x, y) / Varianz(x)).
         '''
         n = len(series)
         if max_window is None:
@@ -170,14 +177,23 @@ class Analyzer:
             n_windows = n // s
             trimmed = y[: n_windows * s].reshape(n_windows, s)
 
-            x_local = np.arange(s)
-            residual_sq_sum = 0.0
-            for window in trimmed:
-                coeffs = np.polyfit(x_local, window, deg=1)
-                trend = np.polyval(coeffs, x_local)
-                residual_sq_sum += np.sum((window - trend) ** 2)
+            # Geschlossene Form der linearen Regression, für alle Fenster
+            # dieser Skala gleichzeitig (x_local ist für jedes Fenster gleich)
+            x_local    = np.arange(s)
+            x_mean     = x_local.mean()
+            x_centered = x_local - x_mean
+            var_x      = np.sum(x_centered ** 2)
 
-            fluctuations[idx] = np.sqrt(residual_sq_sum / (n_windows * s))
+            window_means    = trimmed.mean(axis=1, keepdims=True)
+            window_centered = trimmed - window_means
+
+            slopes     = (window_centered @ x_centered) / var_x
+            intercepts = window_means[:, 0] - slopes * x_mean
+
+            trend     = intercepts[:, None] + slopes[:, None] * x_local[None, :]
+            residuals = trimmed - trend
+
+            fluctuations[idx] = np.sqrt(np.sum(residuals ** 2) / (n_windows * s))
 
         # Log-Log-Regression: log F(s) = H * log(s) + c
         log_s = np.log(scales)
