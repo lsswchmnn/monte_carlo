@@ -9,7 +9,7 @@ from   core.history           import HistoryEntry
 from   core.config            import SimConfig
 from   pathlib                import Path
 from   tkinter                import filedialog
-import tkinter                as     tk
+import tkinter                as     tk, numbers
 #=========================================================================
 class CLI:
 
@@ -906,8 +906,8 @@ class CLI:
         self._show_simulation_settings(config=entry.config)
         if entry.calc_time:
             print(f"  Duration:     {entry.calc_time:.4f}s")
-        print()
-        print(f"  First path (first 10 values): {result[0][:10] if result else '—'}")
+        values_rounded = self._round_nested(result[0][:10]) # Zahlen rekursiv aufrunden
+        print(f"\n  First path (first 10 values): {values_rounded if result else '—'}")
         enter_continue()
 
     def _show_full_result_terminal(self, entry: HistoryEntry, index: int):
@@ -955,7 +955,13 @@ class CLI:
         return (f"{cfg.transition_name} | {cfg.n_paths} paths × {cfg.n_steps} steps | seed {cfg.seed}")
 
 #-------------------------------------------------------------------------
-# TKinter-Interaktion
+# Hilfsfunktionen und TKinter-Interaktion
+
+    def _round_nested(self, value, digits=4):
+        '''Rundet verschachtelte Ergebnisse auf n Nachkommastellen.'''
+        if isinstance(value, numbers.Number):
+            return round(value, digits)
+        return [self._round_nested(v, digits) for v in value]
 
     def _pick_directory(self) -> Path | None:
         '''Öffnet nativen Dateidialog zur Verzeichnisauswahl.'''
