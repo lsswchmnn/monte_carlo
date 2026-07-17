@@ -85,11 +85,13 @@ class MonteCarloSim:
             all_steps = np.empty((config.n_steps, config.n_paths))
 
         interval = self._progress_interval(config.n_steps)
+        aux_state = {}
 
         for t in range(config.n_steps):
             all_steps[t] = x
-            x = config.transition_fn(
+            x, aux_state = config.transition_fn(
                 x_t=x, t=t, path=all_steps[:t + 1],
+                aux_state=aux_state,
                 rng=config.rng, step_size=config.step_size,
                 **config.transition_params)   # Params optional
 
