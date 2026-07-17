@@ -4,62 +4,74 @@ import numpy as np
 # Pfadabhängige, nicht lokale Prozesse. Darf mehr kontext als nur den 
 # aktuellen Zustand nutzen, nämlich gesamten bisherigen Verlauf und die Zeit.
 #=========================================================================
-# Minimaler variationaler Übergang
 
 def variational_baseline(
-    x_t: "np.ndarray",
+    x_t: np.ndarray,
     t: int,
-    path: "np.ndarray",
+    path: np.ndarray,
+    aux_state: dict,
     rng,
     step_size: float,
     memory_strength: float = 0.01
-) -> "np.ndarray":
+) -> tuple[np.ndarray, dict]:
     '''
     Minimaler variationaler Übergang, vektorisiert über alle Pfade:
-    - schwache Rückkopplung an den bisherigen (pfadeigenen) Mittelwert
+    - schwache Rückkopplung an den bisherigen (pfadeigenen) Mittelwert,
+      berechnet über eine laufende Summe (O(1) pro Schritt)
     - additive stochastische Komponente
-
-    Nutzt eine einfache Vektor-Mittelwertbildung über die Zeitachse
-    (path.mean(axis=0)) statt sum(path)/len(path) pro Pfad einzeln —
-    identischer Wert, aber in einem Schritt für alle Pfade berechnet
-    statt in einer Python-Schleife neu aufsummiert.
     '''
-    n = path.shape[0]
+    if not aux_state:
+        aux_state = {"running_sum": np.zeros_like(x_t)}
+
+    n = t + 1
+    aux_state["running_sum"] = aux_state["running_sum"] + x_t
 
     if n > 1:
-        path_mean = path.mean(axis=0)
+        path_mean = aux_state["running_sum"] / n
         feedback = -memory_strength * (x_t - path_mean)
     else:
         feedback = 0.0
 
     noise = rng.normal(0, step_size, size=x_t.shape)
 
-    return x_t + feedback + noise
+    return x_t + feedback + noise, aux_state
 
 def variational_trend_feedback(
-    x_t: "np.ndarray",
+    x_t: np.ndarray,
     t: int,
-    path: "np.ndarray",
+    path: np.ndarray,
+    aux_state: dict,
     rng,
     step_size: float,
     memory_strength: float = 0.02,
     trend_strength: float = 0.01,
     vol_factor: float = 0.05
-) -> "np.ndarray":
+) -> tuple[np.ndarray, dict]:
     '''
     Variationaler Übergang mit Pfad-Rückkopplung und Trendverstärkung,
     vektorisiert über alle Pfade:
-    
-    - Rückkopplung an den Mittelwert des bisherigen Pfads (pro Pfad)
+
+    - Rückkopplung an den Mittelwert des bisherigen Pfads, über eine
+      laufende Summe (O(1) pro Schritt)
     - Verstärkung des bestehenden Trends (letzter Schritt, pro Pfad)
     - Additive stochastische Komponente, abhängig von der bisherigen
       Pfad-Volatilität (max. Abweichung vom Pfadmittel, pro Pfad)
-    '''
-    n = path.shape[0]
 
-    # Mittelwert-Rückkopplung
+    Die Volatilitätsberechnung bleibt bewusst O(t) pro Schritt: sie
+    braucht das Maximum der Abweichung ALLER bisherigen Werte vom
+    AKTUELLEN (sich jeden Schritt ändernden) Mittelwert -- das lässt
+    sich ohne Bedeutungsänderung nicht laufend mitführen, da sich die
+    Referenz für "Abweichung" bei jedem Schritt verschiebt.
+    '''
+    if not aux_state:
+        aux_state = {"running_sum": np.zeros_like(x_t)}
+
+    n = t + 1
+    aux_state["running_sum"] = aux_state["running_sum"] + x_t
+
+    # Mittelwert-Rückkopplung (O(1) via laufender Summe)
     if n > 1:
-        path_mean = path.mean(axis=0)
+        path_mean = aux_state["running_sum"] / n
         feedback = -memory_strength * (x_t - path_mean)
     else:
         path_mean = x_t
@@ -72,7 +84,7 @@ def variational_trend_feedback(
     else:
         trend = 0.0
 
-    # Pfadabhängige Volatilität (extremere Abweichungen -> größere Zufallsschritte)
+    # Pfadabhängige Volatilität (weiterhin O(t) pro Schritt, siehe Docstring)
     if n > 1:
         deviations = np.abs(path - path_mean)
         vol = step_size + vol_factor * deviations.max(axis=0)
@@ -81,4 +93,4 @@ def variational_trend_feedback(
 
     noise = rng.normal(0, vol, size=x_t.shape)
 
-    return x_t + feedback + trend + noise
+    return x_t + feedback + trend + noise, aux_state
