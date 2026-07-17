@@ -2,14 +2,15 @@ from   ui.cli.utils.display   import clear_cli, print_heading, print_thin_separa
 from   ui.cli.utils.errors    import show_error, cli_blocking_message
 from   ui.cli.utils.input     import input_float, input_int, input_confirm
 from   ui.cli.utils.progress  import print_progress_bar, Spinner
-from   ui.cli.help            import print_help
+from   ui.help                import print_help
 from   ui.plots               import Plotter
+from   ui.text                import *
 from   core.controller        import Controller
 from   core.history           import HistoryEntry
 from   core.config            import SimConfig
 from   pathlib                import Path
 from   tkinter                import filedialog
-import tkinter                as     tk, numbers
+import tkinter                as     tk
 #=========================================================================
 class CLI:
 
@@ -68,7 +69,7 @@ class CLI:
             )
             return
  
-        self._show_simulation_settings(config=self.controller.config)
+        print(format_simulation_settings(self.controller.config))
  
         if self.controller.config.exceeds_limit():
             steps, paths = self.controller.get_safe_datapoints()
@@ -288,7 +289,7 @@ class CLI:
 
         print_heading("SELECT RESULT")
         for i, entry in enumerate(entries, start=1):
-            print(f"{i} - {self._show_result_name(entry.config)}")
+            print(f"{i} - {format_result_name(entry.config)}")
         print("C - Cancel")
         print_thin_separation(linebreak=False)
         choice = input("> ").strip().lower()
@@ -482,16 +483,12 @@ class CLI:
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
  
-            if choice == "1":
+            if choice == "1":                
                 print_heading("ERGODICITY DATA")
-                print(f"Ensemble Mean:       {erg_data.ensemble_mean:.4f}")
-                print(f"Mean of Time Means:  {erg_data.time_mean_mean:.4f}")
-                print(f"Std of Time Means:   {erg_data.time_mean_std:.4f}")
-                print(f"Number of Paths:     {len(erg_data.time_means)}")
+                print(format_ergodicity(erg_data))
                 enter_continue()
             elif choice == "2":
-                result_str = "ergodic" if erg_data.ergodic_heuristic else "not ergodic"
-                print(f"\nProcess is {result_str} (heuristic).")
+                print(format_ergodicity_heuristic(erg_data))
                 enter_continue()
             elif choice == "h":
                 print_help("ergodicity")
@@ -528,21 +525,13 @@ class CLI:
 
             if choice == "1":
                 print_heading("AUTOCORRELATION DATA")
-                for lag, val in zip(acf_data.lags, acf_data.acf_mean):
-                    marker = " *" if lag > 0 and abs(val) > acf_data.confidence_bound else ""
-                    print(f"  Lag {lag:>3}: {val:+.4f}{marker}")
-                print(f"\n  95% Confidence Bound: ±{acf_data.confidence_bound:.4f}")
+                print(format_autocorrelation(acf_data))
                 enter_continue()
             elif choice == "2":
                 self.plotter.show_autocorrelation(acf_data, entry.config)
             elif choice == "3":
-                n_sig = int(acf_data.significant_lags.sum())
-                if n_sig == 0:
-                    print("\nNo significant autocorrelation detected (consistent with white noise).")
-                else:
-                    sig_lags = acf_data.lags[acf_data.significant_lags]
-                    print(f"\nSignificant autocorrelation at {n_sig} lag(s): {list(sig_lags)}")
-                enter_continue()
+                print(format_autocorrelation_significance(acf_data))
+                enter_continue()            
             elif choice == "h":
                 print_help("autocorrelation")
             elif choice == "c":
@@ -578,27 +567,12 @@ class CLI:
 
             if choice == "1":
                 print_heading("HURST EXPONENT DATA (DFA)")
-                for s, f in zip(hurst_data.scales, hurst_data.fluctuation_mean):
-                    print(f"  Window {s:>5}: F(s) = {f:.4f}")
-                print(f"\n  Hurst Exponent (path-mean): {hurst_data.hurst_mean:.4f}")
-                print(f"  Std across paths:           {hurst_data.hurst_std:.4f}")
-                print(f"  Fit quality (mean R²):      {hurst_data.r_squared_mean:.4f}")
-                print(f"  Computed on:                {'increments' if hurst_data.on_increments else 'raw levels'}")
+                print(format_hurst_exponent(hurst_data))
                 enter_continue()
             elif choice == "2":
                 self.plotter.show_hurst(hurst_data, entry.config)
             elif choice == "3":
-                H = hurst_data.hurst_mean
-                if H < 0.45:
-                    interpretation = "Anti-persistent (mean-reverting): increments tend to reverse direction."
-                elif H > 0.55:
-                    interpretation = "Persistent (trending): increments tend to continue in the same direction."
-                else:
-                    interpretation = "Close to 0.5: consistent with uncorrelated increments (random walk)."
-                print(f"\n  H ≈ {H:.4f}  ->  {interpretation}")
-                if hurst_data.r_squared_mean < 0.95:
-                    print(f"  Note: R² = {hurst_data.r_squared_mean:.4f} is relatively low — "
-                          f"the scaling may not be well-described by a single exponent.")
+                print(format_hurst_interpretation(hurst_data))
                 enter_continue()
             elif choice == "h":
                 print_help("hurst_exponent")
@@ -633,29 +607,12 @@ class CLI:
 
             if choice == "1":
                 print_heading("VARIANCE GROWTH DATA")
-                for t, v in zip(var_data.times, var_data.variance):
-                    print(f"  t = {t:>5}: Var(t) = {v:.4f}")
-                print(f"\n  Growth Exponent (γ): {var_data.growth_exponent:.4f}")
-                print(f"  Fit quality (R²):     {var_data.r_squared:.4f}")
-                print(f"  Classification:        {var_data.diffusive_type}")
+                print(format_variance_growth(var_data))
                 enter_continue()
             elif choice == "2":
                 self.plotter.show_variance_growth(var_data, entry.config)
             elif choice == "3":
-                gamma = var_data.growth_exponent
-                print(f"\n  γ ≈ {gamma:.4f}  ->  {var_data.diffusive_type.capitalize()}")
-                if var_data.diffusive_type == "diffusive":
-                    print("  Variance grows approximately linearly — consistent with "
-                          "normal (Fickian) diffusion, e.g. an uncorrelated random walk.")
-                elif var_data.diffusive_type == "subdiffusive":
-                    print("  Variance grows slower than linear — consistent with a "
-                          "restoring force (e.g. mean reversion) limiting long-term spread.")
-                else:
-                    print("  Variance grows faster than linear — consistent with rare, "
-                          "large jumps (e.g. heavy-tailed transitions) or persistent trending.")
-                if var_data.r_squared < 0.8:
-                    print(f"  Note: R² = {var_data.r_squared:.4f} is low — the growth "
-                          f"likely doesn't follow a single power law over this range.")
+                print(format_variance_growth_interpretation(var_data))
                 enter_continue()
             elif choice == "h":
                 print_help("variance_growth")
@@ -887,27 +844,10 @@ class CLI:
 #-------------------------------------------------------------------------
 # Anzeige von Einstellungen und Ergebnissen
 
-    def _show_simulation_settings(self, config: SimConfig):
-        '''Zeigt die aktuellen SimConfig-Einstellungen an.''' # Angezeigt bei Simulatinsstart und im Ergebnismenü
-        print(f"  Dimensions:   {config.n_dimensions}")
-        print(f"  Start State:  {config.start_state_name}")
-        print(f"  Transition:   {config.transition_name}")
-        print(f"  Process Type: {config.process_type}")
-        print(f"  Paths:        {config.n_paths}")
-        print(f"  Steps:        {config.n_steps}")
-        print(f"  Step Size:    {config.step_size}")
-        print(f"  Seed:         {config.seed}")
-        print(f"  Datapoints:   {config.datapoint_count():_}")
- 
     def _show_result_terminal(self, entry: HistoryEntry, index: int):
         '''Zeigt eine Zusammenfassung des Ergebnisses an.'''
-        result = entry.result
         print_heading("RESULT DATA (SUMMARY)")
-        self._show_simulation_settings(config=entry.config)
-        if entry.calc_time:
-            print(f"  Duration:     {entry.calc_time:.4f}s")
-        values_rounded = self._round_nested(result[0][:10]) # Zahlen rekursiv aufrunden
-        print(f"\n  First path (first 10 values): {values_rounded if result else '—'}")
+        print(format_result_summary(entry))
         enter_continue()
 
     def _show_full_result_terminal(self, entry: HistoryEntry, index: int):
@@ -918,41 +858,12 @@ class CLI:
 
     def _show_transition_complete(self):
         '''Zeigt alle Daten einer Übergangsfunktion.'''
-        cfg     = self.controller.config
-        params  = self.controller.get_transition_params()
-        process = cfg.process_type or "unknown"
+        cfg    = self.controller.config
+        params = self.controller.get_transition_params()
+        desc   = self.controller.get_transition_desc()
 
-        print_heading(f"SETTINGS: TRANSITION")
-        print(f"Transition: {cfg.transition_name}")
-        print(f"\n{self.controller.get_transition_desc()}")
-        self._show_params_dict(params)
-
-    def _show_params_dict(self, params: dict):
-        '''Zeigt die Parameter einer Übergangsfunktion im Terminal an.'''
-        if not params:
-            print("No parameters defined.")
-            return
-
-        print("\nParams:")
-
-        for name, spec in params.items():
-            p_type = spec.get("type", "unknown")
-            default = spec.get("default", "n/a")
-            min_v = spec.get("min", "n/a")
-            max_v = spec.get("max", "n/a")
-            desc = spec.get("desc", "")
-
-            print(f"\n {name.capitalize()}")
-            print(f"  Type    : {p_type}")
-            print(f"  Default : {default}")
-            if min_v is not None and max_v is not None:
-                print(f"  Range   : [{min_v}, {max_v}]")
-            print(f"  Desc    : {desc}")
-
-    def _show_result_name(self, config: SimConfig) -> str:
-        '''Erstellt string mit Namen und wichtigsten Daten eines Analyseergebnisses.'''
-        cfg = config
-        return (f"{cfg.transition_name} | {cfg.n_paths} paths × {cfg.n_steps} steps | seed {cfg.seed}")
+        print_heading("SETTINGS: TRANSITION")
+        print(format_transition_details(cfg, desc, params))
 
 #-------------------------------------------------------------------------
 # Hilfsfunktionen und TKinter-Interaktion
