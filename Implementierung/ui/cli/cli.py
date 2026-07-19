@@ -477,25 +477,26 @@ class CLI:
         while True:
             print_heading("ERGODICITY DATA")
             print("1 - Show ergodicity data")
-            print("2 - Heuristic check")
+            print("2 - Plot ergodicity")
+            print("3 - Heuristic check")
             print("H - Help")
             print("C - Close")
             print_thin_separation(linebreak=False)
             choice = input("> ").strip().lower()
  
-            if choice == "1":                
+            if choice == "1":
                 print_heading("ERGODICITY DATA")
                 print(format_ergodicity(erg_data))
                 enter_continue()
             elif choice == "2":
+                self.plotter.show_ergodicity(erg_data, entry.config)
+            elif choice == "3":
                 print(format_ergodicity_heuristic(erg_data))
                 enter_continue()
             elif choice == "h":
                 print_help("ergodicity")
             elif choice == "c":
                 break
-            elif choice == "cc":
-                self.run()
 
     def _menu_autocorrelation(self, entry: HistoryEntry, index: int):
         '''Analysemenü: Autokorrelation'''
