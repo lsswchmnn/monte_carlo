@@ -1,4 +1,4 @@
-from   analyze.results   import AutoCorrelationResult, HurstExponentResult, VarianceGrowthResult
+from   analyze.results   import *
 from   core.config       import SimConfig
 from   dataclasses       import dataclass
 from   typing            import List
@@ -69,7 +69,11 @@ class Plotter:
         if fn is None:
             raise ValueError(f"Unknown plot type: '{plot_type}'")
         fn(result, config)
-    
+
+    def show_ergodicity(self, result: ErgodicityResult, config: SimConfig) -> None:
+        '''Zeigt die Verteilung der Pfad-Zeitmittel im Vergleich zum Ensemble-Mittel.'''
+        self._plot_ergodicity(result, config)
+
     def show_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
         '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
         self._plot_autocorrelation(result, config)
@@ -203,6 +207,38 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("distribution_1d")
+        plt.show()
+
+    def _plot_ergodicity(self, result: ErgodicityResult, config: SimConfig) -> None:
+        plt.hist(result.time_means, bins=30, color="steelblue", alpha=self.settings.alpha, zorder=2)
+
+        plt.axvline(result.ensemble_mean, color="black", linewidth=1.5,
+                    label=f"Ensemble Mean ({result.ensemble_mean:.4f})", zorder=3)
+
+        threshold = 0.10  # muss mit dem Schwellenwert in Analyzer.calculate_ergodicity übereinstimmen
+        band = threshold * abs(result.ensemble_mean)
+        plt.axvspan(result.ensemble_mean - band, result.ensemble_mean + band,
+                    color="green" if result.ergodic_heuristic else "red",
+                    alpha=0.15, zorder=1,
+                    label=f"±{threshold:.0%} reference band (visual aid, not the exact test)")
+
+        verdict = "Ergodic (heuristic)" if result.ergodic_heuristic else "Not ergodic (heuristic)"
+        plt.text(
+            0.02, 0.85,
+            f"{verdict}\n"
+            f"Std of time means: {result.time_mean_std:.4f}\n"
+            f"Relative spread: {result.time_mean_std / abs(result.ensemble_mean):.2%}",
+            transform=plt.gca().transAxes, fontsize=9, verticalalignment="top",
+            bbox=dict(facecolor="white", alpha=self.settings.alpha, edgecolor="none"),
+        )
+
+        plt.title("Distribution of Path Time-Averages vs. Ensemble Mean")
+        plt.xlabel("Time Average per Path")
+        plt.ylabel("Frequency")
+        plt.legend(loc="upper right", fontsize=8)
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("ergodicity")
         plt.show()
 
     def _plot_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
