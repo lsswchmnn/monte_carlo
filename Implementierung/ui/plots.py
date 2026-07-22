@@ -38,6 +38,16 @@ class Plotter:
         self.settings = PlotSettings()
 
 #-------------------------------------------------------------------------
+# Ressourcen-Verwaltung (öffentlich)
+
+    @staticmethod
+    def close(fig) -> None:
+        '''
+        Schließt eine Figure, um Speicher freizugeben.
+        '''
+        plt.close(fig)
+
+#-------------------------------------------------------------------------
 # Entry-Point (öffentlich)
 
     def show(self, result: list, plot_type: str, config: SimConfig) -> None:
