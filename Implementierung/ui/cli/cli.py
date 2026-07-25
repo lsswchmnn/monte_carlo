@@ -2,7 +2,7 @@ from   ui.cli.utils.display   import clear_cli, print_heading, print_thin_separa
 from   ui.cli.utils.errors    import show_error, cli_blocking_message
 from   ui.cli.utils.input     import input_float, input_int, input_confirm
 from   ui.cli.utils.progress  import print_progress_bar, Spinner
-from   ui.help                import print_help
+from   ui.cli.help            import print_help
 from   ui.plots               import Plotter
 from   ui.text                import *
 from   core.controller        import Controller
