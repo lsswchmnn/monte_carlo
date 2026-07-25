@@ -48,53 +48,56 @@ class Plotter:
         plt.close(fig)
 
 #-------------------------------------------------------------------------
-# Entry-Point (öffentlich)
+# Entry-Points: Sample Paths und Analysen (öffentlich)
 
-    def show(self, result: list, plot_type: str, config: SimConfig) -> None:
+    def plot(self, result: list, plot_type: str, config: SimConfig):
         '''
-        Verteilt auf die passende Plot-Funktion abhängig von Dimensionalität
-        und Plot-Typ.
+        Baut die passende Figure abhängig von Dimensionalität und Plot-Typ.
+        Zeigt nichts an, somit nutzbar für CLI und Web.
         '''
         # ND Plotting
         if config.dimensionality == "nd":
             if plot_type == "sample_paths":
                 if config.n_dimensions == 2:
-                    self._plot_paths_2d(result, config)
+                    return self.plot_paths_2d(result, config)
                 elif config.n_dimensions == 3:
-                    self._plot_paths_3d(result, config)
+                    return self.plot_paths_3d(result, config)
                 else:
                     raise ValueError(f"Plotting not supported for {config.n_dimensions}D.")
             else:
                 raise ValueError(f"Plot type '{plot_type}' is not available for ND results.")
-            return
 
         # 1D Plotting: sample_paths gesondert behandeln
         if plot_type == "sample_paths":
-            self._plot_paths_1d(result, config)
-            return
+            return self.plot_paths_1d(result, config)
 
         # 1D Plotting: allgemeine Behandlung
-        plots = {"mean_volatility": self._plot_mean_and_std, "final_dist": self._plot_final_distribution}
+        plots = {"mean_volatility": self.plot_mean_and_std, "final_dist": self.plot_final_distribution}
         fn = plots.get(plot_type)
         if fn is None:
             raise ValueError(f"Unknown plot type: '{plot_type}'")
-        fn(result, config)
+        return fn(result, config)
+
+    def show(self, result: list, plot_type: str, config: SimConfig) -> None:
+        '''CLI-Pfad: baut die passende Figure und zeigt sie an.'''
+        self.plot(result, plot_type, config)
+        plt.show()
 
     def show_ergodicity(self, result: ErgodicityResult, config: SimConfig) -> None:
-        '''Zeigt die Verteilung der Pfad-Zeitmittel im Vergleich zum Ensemble-Mittel.'''
-        self._plot_ergodicity(result, config)
+        self.plot_ergodicity(result, config)
+        plt.show()
 
     def show_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
-        '''Zeigt die Autokorrelationsfunktion (ACF) als Balkendiagramm.'''
-        self._plot_autocorrelation(result, config)
+        self.plot_autocorrelation(result, config)
+        plt.show()
 
     def show_hurst(self, result: HurstExponentResult, config: SimConfig) -> None:
-        '''Zeigt das DFA Log-Log-Diagramm (Fenstergröße vs. Fluktuation).'''
-        self._plot_hurst(result, config)
+        self.plot_hurst(result, config)
+        plt.show()
 
     def show_variance_growth(self, result: VarianceGrowthResult, config: SimConfig) -> None:
-            '''Zeigt das Log-Log-Diagramm des Varianzwachstums (Zeit vs. Varianz).'''
-            self._plot_variance_growth(result, config)
+        self.plot_variance_growth(result, config)
+        plt.show()
 
 #-------------------------------------------------------------------------
 # Hilfsfunktionen (privat)
@@ -133,7 +136,7 @@ class Plotter:
 #-------------------------------------------------------------------------
 # Plotting-Funktionen (privat)
 
-    def _plot_paths_1d(self, paths: List[List[float]], config: SimConfig) -> None:
+    def plot_paths_1d(self, paths: List[List[float]], config: SimConfig):
         for path in paths:
             if self.settings.smooth:
                 plt.plot(self._smooth_path(path, window=self.settings.smooth_window), alpha=self.settings.alpha)
@@ -146,9 +149,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("sample_paths_1d")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_paths_2d(self, paths: list, config: SimConfig) -> None:
+    def plot_paths_2d(self, paths: list, config: SimConfig):
         '''
         Zeichnet alle Sample Paths im 2D-Raum.
         x- und y-Achse sind die beiden Dimensionen, Zeit ist implizit der Verlauf.
@@ -167,9 +170,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("sample_paths_2d")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_paths_3d(self, paths: list, config: SimConfig) -> None:
+    def plot_paths_3d(self, paths: list, config: SimConfig):
         '''
         Zeichnet alle Sample Paths im 3D-Raum.
         Drei Dimensionen auf x/y/z-Achsen, Zeit implizit als Verlauf der Linie.
@@ -187,9 +190,9 @@ class Plotter:
         ax.set_ylabel("Dimension 2")
         ax.set_zlabel("Dimension 3")
         self._set_plot_title("sample_paths_3d")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_mean_and_std(self, paths: List[List[float]], config: SimConfig) -> None:
+    def plot_mean_and_std(self, paths: List[List[float]], config: SimConfig):
         data = np.array(paths)
         mean = data.mean(axis=0)
         std  = data.std(axis=0)
@@ -205,9 +208,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("mean_and_std_1d")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_final_distribution(self, paths: List[List[float]], config: SimConfig) -> None:
+    def plot_final_distribution(self, paths: List[List[float]], config: SimConfig):
         final_values = [path[-1] for path in paths]
 
         plt.hist(final_values, bins=30, alpha=self.settings.alpha)
@@ -217,9 +220,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("distribution_1d")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_ergodicity(self, result: ErgodicityResult, config: SimConfig) -> None:
+    def plot_ergodicity(self, result: ErgodicityResult, config: SimConfig):
         plt.hist(result.time_means, bins=30, color="steelblue", alpha=self.settings.alpha, zorder=2)
 
         plt.axvline(result.ensemble_mean, color="black", linewidth=1.5,
@@ -249,9 +252,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("ergodicity")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig) -> None:
+    def plot_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig):
         lags  = result.lags
         acf   = result.acf_mean
         bound = result.confidence_bound
@@ -267,9 +270,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("autocorrelation")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_hurst(self, result: HurstExponentResult, config: SimConfig) -> None:
+    def plot_hurst(self, result: HurstExponentResult, config: SimConfig):
         log_s = np.log10(result.scales)
         log_f = np.log10(result.fluctuation_mean)
 
@@ -295,9 +298,9 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("dfa_hurst")
-        plt.show()
+        return plt.gcf()
 
-    def _plot_variance_growth(self, result: VarianceGrowthResult, config: SimConfig) -> None:
+    def plot_variance_growth(self, result: VarianceGrowthResult, config: SimConfig):
         log_t = np.log10(result.times)
         log_v = np.log10(result.variance)
 
@@ -328,4 +331,4 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("variance_growth")
-        plt.show()
+        return plt.gcf
