@@ -26,10 +26,15 @@ D:\Lasse\Documents\1projekte\informatik\monte_carlo
 │   │   │   │   ├── errors.py
 │   │   │   │   ├── input.py
 │   │   │   │   └── progress.py
-│   │   │   └── cli.py
-│   │   ├── help.py
-│   │   ├── plots.py
-│   │   └── text.py
+│   │   │   ├── cli.py
+│   │   │   └── help.py
+│   │   ├── common
+│   │   │   ├── help.py
+│   │   │   ├── plots.py
+│   │   │   └── text.py
+│   │   └── web
+│   │       ├── app.py
+│   │       └── state.py
 │   ├── exporter.py
 │   └── main.py
 ├── .gitignore
