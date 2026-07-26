@@ -8,8 +8,6 @@ import numbers
 # Analyseergebnisse. Kein Drucken, kein UI-Bezug (kein print_heading, kein
 # enter_continue) -- nur fertige Strings, die von einer beliebigen Ober-
 # fläche (CLI, später Web, PDF-Export) konsumiert werden können.
-# Analog zu HELP_REGISTRY/print_help, nur für dynamische statt statische
-# Inhalte.
 #=========================================================================
 # Simulationseinstellungen
 

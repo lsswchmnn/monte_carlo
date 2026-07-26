@@ -1,5 +1,5 @@
 from ui.cli.utils.display   import print_heading, enter_continue
-from ui.help                import HELP_REGISTRY
+from ui.common.help         import HELP_REGISTRY
 #=========================================================================
 def print_help(key: str) -> None:
     text = HELP_REGISTRY.get(key)

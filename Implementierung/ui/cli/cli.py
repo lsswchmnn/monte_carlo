@@ -3,11 +3,10 @@ from   ui.cli.utils.errors    import show_error, cli_blocking_message
 from   ui.cli.utils.input     import input_float, input_int, input_confirm
 from   ui.cli.utils.progress  import print_progress_bar, Spinner
 from   ui.cli.help            import print_help
-from   ui.plots               import Plotter
-from   ui.text                import *
+from   ui.common.plots        import Plotter
+from   ui.common.text         import *
 from   core.controller        import Controller
 from   core.history           import HistoryEntry
-from   core.config            import SimConfig
 from   pathlib                import Path
 from   tkinter                import filedialog
 import tkinter                as     tk
