@@ -137,6 +137,7 @@ class Plotter:
 # Plotting-Funktionen (privat)
 
     def plot_paths_1d(self, paths: List[List[float]], config: SimConfig):
+        plt.figure()
         for path in paths:
             if self.settings.smooth:
                 plt.plot(self._smooth_path(path, window=self.settings.smooth_window), alpha=self.settings.alpha)
@@ -157,6 +158,7 @@ class Plotter:
         x- und y-Achse sind die beiden Dimensionen, Zeit ist implizit der Verlauf.
         Startpunkt als Marker hervorgehoben.
         '''
+        plt.figure()
         for path in paths:
             coords = np.array(path)         # shape: (n_steps, 2)
             plt.plot(coords[:, 0], coords[:, 1], alpha=self.settings.alpha, linewidth=0.8)
@@ -193,6 +195,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_mean_and_std(self, paths: List[List[float]], config: SimConfig):
+        plt.figure()
         data = np.array(paths)
         mean = data.mean(axis=0)
         std  = data.std(axis=0)
@@ -211,6 +214,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_final_distribution(self, paths: List[List[float]], config: SimConfig):
+        plt.figure()
         final_values = [path[-1] for path in paths]
 
         plt.hist(final_values, bins=30, alpha=self.settings.alpha)
@@ -223,6 +227,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_ergodicity(self, result: ErgodicityResult, config: SimConfig):
+        plt.figure()
         plt.hist(result.time_means, bins=30, color="steelblue", alpha=self.settings.alpha, zorder=2)
 
         plt.axvline(result.ensemble_mean, color="black", linewidth=1.5,
@@ -255,6 +260,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_autocorrelation(self, result: AutoCorrelationResult, config: SimConfig):
+        plt.figure()
         lags  = result.lags
         acf   = result.acf_mean
         bound = result.confidence_bound
@@ -273,6 +279,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_hurst(self, result: HurstExponentResult, config: SimConfig):
+        plt.figure()
         log_s = np.log10(result.scales)
         log_f = np.log10(result.fluctuation_mean)
 
@@ -301,6 +308,7 @@ class Plotter:
         return plt.gcf()
 
     def plot_variance_growth(self, result: VarianceGrowthResult, config: SimConfig):
+        plt.figure()
         log_t = np.log10(result.times)
         log_v = np.log10(result.variance)
 
