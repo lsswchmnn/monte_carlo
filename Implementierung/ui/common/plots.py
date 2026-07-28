@@ -339,4 +339,4 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("variance_growth")
-        return plt.gcf
+        return plt.gcf()
