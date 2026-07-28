@@ -4,6 +4,8 @@ from   ui.common.text   import *
 import streamlit        as     st
 import sys
 #=========================================================================
+# Setup
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 st.set_page_config(
@@ -76,48 +78,60 @@ with col_section:
 
     st.caption(transition_options[selected_key]["desc"])    # Beschreibung anzeigen
 
+st.space(size="xsmall")
+if st.button("Reset", width="content", type="tertiary"):
+    controller.reset_config()
+
 #-------------------------------------------------------------------------
 # Abschnitt: Simulation
 
-st.space(size="xxsmall")
+st.space(size="small")
 st.header("Simulation", divider="gray")
 
-if st.button("Calculate data", width="stretch"):
+if st.button("Run simulation", width="stretch", type="primary"):
     controller.run_simulation()
     st.session_state.last_result_index = len(controller.get_history_entries()) - 1
 
 if "last_result_index" in st.session_state:
-    entry = controller.get_history_entry(st.session_state.last_result_index)
-    st.write(str(format_result_summary(entry)))
+    entry   = controller.get_history_entry(st.session_state.last_result_index)
+    result  = entry.result
+    config  = entry.config
 
-    if st.button("Start plotting", width="stretch"):
-        result = entry.result
-        config = entry.config
-
-        if config.dimensionality == "nd":
-            if config.n_dimensions in (2, 3):
-                fig = plotter.plot(result, "sample_paths", config)
-                st.pyplot(fig)
-                plotter.close(fig)
-            else:
-                st.info(f"Plotting is not available for {config.n_dimensions} dimensions.")
+    # Pfad: >1d
+    if config.dimensionality == "nd":
+        if config.n_dimensions in (2, 3):
+            fig = plotter.plot(result, "sample_paths", config)
+            with st.container(horizontal=True):
+                st.space("stretch")
+                st.pyplot(fig, width="content")
+                st.space("stretch")
+            plotter.close(fig)
         else:
-            col1, col2, col3 = st.columns(3)
-            fig_paths = plotter.plot_paths_1d(result, config)
-            with col1:
-                st.write("Sample Paths:")
-                st.pyplot(fig_paths)
-            plotter.close(fig_paths)
-            fig_dist = plotter.plot_final_distribution(result, config)
-            with col2:
-                st.write("Final distribution:")
-                st.pyplot(fig_dist)
-            plotter.close(fig_dist)
-            fig_mean = plotter.plot_mean_and_std(result, config)
-            with col3:
-                st.write("Mean and std:")
-                st.pyplot(fig_mean)
-            plotter.close(fig_mean)
+            st.info(f"Plotting is not available for {config.n_dimensions} dimensions.")
+
+    # Pfad: 1d
+    else:
+        col1, col2, col3 = st.columns(3)
+        fig_paths = plotter.plot_paths_1d(result, config)
+        with col1:
+            st.write("Sample Paths:")
+            st.pyplot(fig_paths)
+        plotter.close(fig_paths)
+        fig_dist = plotter.plot_final_distribution(result, config)
+        with col2:
+            st.write("Final distribution:")
+            st.pyplot(fig_dist)
+        plotter.close(fig_dist)
+        fig_mean = plotter.plot_mean_and_std(result, config)
+        with col3:
+            st.write("Mean and std:")
+            st.pyplot(fig_mean)
+        plotter.close(fig_mean)
+
+    # Zusammenfassung
+    st.write("Summary:")
+    st.text(format_result_summary(entry))   
 
 else:
-    st.info("Click 'Calculate data' to run a simulation first.")
+    st.info("Click 'Run simulation' to simulate a stochastic process.")
+
