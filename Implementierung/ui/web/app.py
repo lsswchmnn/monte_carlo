@@ -114,17 +114,17 @@ if "last_result_index" in st.session_state:
         col1, col2, col3 = st.columns(3)
         fig_paths = plotter.plot_paths_1d(result, config)
         with col1:
-            st.write("Sample Paths:")
+            st.write("Sample Paths")
             st.pyplot(fig_paths)
         plotter.close(fig_paths)
         fig_dist = plotter.plot_final_distribution(result, config)
         with col2:
-            st.write("Final distribution:")
+            st.write("Final distribution")
             st.pyplot(fig_dist)
         plotter.close(fig_dist)
         fig_mean = plotter.plot_mean_and_std(result, config)
         with col3:
-            st.write("Mean and std:")
+            st.write("Mean and std")
             st.pyplot(fig_mean)
         plotter.close(fig_mean)
 
@@ -135,3 +135,61 @@ if "last_result_index" in st.session_state:
 else:
     st.info("Click 'Run simulation' to simulate a stochastic process.")
 
+#-------------------------------------------------------------------------
+# Abschnitt: Analyse
+
+st.space(size="small")
+st.header("Analysis", divider="gray")
+
+if "last_result_index" not in st.session_state:
+    st.info("Run a simulation first to enable analysis.")
+
+else:
+    entry = controller.get_history_entry(st.session_state.last_result_index)
+
+    if entry.config.dimensionality != "1d":
+        st.info("Analysis is only available for 1D processes.")
+
+    else:
+        if st.button("Analyze", width="stretch"):
+            with st.spinner("Running analysis..."):
+                idx = st.session_state.last_result_index
+                controller.calculate_ergodicity(idx)
+                controller.calculate_autocorrelation(idx)
+                controller.calculate_hurst_exponent(idx)
+                controller.calculate_variance_growth(idx)
+
+        if entry.erg_result is not None:
+            col_erg, col_acf, col_hurst, col_var = st.columns(4)
+
+            with col_erg:
+                st.write("Ergodicity")
+                fig = plotter.plot_ergodicity(entry.erg_result, entry.config)
+                st.pyplot(fig)
+                plotter.close(fig)
+                #st.text(format_ergodicity(entry.erg_result))
+                #st.text(format_ergodicity_heuristic(entry.erg_result))
+
+            with col_acf:
+                st.write("Autocorrelation")
+                fig = plotter.plot_autocorrelation(entry.acf_result, entry.config)
+                st.pyplot(fig)
+                plotter.close(fig)
+                # st.text(format_autocorrelation(entry.acf_result))
+                # st.text(format_autocorrelation_significance(entry.acf_result))
+
+            with col_hurst:
+                st.write("Hurst Exponent")
+                fig = plotter.plot_hurst(entry.hurst_result, entry.config)
+                st.pyplot(fig)
+                plotter.close(fig)
+                # st.text(format_hurst_exponent(entry.hurst_result))
+                # st.text(format_hurst_interpretation(entry.hurst_result))
+
+            with col_var:
+                st.write("Variance Growth")
+                fig = plotter.plot_variance_growth(entry.variance_result, entry.config)
+                st.pyplot(fig)
+                plotter.close(fig)
+                # st.text(format_variance_growth(entry.variance_result))
+                # st.text(format_variance_growth_interpretation(entry.variance_result))
