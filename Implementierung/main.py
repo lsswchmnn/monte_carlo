@@ -6,8 +6,6 @@ from   ui.cli.cli       import CLI
 
 if __name__ == "__main__":
 
-    controller = Controller()
-
     while True:
         print("1 - Start CLI")
         print("2 - Start Streamlit")
@@ -15,6 +13,7 @@ if __name__ == "__main__":
         choice = input("> ").strip().lower()
 
         if choice == "1":
+            controller = Controller()
             cli = CLI(controller)
             cli.run()
             break
