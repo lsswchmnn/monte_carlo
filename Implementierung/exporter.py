@@ -184,11 +184,12 @@ class Exporter:
             n_paths   = meta.get("n_paths", 0),
             step_size = meta.get("step_size", 1.0),
         )
-        cfg.dimensionality   = meta.get("dimensionality", "1d")
-        cfg.n_dimensions     = meta.get("n_dimensions", 1)
-        cfg.process_type     = meta.get("process_type")
-        cfg.transition_name  = meta.get("transition")
-        cfg.start_state_name = None
-        cfg.transition_fn    = None
-        cfg.start_state_fn   = None
+        cfg.dimensionality    = meta.get("dimensionality", "1d")
+        cfg.n_dimensions      = meta.get("n_dimensions", 1)
+        cfg.process_type      = meta.get("process_type")
+        cfg.transition_name   = meta.get("transition")
+        cfg.transition_params = meta.get("params", {})
+        cfg.start_state_name  = None
+        cfg.transition_fn     = None
+        cfg.start_state_fn    = None
         return cfg
