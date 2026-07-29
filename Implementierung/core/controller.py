@@ -217,36 +217,36 @@ class Controller:
 
     def calculate_ergodicity(self, index: int) -> ErgodicityResult:
         '''Untersucht ergodisches Verhalten eines Prozesses.'''
-        if self.config.dimensionality != "1d":
-            raise ValueError("Ergodicity is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
+        if entry.config.dimensionality != "1d":
+            raise ValueError("Ergodicity is not implemented for nd-processes yet.")
         result = self.analyzer.calculate_ergodicity(entry.result)
         entry.erg_result = result
         return result
 
     def calculate_autocorrelation(self, index: int, max_lag: int | None = None) -> AutoCorrelationResult:
         '''Untersucht Autokorrelation eines Prozesses.'''
-        if self.config.dimensionality != "1d":
-            raise ValueError("Autocorrelation is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
+        if entry.config.dimensionality != "1d":
+            raise ValueError("Autocorrelation is not implemented for nd-processes yet.")
         result = self.analyzer.calculate_autocorrelation(entry.result, max_lag=max_lag)
         entry.acf_result = result
         return result
 
     def calculate_hurst_exponent(self, index: int, on_increments: bool = True) -> HurstExponentResult:
         '''Untersucht Langzeitgedächtnis / Selbstähnlichkeit via DFA.'''
-        if self.config.dimensionality != "1d":
-            raise ValueError("Hurst exponent is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
+        if entry.config.dimensionality != "1d":
+            raise ValueError("Hurst exponent is not implemented for nd-processes yet.")
         result = self.analyzer.calculate_hurst_exponent(entry.result, on_increments=on_increments)
         entry.hurst_result = result
         return result
 
     def calculate_variance_growth(self, index: int) -> VarianceGrowthResult:
         '''Untersucht das Wachstum der Ensemble-Varianz über die Zeit.'''
-        if self.config.dimensionality != "1d":
-            raise ValueError("Variance growth is not implemented for nd-processes yet.")
         entry = self.get_history_entry(index)
+        if entry.config.dimensionality != "1d":
+            raise ValueError("Variance growth is not implemented for nd-processes yet.")
         result = self.analyzer.calculate_variance_growth(entry.result)
         entry.variance_result = result
         return result
