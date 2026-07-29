@@ -17,6 +17,31 @@ controller  = get_controller()
 plotter     = get_plotter()
 config      = controller.config
 settings    = plotter.settings
+
+#-------------------------------------------------------------------------
+# Hilfsfunktionen
+
+def _reset_all():
+    controller.reset_config()
+    plotter.reset_settings()
+
+    cfg      = controller.config
+    settings = plotter.settings
+
+    st.session_state["cfg_n_dim"]        = cfg.n_dimensions
+    st.session_state["cfg_n_paths"]      = cfg.n_paths
+    st.session_state["cfg_n_steps"]      = cfg.n_steps
+    st.session_state["cfg_step_size"]    = cfg.step_size
+    st.session_state["cfg_seed"]         = cfg.seed
+    st.session_state["cfg_process_type"] = cfg.process_type
+    st.session_state["cfg_start_state"]  = cfg.start_state_name
+    st.session_state["cfg_transition"]   = cfg.transition_name
+
+    st.session_state["sys_smooth"]        = settings.smooth
+    st.session_state["sys_smooth_window"] = settings.smooth_window
+    st.session_state["sys_grid"]          = settings.grid
+    st.session_state["sys_alpha"]         = settings.alpha
+
 #-------------------------------------------------------------------------
 # Abschnitt: Simulationseinstellungen
 
@@ -95,9 +120,7 @@ with col_system:
         plotter.set_alpha(alpha)
 
 st.space(size="xsmall")
-if st.button("Reset", width="content", type="tertiary"):
-    controller.reset_config()
-    plotter.reset_settings()
+st.button("Reset", width="content", type="tertiary", on_click=_reset_all)
 
 #-------------------------------------------------------------------------
 # Abschnitt: Simulation
