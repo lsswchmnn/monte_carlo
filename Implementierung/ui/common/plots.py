@@ -194,25 +194,6 @@ class Plotter:
         self._set_plot_title("sample_paths_3d")
         return plt.gcf()
 
-    def plot_mean_and_std(self, paths: List[List[float]], config: SimConfig):
-        plt.figure()
-        data = np.array(paths)
-        mean = data.mean(axis=0)
-        std  = data.std(axis=0)
-        x    = range(len(mean))
-
-        plt.plot(x, mean, label="Mean", color="black")
-        plt.fill_between(x, mean - std, mean + std, alpha=0.3, label="±1 Std Dev")
-
-        plt.title("Mean Path with Volatility")
-        plt.xlabel("Step")
-        plt.ylabel("State")
-        plt.legend()
-        self._apply_grid()
-        self._add_label(config)
-        self._set_plot_title("mean_and_std_1d")
-        return plt.gcf()
-
     def plot_final_distribution(self, paths: List[List[float]], config: SimConfig):
         plt.figure()
         final_values = [path[-1] for path in paths]
@@ -224,6 +205,25 @@ class Plotter:
         self._apply_grid()
         self._add_label(config)
         self._set_plot_title("distribution_1d")
+        return plt.gcf()
+
+    def plot_mean_and_std(self, paths: List[List[float]], config: SimConfig):
+        plt.figure()
+        data = np.array(paths)
+        mean = data.mean(axis=0)
+        std  = data.std(axis=0)
+        x    = range(len(mean))
+
+        plt.plot(x, mean, label="Mean", color="black")
+        plt.fill_between(x, mean - std, mean + std, alpha=self.settings.alpha, label="±1 Std Dev")
+
+        plt.title("Mean Path with Volatility")
+        plt.xlabel("Step")
+        plt.ylabel("State")
+        plt.legend()
+        self._apply_grid()
+        self._add_label(config)
+        self._set_plot_title("mean_and_std_1d")
         return plt.gcf()
 
     def plot_ergodicity(self, result: ErgodicityResult, config: SimConfig):
