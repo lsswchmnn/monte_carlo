@@ -26,6 +26,7 @@ class HistoryManager:
     def add(self, result: list, config: SimConfig, calc_time: float | None = None) -> None:
         snapshot = replace(config)
         snapshot.rng = np.random.default_rng(config.seed)                                         # saubere Kopie der Konfiguration
+        snapshot.transition_params = dict(config.transition_params)
         self._entries.append(HistoryEntry(result=result, config=snapshot, calc_time=calc_time))   # dataclass zu Historie hinzufügen
  
     def get(self, index: int) -> HistoryEntry:
