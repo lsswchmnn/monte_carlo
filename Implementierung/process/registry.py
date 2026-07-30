@@ -233,6 +233,13 @@ TRANSITION_REGISTRY_ND:  dict[str, dict] = {
                     "type": "float",
                     "desc": "Constant drift added to each axis each step",
                 },
+                "mode": {
+                    "default": "isotropic", "min": None, "max": None,
+                    "type": "str",
+                    "options": ["isotropic", "axis_aligned"],
+                    "desc": "isotropic: uniformly random direction | axis_aligned: classic grid random walk",
+        },
+
             },
         },
         "mean_reverting_nd": {
