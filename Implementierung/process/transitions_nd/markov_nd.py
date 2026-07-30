@@ -36,23 +36,36 @@ def _uniform_direction(rng, n_paths, n_dimensions):
 # Übergangsfunktionen
 
 def random_walk_nd(x_t: np.ndarray, rng, step_size: float = 1.0,
-                   drift: float = 0.0) -> np.ndarray:
+                   drift: float = 0.0, mode: str = "isotropic") -> np.ndarray:
     '''
-    Zufälliger Schritt entlang einer zufällig gewählten Achse (±step_size),
-    optional mit konstantem Drift entlang jeder Achse.
+    Zufälliger Schritt fester Länge step_size, Richtung abhängig von mode:
+      'isotropic'    -> gleichverteilt zufällige Richtung im Raum (Muller 1959),
+                         keine Gitterstruktur.
+      'axis_aligned' -> klassischer Gitter-Random-Walk: Schritt entlang einer
+                         zufällig gewählten Achse (N-dim. Analogon des 1D-Walks).
+    Optional mit konstantem Drift entlang jeder Achse.
     '''
     if x_t.ndim == 2:
         n_paths, n_dimensions = x_t.shape
-        directions = rng.integers(n_dimensions, size=n_paths)
-        signs      = rng.choice(np.array([-1.0, 1.0]), size=n_paths)
-        steps      = np.zeros((n_paths, n_dimensions))
-        steps[np.arange(n_paths), directions] = signs * step_size
+        if mode == "axis_aligned":
+            directions = rng.integers(n_dimensions, size=n_paths)
+            signs      = rng.choice(np.array([-1.0, 1.0]), size=n_paths)
+            steps      = np.zeros((n_paths, n_dimensions))
+            steps[np.arange(n_paths), directions] = signs * step_size
+        else:
+            directions = _uniform_direction(rng, n_paths, n_dimensions)
+            steps = directions * step_size
     else:
         n_dimensions = len(x_t)
-        direction    = int(rng.integers(n_dimensions))
-        sign         = rng.choice(np.array([-1.0, 1.0]))
-        steps        = np.zeros(n_dimensions)
-        steps[direction] = sign * step_size
+        if mode == "axis_aligned":
+            direction = int(rng.integers(n_dimensions))
+            sign      = rng.choice(np.array([-1.0, 1.0]))
+            steps     = np.zeros(n_dimensions)
+            steps[direction] = sign * step_size
+        else:
+            direction = rng.normal(size=n_dimensions)
+            direction = direction / np.linalg.norm(direction)
+            steps = direction * step_size
 
     return x_t + steps + drift
 
