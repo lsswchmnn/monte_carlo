@@ -117,6 +117,7 @@ class Exporter:
     @staticmethod
     def _build_meta(config: SimConfig) -> dict:
         return {
+            "start_state":      config.start_state_name,
             "transition":       config.transition_name,
             "process_type":     config.process_type,
             "dimensionality":   config.dimensionality,
@@ -184,12 +185,12 @@ class Exporter:
             n_paths   = meta.get("n_paths", 0),
             step_size = meta.get("step_size", 1.0),
         )
+        cfg.start_state_name  = meta.get("start_state")
         cfg.dimensionality    = meta.get("dimensionality", "1d")
         cfg.n_dimensions      = meta.get("n_dimensions", 1)
         cfg.process_type      = meta.get("process_type")
         cfg.transition_name   = meta.get("transition")
         cfg.transition_params = meta.get("params", {})
-        cfg.start_state_name  = None
         cfg.transition_fn     = None
         cfg.start_state_fn    = None
         return cfg
