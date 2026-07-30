@@ -19,6 +19,7 @@ if __name__ == "__main__":
             break
 
         elif choice == "2":
+            print()
             subprocess.run(
                 [
                     sys.executable,
